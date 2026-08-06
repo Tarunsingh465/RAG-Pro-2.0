@@ -1,27 +1,32 @@
 from pathlib import Path
 
 from langchain_core.documents import Document
-from langchain_community.document_loaders import PyPDFLoader
 
 from app.core.logger import get_logger
+from app.ingestion.searchable import SearchablePDFExtractor
 
 logger = get_logger()
 
 
 class DocumentLoader:
     """
-    Loads supported documents and converts them
+    Loads searchable and scanned PDFs and converts them
     into LangChain Document objects.
     """
 
     SUPPORTED_EXTENSIONS = {".pdf"}
 
+    def __init__(self):
+        self.extractor = SearchablePDFExtractor()
+
     def load(self, file_path: str | Path) -> list[Document]:
         """
-        Load a document and return LangChain Documents.
+        Load a PDF and return LangChain Documents.
 
-        Args:
-            file_path: Path to document
+        Supports:
+        - Searchable PDFs
+        - Scanned PDFs (OCR)
+        - Mixed PDFs
 
         Returns:
             list[Document]
@@ -33,21 +38,39 @@ class DocumentLoader:
             raise FileNotFoundError(f"{file_path} not found.")
 
         if file_path.suffix.lower() not in self.SUPPORTED_EXTENSIONS:
-            raise ValueError(f"{file_path.suffix} is not supported.")
-
-        logger.info(f"Loading {file_path.name}")
-
-        loader = PyPDFLoader(str(file_path))
-        documents = loader.load()
-
-        logger.success(f"{len(documents)} pages loaded successfully.")
-
-        for doc in documents:
-            doc.metadata.update(
-                {
-                    "source": file_path.name,
-                    "page": doc.metadata.get("page", 0),
-                }
+            raise ValueError(
+                f"{file_path.suffix} is not supported."
             )
+
+        logger.info(f"Loading '{file_path.name}'")
+
+        pages = self.extractor.extract(file_path)
+
+        documents = []
+
+        for page in pages:
+
+            text = page["text"].strip()
+
+            # Skip completely empty pages
+            if not text:
+                logger.warning(
+                    f"Skipping empty page {page['page'] + 1}"
+                )
+                continue
+
+            documents.append(
+                Document(
+                    page_content=text,
+                    metadata={
+                        "source": file_path.name,
+                        "page": page["page"] + 1,
+                    },
+                )
+            )
+
+        logger.success(
+            f"Loaded {len(documents)} page(s) successfully."
+        )
 
         return documents

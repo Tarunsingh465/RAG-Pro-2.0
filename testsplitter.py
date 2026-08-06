@@ -1,9 +1,12 @@
-from app.ingestion.embedder import Embedder
+from paddleocr import PaddleOCR
 
-embedder = Embedder()
+ocr = PaddleOCR(lang="en")
 
-vector = embedder.embed_query("What is Retrieval Augmented Generation?")
+results = ocr.predict("data/uploads/cur.jpeg")
 
-print(type(vector))
-print(len(vector))
-print(vector[:10])
+for page in results:
+    print("\nExtracted Text:")
+    print("-" * 50)
+
+    for text in page["rec_texts"]:
+        print(text)
