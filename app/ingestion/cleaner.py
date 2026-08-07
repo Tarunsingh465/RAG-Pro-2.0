@@ -1,58 +1,23 @@
 import re
 
-from app.core.logger import get_logger
-
-logger = get_logger()
-
 
 class TextCleaner:
-    """
-    Cleans extracted text before chunking.
-    """
+    """Clean OCR output while preserving Markdown formatting."""
 
     def clean(self, text: str) -> str:
-
         if not text:
             return ""
 
-        # Normalize spaces
-        text = re.sub(r"[ \t]+", " ", text)
+        # Normalize line endings
+        text = text.replace("\r\n", "\n").replace("\r", "\n")
 
-        # Remove multiple blank lines
-        text = re.sub(r"\n{2,}", "\n", text)
+        # Remove trailing spaces
+        text = re.sub(r"[ \t]+$", "", text, flags=re.MULTILINE)
 
-        # Remove page numbers
-        text = re.sub(
-            r"Page\s+\d+(\s+of\s+\d+)?",
-            "",
-            text,
-            flags=re.IGNORECASE,
-        )
+        # Collapse excessive blank lines (keep markdown readable)
+        text = re.sub(r"\n{3,}", "\n\n", text)
 
-        # Remove standalone page numbers
-        text = re.sub(
-            r"^\d+$",
-            "",
-            text,
-            flags=re.MULTILINE,
-        )
+        # Remove multiple spaces (not newlines)
+        text = re.sub(r"[ \t]{2,}", " ", text)
 
-        # Remove duplicate lines
-        cleaned = []
-        previous = ""
-
-        for line in text.splitlines():
-
-            line = line.strip()
-
-            if not line:
-                continue
-
-            if line == previous:
-                continue
-
-            previous = line
-
-            cleaned.append(line)
-
-        return "\n".join(cleaned)
+        return text.strip()

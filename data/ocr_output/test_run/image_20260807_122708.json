@@ -1,0 +1,72 @@
+{
+  "pages": [
+    {
+      "index": 0,
+      "markdown": "![img-0.jpeg](img-0.jpeg)\n\n# I love reading books.\n\nI love reading books.\n\nEvery day, I pick up a book and enter a new world. The stories take me on exciting adventures, and I learn new things.\n\nI like to read in a quiet corner, surrounded by the smell of pages. The characters become my friends, and their journeys inspire me. Reading helps me relax and imagine wonderful places.\n\nWhether it's a rainy day or a sunny afternoon, a good book is my perfect companion.",
+      "images": [
+        {
+          "id": "img-0.jpeg",
+          "top_left_x": 184,
+          "top_left_y": 107,
+          "bottom_right_x": 422,
+          "bottom_right_y": 263,
+          "image_base64": null,
+          "image_annotation": null
+        }
+      ],
+      "dimensions": {
+        "dpi": 87,
+        "height": 1018,
+        "width": 719
+      },
+      "tables": [],
+      "hyperlinks": [],
+      "header": null,
+      "footer": null
+    },
+    {
+      "index": 1,
+      "markdown": "forest\n\n# The Flying Elephant\n\n![img-1.jpeg](img-1.jpeg)\n\nOnce upon a time, a herd of elephants lived in a forest clearing beside a crumbly old castle.\n\nThe castle had been empty for many years. Some towers and walls still stood though, with vines growing over them. The adult elephants loved to scratch their backs against the castle, but they were too big to go through the doors. Only the young elephants could squeeze through—they had a lot of fun playing inside, away from the adults.\n\nThe youngest was a three-year-old elephant named Milly. One day she was chasing a colorful butterfly in the castle, when she tumbled down a few stairs and broke through a door into a wide dark room.",
+      "images": [
+        {
+          "id": "img-1.jpeg",
+          "top_left_x": 111,
+          "top_left_y": 290,
+          "bottom_right_x": 333,
+          "bottom_right_y": 424,
+          "image_base64": null,
+          "image_annotation": null
+        }
+      ],
+      "dimensions": {
+        "dpi": 87,
+        "height": 1018,
+        "width": 719
+      },
+      "tables": [],
+      "hyperlinks": [],
+      "header": null,
+      "footer": null
+    },
+    {
+      "index": 2,
+      "markdown": "n - 0:56\n\n## 14 The Judgement\n\nOn a bright sunny day, Tom and Eliot decided to have a picnic on the beach. They spread out their mat and lay out the food.\n\nAt a distance, they saw a ship sinking in the water. They looked around for the coast guard but no one was in sight. Both the friends were concerned. A few moments later, Tom remarked, \"Maybe this happened because there was one bad man on the ship. God must have wanted to kill him. But see, all the other innocent people were also killed.\"\n\nSuddenly, a red ant bit him on his foot. In a fit of rage, Tom stood up and stomped on all the red ants around his foot. Eliot saw this and said, \"My dear Tom. Why did you kill so many innocent red ants when only one bit you on your foot?\" Tom was ashamed and realised his mistake.\n\nMoral: Do not judge others without knowing the truth\n\n14\n\nPEOPLE WITH ALSO",
+      "images": [],
+      "dimensions": {
+        "dpi": 87,
+        "height": 1018,
+        "width": 719
+      },
+      "tables": [],
+      "hyperlinks": [],
+      "header": null,
+      "footer": null
+    }
+  ],
+  "model": "mistral-ocr-latest",
+  "usage_info": {
+    "pages_processed": 3,
+    "doc_size_bytes": 746826
+  },
+  "document_annotation": null
+}

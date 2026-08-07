@@ -5,7 +5,7 @@ from app.ingestion.splitter import DocumentSplitter
 
 
 def main():
-    pdf_path = Path("data/uploads/happy.pdf")  # Change this path
+    pdf_path = Path("data/uploads/image.pdf")  # Change this path
 
     loader = DocumentLoader()
     splitter = DocumentSplitter()
