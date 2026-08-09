@@ -14,6 +14,11 @@ class ChatRequest(BaseModel):
         examples=["What is Retrieval Augmented Generation?"],
     )
 
+    document_id: str | None = Field(
+        default=None,
+        description="ID of the document to use for RAG retrieval.",
+    )
+
     top_k: int = Field(
         default=5,
         ge=1,

@@ -19,10 +19,18 @@ class RAGChain:
             | StrOutputParser()
         )
 
-    def invoke(self, question: str):
+    def invoke(
+        self,
+        question: str,
+        document_id: str | None = None,
+        top_k: int = 5,
+    ):
 
-        docs = self.retriever.retrieve(question)
-
+        docs = self.retriever.retrieve(
+            query=question,
+            document_id=document_id,
+            k=top_k,
+        )
         context = "\n\n".join(
             doc.page_content
             for doc in docs

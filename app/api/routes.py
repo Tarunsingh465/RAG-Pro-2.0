@@ -1,21 +1,21 @@
 from fastapi import APIRouter, File, UploadFile
+from typing import List
 
 from app.core.config import settings
 from app.schemas.request import ChatRequest
 from app.schemas.response import (
     ChatResponse,
     HealthResponse,
-    SourceDocument,
 )
+from app.services.chat_service import ChatService
 from app.services.ingest_service import IngestService
-
 router = APIRouter(
     prefix="/api/v1",
     tags=["RAG API"],
 )
 
 ingest_service = IngestService()
-
+chat_service = ChatService()
 
 # =====================================================
 # System
@@ -40,16 +40,16 @@ async def health():
 
 @router.post(
     "/upload",
-    summary="Upload PDF",
+    summary="Upload Documents",
 )
-async def upload_document(
-    file: UploadFile = File(...),
+async def upload_documents(
+    files: List[UploadFile] = File(...),
 ):
     """
-    Upload a PDF and ingest it into the vector database.
+    Upload one or more documents and ingest them.
     """
-    return ingest_service.ingest_document(file)
 
+    return ingest_service.ingest_documents(files)
 
 @router.get(
     "/documents",
@@ -80,9 +80,15 @@ from app.services.rag_service import RagService
 rag_service = RagService()
 
 
-@router.post("/chat")
+@router.post(
+    "/chat",
+    response_model=ChatResponse,
+    summary="Chat with RAG Assistant",
+)
 async def chat(request: ChatRequest):
 
-    return rag_service.ask(
-        request.question
+    return chat_service.chat(
+        question=request.question,
+        document_id=request.document_id,
+        top_k=request.top_k,
     )

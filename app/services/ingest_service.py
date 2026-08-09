@@ -15,23 +15,27 @@ class IngestService:
     def __init__(self):
         self.pipeline = IngestionPipeline()
 
-    def ingest_document(self, file: UploadFile):
+    def ingest_documents(
+        self,
+        files: list[UploadFile],
+    ):
 
-        # Create upload directory
         upload_dir = Path(UPLOAD_FOLDER)
         upload_dir.mkdir(parents=True, exist_ok=True)
 
-        file_path = upload_dir / file.filename
+        paths = []
 
-        # Save uploaded file
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        for file in files:
 
-        logger.success(
-            f"File saved at {file_path}"
-        )
+            file_path = upload_dir / file.filename
 
-        # Start ingestion
-        result = self.pipeline.ingest(file_path)
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
 
-        return result
+            logger.success(
+                f"Saved: {file.filename}"
+            )
+
+            paths.append(file_path)
+
+        return self.pipeline.ingest(paths)

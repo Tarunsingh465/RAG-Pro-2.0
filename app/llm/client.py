@@ -11,7 +11,7 @@ class LLMClient:
     Creates and returns a LangChain Chat Model.
     """
 
-    def __init__(self):
+    def __init__(self,*,temperature: float = 0.2,max_tokens: int = 1024,):
 
         logger.info("Initializing OpenRouter LLM...")
 

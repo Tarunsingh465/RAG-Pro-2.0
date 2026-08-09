@@ -64,11 +64,16 @@ class PineconeManager:
     def add_documents(self, documents: Sequence[Document]) -> list[str]:
         return self.vector_store.add_documents(documents)
 
-    def similarity_search(self, query: str, k: int = 5):
-        return self.vector_store.similarity_search(query, k=k)
+    def similarity_search(self,query: str, k: int = 5, filter: dict | None = None, ):
+        return self.vector_store.similarity_search(
+            query,
+            k=k,
+            filter=filter,
+        )
 
-    def similarity_search_with_score(self, query: str, k: int = 5):
-        return self.vector_store.similarity_search_with_score(query, k=k)
+
+    def similarity_search_with_score(self, query: str, k: int = 5, filter: dict | None = None,):
+        return self.vector_store.similarity_search_with_score(query, k=k, filter=filter,)
 
     def get_retriever(self, k: int = 5):
         return self.vector_store.as_retriever(

@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from mistralai import Mistral
+from langchain_core.documents import Document
 
 from app.ingestion.cleaner import TextCleaner
 from app.core.logger import get_logger
@@ -14,7 +15,7 @@ load_dotenv()
 logger = get_logger()
 
 
-class MistralOCRExtractor:
+class MistralExtractor:
     """
     Extract text from PDFs using Mistral OCR.
 
@@ -114,7 +115,7 @@ class MistralOCRExtractor:
 
         raise last_error
 
-    def extract(self, pdf_path: str | Path) -> list[dict]:
+    def extract(self, pdf_path: str | Path) -> list[Document]:
 
         pdf_path = Path(pdf_path)
 
@@ -138,7 +139,7 @@ class MistralOCRExtractor:
         if self.save_json:
             self._persist_json(pdf_path, response_dict)
 
-        pages = []
+        documents = []
 
         for page in response_dict.get("pages", []):
 
@@ -146,18 +147,21 @@ class MistralOCRExtractor:
                 (page.get("markdown") or "").strip()
             )
 
-            pages.append(
-                {
-                    "page": page.get("index", len(pages)),
-                    "text": text,
-                }
+            if not text:
+                continue
+
+            documents.append(
+                Document(
+                    page_content=text,
+                    metadata={
+                        "source": pdf_path.name,
+                        "page": page.get("index", 0) + 1,
+                    },
+                )
             )
 
-        logger.success(
-            f"Extracted {len(pages)} pages from {pdf_path.name}"
-        )
+        return documents
 
-        return pages
 
     def _persist_json(
         self,
