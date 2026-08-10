@@ -10,21 +10,18 @@ class SourceDocument(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
-
     sources: List[SourceDocument]
+    out_of_context: bool = False
+    similarity_score: float | None = None
 
 
 class UploadResponse(BaseModel):
     filename: str
-
     chunks_created: int
-
     message: str
 
 
 class HealthResponse(BaseModel):
     status: str
-
     app: str
-
     version: str

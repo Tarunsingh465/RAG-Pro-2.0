@@ -8,7 +8,7 @@ Avoid hardcoding values throughout the project.
 # ==========================================
 
 API_PREFIX = "/api/v1"
-
+RAG_SIMILARITY_THRESHOLD = 0.65
 # ==========================================
 # Supported File Types
 # ==========================================

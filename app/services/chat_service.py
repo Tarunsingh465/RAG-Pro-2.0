@@ -51,11 +51,23 @@ class ChatService:
             }
 
         if decision.route == "rag":
-            return self.rag_service.ask(
+            result = self.rag_service.ask(
                 question=question,
                 document_id=document_id,
                 top_k=top_k,
             )
+
+            if result.get("out_of_context"):
+                return {
+                    "answer": (
+                        "I couldn't find anything relevant to that in the "
+                        "provided documents. Could you rephrase, or ask "
+                        "something related to the document content?"
+                    ),
+                    "sources": [],
+                }
+
+            return result
 
         logger.error(f"Unexpected route: {decision.route}")
 
