@@ -1,0 +1,24 @@
+{
+  "pages": [
+    {
+      "index": 0,
+      "markdown": "# THE 10 RULES OF\nikigai\n\n1. Stay active; don't retire.\n2. Take it slow.\n3. Don't fill your stomach.\n4. Surround yourself with good friends.\n5. Get in shape for your next birthday.\n6. Smile.\n7. Reconnect with nature.\n8. Give thanks.\n9. Live in the moment.\n10. Follow your ikigai.\n\nFrom the book *Ikigai: The Japanese Secret to a Long and Happy Life* by Héctor García and Francesc Miralles",
+      "images": [],
+      "dimensions": {
+        "dpi": 200,
+        "height": 1000,
+        "width": 696
+      },
+      "tables": [],
+      "hyperlinks": [],
+      "header": null,
+      "footer": null
+    }
+  ],
+  "model": "mistral-ocr-latest",
+  "usage_info": {
+    "pages_processed": 1,
+    "doc_size_bytes": 60147
+  },
+  "document_annotation": null
+}

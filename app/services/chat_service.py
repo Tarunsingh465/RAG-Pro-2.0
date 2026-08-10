@@ -1,4 +1,5 @@
 from app.core.logger import get_logger
+from app.services.greeting_service import GreetingService
 from app.services.rag_service import RagService
 from app.services.supervisor_service import SupervisorService
 
@@ -10,6 +11,7 @@ class ChatService:
     def __init__(self):
 
         self.supervisor = SupervisorService()
+        self.greeting_service = GreetingService()
         self.rag_service = RagService()
 
         logger.info("Chat service initialized.")
@@ -23,22 +25,12 @@ class ChatService:
 
         decision = self.supervisor.route(question)
 
-        logger.info(
-            f"Processing route: {decision.route}"
-        )
+        logger.info(f"Processing route: {decision.route}")
 
         if decision.route == "greeting":
-
-            return {
-                "answer": (
-                    "Hello! 👋 "
-                    "How can I help you with your documents?"
-                ),
-                "sources": [],
-            }
+            return self.greeting_service.reply(question)
 
         if decision.route == "guardrail":
-
             return {
                 "answer": (
                     "I can't help with that request. "
@@ -49,7 +41,6 @@ class ChatService:
             }
 
         if decision.route == "out_of_scope":
-
             return {
                 "answer": (
                     "I'm designed to answer questions "
@@ -60,16 +51,13 @@ class ChatService:
             }
 
         if decision.route == "rag":
-
             return self.rag_service.ask(
                 question=question,
                 document_id=document_id,
                 top_k=top_k,
             )
 
-        logger.error(
-            f"Unexpected route: {decision.route}"
-        )
+        logger.error(f"Unexpected route: {decision.route}")
 
         return {
             "answer": "Unable to process the request.",
