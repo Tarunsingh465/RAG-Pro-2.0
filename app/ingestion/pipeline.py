@@ -40,6 +40,15 @@ class IngestionPipeline:
                 f"Processing '{file_path.name}'"
             )
 
+            # Prevent duplicate vectors: remove previous chunks if this file was re-uploaded
+            try:
+                self.vector_store.index.delete(
+                    filter={"file_name": {"$eq": file_path.name}}
+                )
+                logger.info(f"Cleared previous vectors for '{file_path.name}' before re-indexing.")
+            except Exception as e:
+                logger.debug(f"Previous vector cleanup notice for '{file_path.name}': {e}")
+
             # Unique ID for this uploaded document
             document_id = str(uuid4())
 

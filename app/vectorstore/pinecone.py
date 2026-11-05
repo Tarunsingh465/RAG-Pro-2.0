@@ -12,8 +12,24 @@ logger = get_logger()
 
 
 class PineconeManager:
+    """
+    Singleton manager for Pinecone vector store connections.
+    Reuses connection across loader, retriever, and RAG services.
+    """
+
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self):
-        logger.info("Initializing Pinecone...")
+        if getattr(self, "_initialized", False):
+            return
+
+        logger.info("Initializing Pinecone singleton...")
 
         self.client = Pinecone(api_key=settings.PINECONE_API_KEY)
         self.index_name = settings.PINECONE_INDEX_NAME
@@ -29,6 +45,7 @@ class PineconeManager:
             embedding=self.embedding,
         )
 
+        self._initialized = True
         logger.success(f"Connected to Pinecone index '{self.index_name}'")
 
     def _embedding_dimension(self) -> int:
@@ -64,16 +81,29 @@ class PineconeManager:
     def add_documents(self, documents: Sequence[Document]) -> list[str]:
         return self.vector_store.add_documents(documents)
 
-    def similarity_search(self,query: str, k: int = 5, filter: dict | None = None, ):
+    def similarity_search(
+        self,
+        query: str,
+        k: int = 5,
+        filter: dict | None = None,
+    ):
         return self.vector_store.similarity_search(
             query,
             k=k,
             filter=filter,
         )
 
-
-    def similarity_search_with_score(self, query: str, k: int = 5, filter: dict | None = None,):
-        return self.vector_store.similarity_search_with_score(query, k=k, filter=filter,)
+    def similarity_search_with_score(
+        self,
+        query: str,
+        k: int = 5,
+        filter: dict | None = None,
+    ):
+        return self.vector_store.similarity_search_with_score(
+            query,
+            k=k,
+            filter=filter,
+        )
 
     def get_retriever(self, k: int = 5):
         return self.vector_store.as_retriever(

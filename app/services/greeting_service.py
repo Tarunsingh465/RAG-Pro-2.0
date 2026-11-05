@@ -1,7 +1,6 @@
-import os
-
 from langchain_openai import ChatOpenAI
 
+from app.core.config import settings
 from app.core.logger import get_logger
 
 logger = get_logger()
@@ -9,14 +8,13 @@ logger = get_logger()
 
 class GreetingService:
     """
-    Handles casual/greeting queries using a dedicated OpenRouter model
-    and API key, fully independent from the supervisor/RAG LLM setup.
+    Handles casual/greeting queries using a lightweight OpenRouter model,
+    fully independent from the supervisor/RAG LLM setup.
     """
 
     OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
-    # Pick any OpenRouter model slug you want for greetings —
-    # this can be a small/cheap model since the task is trivial.
+    # Small/cheap model — greeting task is trivial.
     MODEL = "meta-llama/llama-3.1-8b-instruct"
 
     GREETING_PROMPT = (
@@ -30,23 +28,15 @@ class GreetingService:
 
     def __init__(self):
 
-        api_key = os.getenv("GREETING_LLM_API_KEY")
-
-        if not api_key:
-            logger.error(
-                "GREETING_LLM_API_KEY is not set. "
-                "Greeting service will fail on first use."
-            )
-
         self.llm = ChatOpenAI(
             model=self.MODEL,
-            api_key=api_key,
+            api_key=settings.OPENROUTER_API_KEY,
             base_url=self.OPENROUTER_BASE_URL,
             temperature=0.7,
             max_tokens=256,
             default_headers={
-                "HTTP-Referer": os.getenv("APP_URL", "http://localhost"),
-                "X-Title": os.getenv("APP_NAME", "RAG-PRO"),
+                "HTTP-Referer": f"http://localhost",
+                "X-Title": settings.APP_NAME,
             },
         )
 

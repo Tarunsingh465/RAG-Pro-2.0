@@ -1,3 +1,4 @@
+from pathlib import Path
 import requests
 import streamlit as st
 
@@ -8,6 +9,11 @@ st.set_page_config(
     page_icon="📚",
     layout="wide",
 )
+
+# Load custom styles
+css_file = Path(__file__).parent / "styles.css"
+if css_file.exists():
+    st.markdown(f"<style>{css_file.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -70,6 +76,7 @@ with st.sidebar:
                     response = requests.post(
                         f"{API_URL}/upload",
                         files=files,
+                        timeout=120,
                     )
 
                     if response.status_code == 200:
@@ -77,20 +84,22 @@ with st.sidebar:
                         result = response.json()
 
                         st.success(
-                            f"✅ Indexed {len(result['files'])} file(s)"
+                            f"✅ Indexed {len(result.get('files', []))} file(s)"
                         )
 
                         st.info(
                             f"""
-**Documents:** {result['documents']}
+**Documents:** {result.get('documents', 0)}
 
-**Chunks:** {result['chunks']}
+**Chunks:** {result.get('chunks', 0)}
 """
                         )
 
                     else:
                         st.error(response.text)
 
+                except requests.exceptions.ConnectionError:
+                    st.error("Cannot connect to backend. Is the server running?")
                 except Exception as e:
                     st.error(f"Backend Error: {e}")
 
@@ -100,11 +109,12 @@ with st.sidebar:
 
     try:
 
-        response = requests.get(f"{API_URL}/documents")
+        response = requests.get(f"{API_URL}/documents", timeout=5)
 
         if response.status_code == 200:
 
-            docs = response.json()
+            data = response.json()
+            docs = data.get("documents", [])
 
             if len(docs) == 0:
                 st.info("No documents uploaded.")
@@ -131,6 +141,8 @@ with st.sidebar:
         else:
             st.warning("Couldn't fetch documents.")
 
+    except requests.exceptions.ConnectionError:
+        st.warning("Backend Offline")
     except Exception:
         st.warning("Backend Offline")
 
@@ -176,14 +188,16 @@ if prompt:
                     f"{API_URL}/chat",
                     json={
                         "question": prompt,
+                        "history": st.session_state.messages[:-1][-6:],
                     },
+                    timeout=60,
                 )
 
                 if response.status_code == 200:
 
                     data = response.json()
 
-                    answer = data["answer"]
+                    answer = data.get("answer", "No response received.")
 
                     st.markdown(answer)
 
@@ -193,10 +207,10 @@ if prompt:
                         st.caption("📄 Sources")
 
                         for source in data["sources"]:
-
-                            st.write(
-                                f"📄 {source['source']} (Page {source['page']})"
-                            )
+                            page = source.get("page")
+                            src = source.get("source", "Unknown")
+                            page_str = f" (Page {page})" if page else ""
+                            st.write(f"📄 {src}{page_str}")
 
                     st.session_state.messages.append(
                         {
@@ -208,5 +222,7 @@ if prompt:
                 else:
                     st.error(response.text)
 
+            except requests.exceptions.ConnectionError:
+                st.error("Cannot connect to backend. Is the server running?")
             except Exception as e:
                 st.error(f"Backend Error: {e}")

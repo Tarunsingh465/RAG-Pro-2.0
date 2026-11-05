@@ -26,6 +26,11 @@ class ChatRequest(BaseModel):
         description="Number of chunks to retrieve",
     )
 
+    history: list[dict] | None = Field(
+        default=None,
+        description="Optional recent chat history messages",
+    )
+
 
 class DeleteDocumentRequest(BaseModel):
     """

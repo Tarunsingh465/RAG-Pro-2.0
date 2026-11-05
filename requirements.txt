@@ -1,32 +1,58 @@
+# Web Framework
 fastapi
 uvicorn[standard]
 
+# Configuration
 python-dotenv
 pydantic
 pydantic-settings
 
+# LangChain
 langchain
 langchain-core
 langchain-community
 langchain-google-genai
 langchain-pinecone
+langchain-openai
 
+# Vector Store
 pinecone
 
+# LLMs & Embeddings
 google-generativeai
-
 sentence-transformers
 
-pypdf
+# OCR
+mistralai
 
+# Document Parsers
+pypdf
+python-docx
+python-pptx
+
+# Tabular
+pandas
+openpyxl
+tabulate
+
+# File Upload
 python-multipart
 
+# Tokenization
 tiktoken
 
+# Logging
 loguru
 
+# HTTP
 httpx
+requests
 
+# Resilience
 tenacity
 
+# Serialization
 orjson
+
+# Frontend
+streamlit

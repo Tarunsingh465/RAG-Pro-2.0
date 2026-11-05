@@ -1,32 +1,29 @@
 import json
-import os
 import time
 from datetime import datetime
 from pathlib import Path
-from mistralai import Mistral
+
+try:
+    from mistralai.client import Mistral
+except ImportError:
+    try:
+        from mistralai import Mistral
+    except ImportError:
+        Mistral = None
 from langchain_core.documents import Document
 
 from app.ingestion.cleaner import TextCleaner
+from app.core.config import settings
 from app.core.logger import get_logger
 
-from dotenv import load_dotenv
-
-load_dotenv()
 logger = get_logger()
 
 
 class MistralExtractor:
     """
-    Extract text from PDFs using Mistral OCR.
+    Extract text from PDFs and images using Mistral OCR.
 
-    Returns:
-        [
-            {
-                "page": 0,
-                "text": "..."
-            },
-            ...
-        ]
+    Returns a list of LangChain Documents (one per page).
     """
 
     MODEL = "mistral-ocr-latest"
@@ -39,23 +36,21 @@ class MistralExtractor:
         save_json: bool = True,
         json_output_dir: str | Path = "data/ocr_output",
     ):
-        api_key = api_key or os.getenv("MISTRAL_API_KEY")
+        self.api_key = api_key or settings.MISTRAL_API_KEY
+        self.client = None
 
-        if not api_key:
-            raise ValueError(
-                "MISTRAL_API_KEY environment variable is not set."
-            )
+        if self.api_key:
+            self.client = Mistral(api_key=self.api_key)
+            logger.success("Mistral OCR initialized.")
+        else:
+            logger.warning("MISTRAL_API_KEY not set. Mistral OCR extractor disabled.")
 
-        self.client = Mistral(api_key=api_key)
         self.cleaner = TextCleaner()
-
         self.save_json = save_json
         self.json_output_dir = Path(json_output_dir)
 
         if self.save_json:
             self.json_output_dir.mkdir(parents=True, exist_ok=True)
-
-        logger.success("Mistral OCR initialized.")
 
     def _upload_pdf(self, pdf_path: Path):
         """
@@ -116,6 +111,11 @@ class MistralExtractor:
         raise last_error
 
     def extract(self, pdf_path: str | Path) -> list[Document]:
+        if not self.client:
+            raise ValueError(
+                "MISTRAL_API_KEY is required to run Mistral OCR. "
+                "Please configure MISTRAL_API_KEY in your .env file."
+            )
 
         pdf_path = Path(pdf_path)
 
@@ -161,7 +161,6 @@ class MistralExtractor:
             )
 
         return documents
-
 
     def _persist_json(
         self,

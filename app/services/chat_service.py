@@ -9,7 +9,6 @@ logger = get_logger()
 class ChatService:
 
     def __init__(self):
-
         self.supervisor = SupervisorService()
         self.greeting_service = GreetingService()
         self.rag_service = RagService()
@@ -21,11 +20,11 @@ class ChatService:
         question: str,
         document_id: str | None = None,
         top_k: int = 5,
+        history: list[dict] | None = None,
     ):
-
         decision = self.supervisor.route(question)
 
-        logger.info(f"Processing route: {decision.route}")
+        logger.info(f"Processing route: {decision.route} for query: {question!r}")
 
         if decision.route == "greeting":
             return self.greeting_service.reply(question)
@@ -41,6 +40,23 @@ class ChatService:
             }
 
         if decision.route == "out_of_scope":
+            # Safety check: if vectorstore actually contains matching content, answer it!
+            is_relevant, top_score, _ = self.rag_service._check_relevance(
+                question=question,
+                document_id=document_id,
+                top_k=top_k,
+            )
+            if is_relevant:
+                logger.info(
+                    f"Overriding out_of_scope route to RAG (found relevant content, score={top_score:.4f})"
+                )
+                return self.rag_service.ask(
+                    question=question,
+                    document_id=document_id,
+                    top_k=top_k,
+                    history=history,
+                )
+
             return {
                 "answer": (
                     "I'm designed to answer questions "
@@ -55,6 +71,7 @@ class ChatService:
                 question=question,
                 document_id=document_id,
                 top_k=top_k,
+                history=history,
             )
 
             if result.get("out_of_context"):

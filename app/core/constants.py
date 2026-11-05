@@ -8,22 +8,44 @@ Avoid hardcoding values throughout the project.
 # ==========================================
 
 API_PREFIX = "/api/v1"
-RAG_SIMILARITY_THRESHOLD = 0.65
+RAG_SIMILARITY_THRESHOLD = 0.55
+
 # ==========================================
 # Supported File Types
 # ==========================================
 
 SUPPORTED_FILE_EXTENSIONS = {
+    # OCR (Mistral)
     ".pdf",
-    ".txt",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".tiff",
+    ".bmp",
+    ".webp",
+    # Office
     ".docx",
+    ".pptx",
+    # Tabular
+    ".csv",
+    ".xlsx",
+    # Text
+    ".txt",
     ".md",
 }
 
 SUPPORTED_MIME_TYPES = {
     "application/pdf",
-    "text/plain",
+    "image/png",
+    "image/jpeg",
+    "image/tiff",
+    "image/bmp",
+    "image/webp",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "text/csv",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "text/plain",
     "text/markdown",
 }
 

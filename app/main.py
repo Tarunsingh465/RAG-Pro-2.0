@@ -34,11 +34,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS
+# CORS — restrict `allow_origins` in production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # Restrict in production
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,     # `*` origins + credentials = browser rejection
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -51,13 +51,5 @@ async def root():
         "version": settings.APP_VERSION,
     }
 
-
-@app.get("/health", tags=["System"])
-async def health():
-    return {
-        "status": "healthy",
-        "app": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-    }
 
 app.include_router(router)

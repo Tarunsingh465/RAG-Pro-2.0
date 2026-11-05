@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from typing import List
 
 from app.core.config import settings
@@ -9,6 +9,7 @@ from app.schemas.response import (
 )
 from app.services.chat_service import ChatService
 from app.services.ingest_service import IngestService
+
 router = APIRouter(
     prefix="/api/v1",
     tags=["RAG API"],
@@ -16,22 +17,6 @@ router = APIRouter(
 
 ingest_service = IngestService()
 chat_service = ChatService()
-
-# =====================================================
-# System
-# =====================================================
-
-@router.get(
-    "/health",
-    response_model=HealthResponse,
-    summary="Health Check",
-)
-async def health():
-    return HealthResponse(
-        status="healthy",
-        app=settings.APP_NAME,
-        version=settings.APP_VERSION,
-    )
 
 
 # =====================================================
@@ -48,16 +33,19 @@ async def upload_documents(
     """
     Upload one or more documents and ingest them.
     """
+    if not files:
+        raise HTTPException(status_code=400, detail="No files provided.")
 
-    return ingest_service.ingest_documents(files)
+    return await ingest_service.ingest_documents(files)
+
 
 @router.get(
     "/documents",
     summary="List Uploaded Documents",
 )
 async def list_documents():
-    # TODO: Implement document listing
-    return {"documents": []}
+    docs = ingest_service.list_documents()
+    return {"documents": docs}
 
 
 @router.delete(
@@ -65,7 +53,12 @@ async def list_documents():
     summary="Delete Document",
 )
 async def delete_document(document_name: str):
-    # TODO: Delete document from storage + vector DB
+    success = ingest_service.delete_document(document_name)
+    if not success:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Document '{document_name}' not found.",
+        )
     return {
         "message": f"{document_name} deleted successfully."
     }
@@ -74,11 +67,6 @@ async def delete_document(document_name: str):
 # =====================================================
 # Chat
 # =====================================================
-
-from app.services.rag_service import RagService
-
-rag_service = RagService()
-
 
 @router.post(
     "/chat",
@@ -91,4 +79,5 @@ async def chat(request: ChatRequest):
         question=request.question,
         document_id=request.document_id,
         top_k=request.top_k,
+        history=request.history,
     )

@@ -1,0 +1,36 @@
+/* Modern UI Styles for RAG-Pro Streamlit App */
+
+/* Chat Messages */
+.stChatMessage {
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+}
+
+/* Assistant Chat Bubble Accent */
+div[data-testid="stChatMessage"]:nth-child(even) {
+    background-color: rgba(66, 133, 244, 0.04);
+    border-left: 3px solid #4285F4;
+}
+
+/* Source Card Styling */
+.source-card {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-top: 4px;
+    font-size: 0.85rem;
+}
+
+/* Sidebar Document Items */
+.document-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background: #f1f3f5;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+

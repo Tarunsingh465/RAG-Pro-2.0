@@ -1,38 +1,37 @@
 import argparse
-import json
 import sys
 import time
 from pathlib import Path
 
-from app.ingestion.mistral_ocr import MistralOCRExtractor
+from app.ingestion.extractors.mistral_extractor import MistralExtractor
 from app.ingestion.loader import DocumentLoader
 
 
 def test_extractor_direct(pdf_path: Path):
-    print(f"\n[1/2] Testing MistralOCRExtractor on: {pdf_path.name}")
+    print(f"\n[1/2] Testing MistralExtractor on: {pdf_path.name}")
 
-    extractor = MistralOCRExtractor(
+    extractor = MistralExtractor(
         save_json=True,
         json_output_dir="data/ocr_output/test_run",
     )
 
     start = time.perf_counter()
 
-    pages = extractor.extract(pdf_path)
+    documents = extractor.extract(pdf_path)
 
     elapsed = time.perf_counter() - start
 
-    assert isinstance(pages, list)
-    assert len(pages) > 0
+    assert isinstance(documents, list)
+    assert len(documents) > 0
 
-    total_chars = sum(len(p["text"]) for p in pages)
+    total_chars = sum(len(d.page_content) for d in documents)
 
-    print(f"Pages      : {len(pages)}")
+    print(f"Documents  : {len(documents)}")
     print(f"Characters : {total_chars}")
     print(f"Time       : {elapsed:.2f}s")
 
     print("\nSample text:\n")
-    print(pages[0]["text"][:500])
+    print(documents[0].page_content[:500])
 
     json_files = sorted(
         Path("data/ocr_output/test_run").glob(f"{pdf_path.stem}_*.json")
@@ -42,7 +41,7 @@ def test_extractor_direct(pdf_path: Path):
 
     print(f"\nSaved JSON : {json_files[-1]}")
 
-    return pages
+    return documents
 
 
 def test_loader(pdf_path: Path):
