@@ -26,8 +26,8 @@ class Settings(BaseSettings):
     PINECONE_NAMESPACE: str = "default"
 
     # Models
-    LLM_MODEL: str = "google/gemini-2.0-flash-001"
-    EMBEDDING_MODEL: str = "models/embedding-001"
+    LLM_MODEL: str = "google/gemini-2.5-flash"
+    EMBEDDING_MODEL: str = "models/gemini-embedding-001"
 
     # Retrieval
     TOP_K: int = Field(default=5)
