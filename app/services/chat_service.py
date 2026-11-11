@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from app.core.constants import UPLOAD_FOLDER
 from app.core.engineering import is_engineering_query
 from app.core.logger import get_logger
 from app.services.conversational_engine import match_conversational_intent
@@ -6,6 +9,14 @@ from app.services.rag_service import RagService
 from app.services.supervisor_service import SupervisorService
 
 logger = get_logger()
+
+
+def get_active_documents() -> list[str]:
+    """Return list of active document filenames currently stored in the knowledge base."""
+    upload_dir = Path(UPLOAD_FOLDER)
+    if not upload_dir.exists():
+        return []
+    return [f.name for f in upload_dir.iterdir() if f.is_file() and not f.name.startswith(".")]
 
 
 class ChatService:
@@ -40,8 +51,13 @@ class ChatService:
                 }
 
             decision = self.supervisor.route(question)
+            active_docs = get_active_documents()
+            has_documents = bool(active_docs)
 
-            logger.info(f"Processing route: {decision.route} for query: {question!r}")
+            logger.info(
+                f"Processing route: {decision.route} for query: {question!r} "
+                f"(active_documents={len(active_docs)})"
+            )
 
             if decision.route == "greeting":
                 return self.greeting_service.reply(question)
@@ -56,8 +72,25 @@ class ChatService:
                     "sources": [],
                 }
 
+            # If NO documents are currently uploaded in the knowledge base:
+            if not has_documents:
+                is_eng, disc, _ = is_engineering_query(question)
+                if is_eng:
+                    logger.info(f"No documents uploaded. Handling engineering query ({disc}) via fallback.")
+                    return self.rag_service.answer_engineering_fallback(question, discipline=disc)
+
+                logger.info("No documents uploaded and non-engineering query. Rejecting out-of-domain request with 0 sources.")
+                return {
+                    "answer": (
+                        "⚠️ **No Documents Uploaded:** The knowledge base is currently empty. "
+                        "Please upload a document to analyze its content, or ask an engineering, IT, or candidate-evaluation question."
+                    ),
+                    "sources": [],
+                    "out_of_context": True,
+                }
+
             if decision.route == "out_of_scope":
-                # Safety check: if vectorstore actually contains matching content, answer it!
+                # Safety check: if vectorstore actually contains matching content from active docs, answer it!
                 is_relevant, top_score, _ = self.rag_service._check_relevance(
                     question=question,
                     document_id=document_id,
@@ -67,12 +100,16 @@ class ChatService:
                     logger.info(
                         f"Overriding out_of_scope route to RAG (found relevant content, score={top_score:.4f})"
                     )
-                    return self.rag_service.ask(
+                    result = self.rag_service.ask(
                         question=question,
                         document_id=document_id,
                         top_k=top_k,
                         history=history,
                     )
+                    # Sanitize sources: only allow active documents
+                    if result.get("sources"):
+                        result["sources"] = [s for s in result["sources"] if s.get("source") in active_docs]
+                    return result
 
                 is_eng, disc, _ = is_engineering_query(question)
                 if is_eng:
@@ -114,14 +151,22 @@ class ChatService:
                     }
 
                 # If LLM fell back to context-miss phrase, verify if question is engineering or out-of-domain
-                answer_text = result.get("answer", "") or ""
-                not_found_phrases = [
-                    "couldn't find information about that in the provided documents",
-                    "couldn't find anything relevant to that in the provided documents",
-                    "not mentioned in the provided documents",
-                    "cannot be found in the provided documents",
+                answer_lower = (result.get("answer", "") or "").lower()
+                not_found_triggers = [
+                    "couldn't find",
+                    "could not find",
+                    "cannot be found",
+                    "can't be found",
+                    "not found in",
+                    "not mentioned in",
+                    "no mention of",
+                    "no information about",
+                    "not contained in",
+                    "does not contain information",
+                    "doesn't contain information",
+                    "not found in the provided document",
                 ]
-                if any(phrase in answer_text.lower() for phrase in not_found_phrases):
+                if any(trigger in answer_lower for trigger in not_found_triggers):
                     is_eng, disc, _ = is_engineering_query(question)
                     if is_eng:
                         logger.info(
@@ -129,15 +174,19 @@ class ChatService:
                         )
                         return self.rag_service.answer_engineering_fallback(question, discipline=disc)
                     else:
-                        logger.info("LLM indicated context-miss for non-engineering query. Returning out-of-domain message.")
+                        logger.info("LLM indicated context-miss for non-engineering query. Returning out-of-domain message without sources.")
                         return {
                             "answer": (
                                 "⚠️ **Out-of-Domain Request:** The RAG system is not authorized to answer "
                                 "questions unrelated to your uploaded documents or technical engineering domains. "
-                                "Please upload a document to analyze or ask an engineering, IT, or candidate-evaluation question."
+                                "Please ask a question related to your uploaded documents, or ask an engineering question."
                             ),
                             "sources": [],
                         }
+
+                # Ensure only currently active documents are in sources
+                if result.get("sources"):
+                    result["sources"] = [s for s in result["sources"] if s.get("source") in active_docs]
 
                 return result
 

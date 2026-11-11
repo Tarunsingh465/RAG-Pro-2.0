@@ -49,6 +49,18 @@ async def list_documents():
 
 
 @router.delete(
+    "/documents",
+    summary="Delete All Documents",
+)
+async def delete_all_documents():
+    count = ingest_service.delete_all_documents()
+    return {
+        "message": f"Successfully deleted {count} document(s) and cleared Pinecone index.",
+        "deleted_count": count,
+    }
+
+
+@router.delete(
     "/documents/{document_name}",
     summary="Delete Document",
 )

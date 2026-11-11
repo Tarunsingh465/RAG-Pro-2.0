@@ -155,6 +155,15 @@ with st.sidebar:
                                     st.rerun()
                                 except Exception as e:
                                     st.error(f"Failed to delete: {e}")
+                    if docs:
+                        st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                        if st.button("🗑 Wipe All Documents", use_container_width=True, help="Removes all uploaded documents and resets Pinecone index"):
+                            try:
+                                requests.delete(f"{API_URL}/documents", timeout=10)
+                                st.toast("Knowledge base cleared!", icon="✅")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Failed to clear knowledge base: {e}")
             else:
                 st.warning("Could not fetch document list.")
         except Exception:
@@ -200,7 +209,7 @@ if not st.session_state.messages:
         <div class="hero-box">
             <h3 style="margin-top:0;">👋 Welcome to RAG-Pro 2.0</h3>
             <p style="color:#94a3b8; font-size: 0.95rem;">
-                Built by <b>Tarun</b> (B.Tech CS - Data Science & AI). Ask questions about your uploaded documents,
+                Ask questions about your uploaded documents,
                 solve engineering equations, diagnose equipment failures, or test common conversational queries.
             </p>
         </div>

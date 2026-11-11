@@ -72,6 +72,10 @@ class IngestService:
             self.pipeline.vector_store.index.delete(
                 filter={"file_name": {"$eq": document_name}}
             )
+            # Also purge by source metadata if indexed with full path or basename
+            self.pipeline.vector_store.index.delete(
+                filter={"source": {"$eq": document_name}}
+            )
             logger.info(f"Deleted vectors for '{document_name}' from Pinecone")
         except Exception as e:
             logger.warning(
@@ -79,3 +83,27 @@ class IngestService:
             )
 
         return file_deleted
+
+    def delete_all_documents(self) -> int:
+        """
+        Deletes all uploaded documents locally and completely wipes the Pinecone index.
+        """
+        upload_dir = Path(UPLOAD_FOLDER)
+        count = 0
+        if upload_dir.exists():
+            for f in upload_dir.iterdir():
+                if f.is_file() and not f.name.startswith("."):
+                    try:
+                        f.unlink()
+                        count += 1
+                    except Exception as e:
+                        logger.warning(f"Failed to delete {f.name}: {e}")
+            logger.info(f"Deleted {count} local uploaded file(s).")
+
+        try:
+            self.pipeline.vector_store.delete_all()
+            logger.success("Purged all vectors from Pinecone index.")
+        except Exception as e:
+            logger.warning(f"Could not purge Pinecone index: {e}")
+
+        return count

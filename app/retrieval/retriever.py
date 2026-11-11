@@ -1,8 +1,10 @@
+from pathlib import Path
 from typing import List
 
 from langchain_core.documents import Document
 
 from app.core.config import settings
+from app.core.constants import UPLOAD_FOLDER
 from app.core.logger import get_logger
 from app.vectorstore.pinecone import PineconeManager
 
@@ -32,19 +34,28 @@ class Retriever:
 
         k = k or settings.TOP_K
 
-        logger.info(
-            f"Searching for relevant chunks (k={k}, "
-            f"document_id={document_id})..."
+        upload_dir = Path(UPLOAD_FOLDER)
+        active_docs = (
+            [f.name for f in upload_dir.iterdir() if f.is_file() and not f.name.startswith(".")]
+            if upload_dir.exists()
+            else []
         )
 
-        metadata_filter = None
+        if not active_docs:
+            logger.info("Retriever: No active documents in knowledge base. Returning 0 chunks.")
+            return []
+
+        logger.info(
+            f"Searching for relevant chunks (k={k}, "
+            f"document_id={document_id}, active_docs={len(active_docs)})..."
+        )
 
         if document_id:
-            metadata_filter = {
-                "document_id": {
-                    "$eq": document_id
-                }
-            }
+            metadata_filter = {"document_id": {"$eq": document_id}}
+        elif len(active_docs) == 1:
+            metadata_filter = {"file_name": {"$eq": active_docs[0]}}
+        else:
+            metadata_filter = {"file_name": {"$in": active_docs}}
 
         docs = self.db.similarity_search(
             query=query,
