@@ -1,5 +1,6 @@
 from langchain_core.output_parsers import StrOutputParser
 
+from app.core.engineering import is_engineering_query
 from app.core.prompts import RAG_PROMPT
 from app.llm.client import LLMClient
 from app.retrieval.retriever import Retriever
@@ -38,11 +39,18 @@ class RAGChain:
         history: list[dict] | None = None,
     ):
         is_evaluative = any(kw in question.lower() for kw in EVALUATIVE_KEYWORDS)
-        search_query = (
-            f"{question} candidate qualifications skills experience projects education achievements"
-            if is_evaluative
-            else question
-        )
+        is_eng, discipline, disc_name = is_engineering_query(question)
+
+        if is_evaluative:
+            search_query = (
+                f"{question} candidate qualifications skills experience projects education achievements"
+            )
+        elif is_eng:
+            search_query = (
+                f"{question} {discipline} calculation formula equation standard troubleshooting procedure"
+            )
+        else:
+            search_query = question
 
         docs = self.retriever.retrieve(
             query=search_query,

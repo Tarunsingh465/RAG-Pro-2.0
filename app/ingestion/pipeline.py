@@ -1,6 +1,7 @@
 from pathlib import Path
 from uuid import uuid4
 
+from app.core.engineering import classify_engineering_domain
 from app.core.logger import get_logger
 from app.ingestion.loader import DocumentLoader
 from app.ingestion.splitter import DocumentSplitter
@@ -27,6 +28,7 @@ class IngestionPipeline:
         all_documents = []
         processed_files = []
         document_ids = []
+        disciplines_detected = []
 
         logger.info(
             f"Starting ingestion of {len(file_paths)} file(s)."
@@ -54,6 +56,15 @@ class IngestionPipeline:
 
             documents = self.loader.load(file_path)
 
+            # Analyze document for engineering domain & document type
+            sample_content = " ".join(doc.page_content for doc in documents[:5])
+            classification = classify_engineering_domain(sample_content, filename=file_path.name)
+            disciplines_detected.append(classification["discipline_name"])
+            logger.info(
+                f"Classified '{file_path.name}' -> Discipline: {classification['discipline_name']} "
+                f"({classification['discipline']}), DocType: {classification['doc_type']}"
+            )
+
             # Attach metadata BEFORE splitting
             for document in documents:
 
@@ -62,6 +73,10 @@ class IngestionPipeline:
                         "document_id": document_id,
                         "file_name": file_path.name,
                         "file_type": file_path.suffix.lower(),
+                        "discipline": classification["discipline"],
+                        "discipline_name": classification["discipline_name"],
+                        "doc_type": classification["doc_type"],
+                        "is_engineering": str(classification["is_engineering"]),
                     }
                 )
 
@@ -91,4 +106,5 @@ class IngestionPipeline:
             "chunks": len(chunks),
             "vector_ids": ids,
             "document_ids": document_ids,
+            "disciplines": list(dict.fromkeys(disciplines_detected)),
         }

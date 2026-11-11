@@ -50,6 +50,27 @@ class GreetingService:
 
         logger.info(f"Handling greeting query: {question}")
 
+        q_clean = question.strip().lower().rstrip("?!.,")
+        instant_greetings = {
+            "hi": "Hello! I am your RAG & Industrial Intelligence Assistant. How can I help you analyze your documents or solve an engineering problem today?",
+            "hello": "Hi there! I am ready to help. Feel free to ask any question about your uploaded documents or engineering workflows.",
+            "hey": "Hey! How can I assist you with your documents or engineering calculations today?",
+            "good morning": "Good morning! How can I assist you with your documents or technical tasks today?",
+            "good afternoon": "Good afternoon! What documents or engineering topics would you like to explore?",
+            "good evening": "Good evening! How can I help you with your documents or technical queries today?",
+            "how are you": "I'm doing great, thank you! Ready to help you inspect, analyze, and query your documents. What would you like to know?",
+            "who are you": "I am RAG-Pro 2.0, an AI-powered Enterprise Knowledge & Industrial Intelligence Assistant. I can analyze documents, extract technical data, evaluate candidates, and assist with engineering problem-solving.",
+            "what can you do": "I can ingest multi-format technical documents (PDFs, Office files, CSVs, Notes), index them with semantic vector search, perform deep technical Q&A across engineering disciplines, troubleshoot faults, and evaluate resumes.",
+            "help": "Simply upload your documents in the left sidebar and ask any question! I can explain concepts, calculate engineering formulas, search document sections, or evaluate candidate qualifications.",
+        }
+
+        if q_clean in instant_greetings:
+            logger.info("Returned instant greeting response (0ms latency, 0 token cost).")
+            return {
+                "answer": instant_greetings[q_clean],
+                "sources": [],
+            }
+
         try:
             prompt = self.GREETING_PROMPT.format(query=question)
             response = self.llm.invoke(prompt)

@@ -1,4 +1,5 @@
 from app.core.config import settings
+from app.core.engineering import is_engineering_query
 from app.core.logger import get_logger
 from app.llm.chain import RAGChain
 from app.vectorstore.pinecone import PineconeManager
@@ -27,8 +28,17 @@ class RagService:
 
     def _get_search_query(self, question: str) -> tuple[str, bool]:
         is_evaluative = any(kw in question.lower() for kw in EVALUATIVE_KEYWORDS)
+        is_eng, discipline, _ = is_engineering_query(question)
         if is_evaluative:
-            return f"{question} candidate qualifications skills experience projects education achievements", True
+            return (
+                f"{question} candidate qualifications skills experience projects education achievements",
+                True,
+            )
+        if is_eng:
+            return (
+                f"{question} {discipline} calculation formula equation standard troubleshooting procedure",
+                True,
+            )
         return question, False
 
     def _check_relevance(
@@ -54,8 +64,8 @@ class RagService:
 
         top_score = results[0][1]  # (Document, score) tuples
 
-        # Evaluative questions (e.g. "Should I hire him?") naturally have slightly lower semantic
-        # similarity to raw resume chunks than factual queries, so use adaptive threshold 0.50.
+        # Adaptive thresholding: Evaluative & Engineering queries often use cross-domain vocabulary
+        # compared to raw technical chunks, so use adaptive threshold 0.50.
         effective_threshold = 0.50 if is_evaluative else settings.RAG_SIMILARITY_THRESHOLD
 
         logger.info(

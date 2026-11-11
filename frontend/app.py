@@ -22,7 +22,8 @@ if "messages" not in st.session_state:
 
 with st.sidebar:
 
-    st.title("📚 RAG Assistant")
+    st.title("🏭 RAG-Pro 2.0")
+    st.caption("Enterprise AI Knowledge & Industrial Intelligence Platform")
 
     st.divider()
 
@@ -83,6 +84,9 @@ with st.sidebar:
 
                         result = response.json()
 
+                        disciplines = result.get("disciplines", [])
+                        disc_str = f"\n\n**Engineering Disciplines:** {', '.join(disciplines)}" if disciplines else ""
+
                         st.success(
                             f"✅ Indexed {len(result.get('files', []))} file(s)"
                         )
@@ -91,7 +95,7 @@ with st.sidebar:
                             f"""
 **Documents:** {result.get('documents', 0)}
 
-**Chunks:** {result.get('chunks', 0)}
+**Chunks:** {result.get('chunks', 0)}{disc_str}
 """
                         )
 

@@ -20,8 +20,8 @@ class RateLimitedEmbeddings(Embeddings):
     def __init__(
         self,
         base_embeddings: Embeddings,
-        batch_size: int = 15,
-        delay_between_batches: float = 0.5,
+        batch_size: int = 20,
+        delay_between_batches: float = 0.3,
     ):
         self.base_embeddings = base_embeddings
         self.batch_size = batch_size
@@ -156,8 +156,8 @@ class Embedder:
 
         self.embedding_model = RateLimitedEmbeddings(
             base_embeddings=base_model,
-            batch_size=15,
-            delay_between_batches=0.6,
+            batch_size=20,
+            delay_between_batches=0.35,
         )
 
         logger.success("Rate-limited Embedding model initialized.")
