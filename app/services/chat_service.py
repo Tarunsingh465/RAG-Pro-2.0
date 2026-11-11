@@ -1,4 +1,5 @@
 from app.core.logger import get_logger
+from app.services.conversational_engine import match_conversational_intent
 from app.services.greeting_service import GreetingService
 from app.services.rag_service import RagService
 from app.services.supervisor_service import SupervisorService
@@ -23,6 +24,20 @@ class ChatService:
         history: list[dict] | None = None,
     ):
         try:
+            # 1. Zero-API conversational interceptor:
+            # Intercepts generic small-talk, status checks, bot identity, and capability
+            # questions in-memory in < 0.5ms with ZERO external API calls or credit cost.
+            intent_match = match_conversational_intent(question)
+            if intent_match:
+                logger.info(
+                    f"Zero-API intent matched ({intent_match['id']}) in <0.5ms. "
+                    f"Returning local response with 0 external API calls."
+                )
+                return {
+                    "answer": intent_match["response"],
+                    "sources": [],
+                }
+
             decision = self.supervisor.route(question)
 
             logger.info(f"Processing route: {decision.route} for query: {question!r}")
@@ -78,9 +93,9 @@ class ChatService:
                 if result.get("out_of_context"):
                     return {
                         "answer": (
-                            "I couldn't find anything relevant to that in the "
-                            "provided documents. Could you rephrase, or ask "
-                            "something related to the document content?"
+                            "I couldn't find anything relevant to that in the indexed documents. "
+                            "If you haven't uploaded documents yet, please use the **Upload Documents** "
+                            "section in the sidebar to add your files (PDF, DOCX, TXT, CSV) and click **Upload & Index**."
                         ),
                         "sources": [],
                     }

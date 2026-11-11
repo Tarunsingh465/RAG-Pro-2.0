@@ -2,6 +2,7 @@ from app.core.logger import get_logger
 from app.core.prompts import SUPERVISOR_PROMPT
 from app.llm.client import LLMClient
 from app.schemas.routing import RouteDecision
+from app.services.conversational_engine import match_conversational_intent
 
 logger = get_logger()
 
@@ -41,9 +42,18 @@ class SupervisorService:
 
         logger.debug("Routing user query.")
 
+        # Fast rule-based routing for common conversational patterns via zero-API engine
+        intent_match = match_conversational_intent(query)
+        if intent_match:
+            logger.info(f"Supervisor routed to greeting via zero-API intent: {intent_match['id']}.")
+            return RouteDecision(
+                route="greeting",
+                confidence=1.0,
+                reason=f"Zero-API intent: {intent_match['id']}",
+            )
+
         clean_query = query.strip().lower().rstrip("?!.,")
 
-        # Fast rule-based routing for common conversational patterns
         if clean_query in GREETING_PATTERNS:
             logger.info("Supervisor routed to greeting via fast-path rule.")
             return RouteDecision(

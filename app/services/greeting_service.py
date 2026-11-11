@@ -2,6 +2,7 @@ from langchain_openai import ChatOpenAI
 
 from app.core.config import settings
 from app.core.logger import get_logger
+from app.services.conversational_engine import match_conversational_intent
 
 logger = get_logger()
 
@@ -49,6 +50,15 @@ class GreetingService:
         """
 
         logger.info(f"Handling greeting query: {question}")
+
+        # Zero-API check
+        intent_match = match_conversational_intent(question)
+        if intent_match:
+            logger.info(f"GreetingService returning zero-API reply for '{intent_match['id']}'.")
+            return {
+                "answer": intent_match["response"],
+                "sources": [],
+            }
 
         q_clean = question.strip().lower().rstrip("?!.,")
         instant_greetings = {
