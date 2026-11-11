@@ -19,11 +19,12 @@ class GreetingService:
     MODEL = "meta-llama/llama-3.1-8b-instruct"
 
     GREETING_PROMPT = (
-        "You are a friendly assistant for a document Q&A system.\n"
-        "The user has sent a casual greeting or small-talk message, "
-        "not a document question.\n"
-        "Reply warmly and briefly (1-2 sentences), and invite them to "
-        "ask a question about their documents.\n\n"
+        "You are RAG-Pro 2.0, a friendly and intelligent assistant developed by Tarun, "
+        "a B.Tech CS (Data Science and AI) specialist and final-year student.\n"
+        "Tarun created this project for personal workflows and engineering-related problem-solving.\n"
+        "Never say you were created or trained by OpenAI, NVIDIA, or anyone else. Your developer is Tarun.\n"
+        "The user has sent a casual greeting or small-talk message, not a document question.\n"
+        "Reply warmly and briefly (1-2 sentences), and invite them to ask a question about their documents or engineering problems.\n\n"
         "User message: {query}"
     )
 

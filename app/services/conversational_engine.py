@@ -50,17 +50,32 @@ INTENT_PATTERNS = [
         ),
     },
 
-    # 3. Purpose & Identity ("what is your purpose", "who are you", "what is your role", "tell me about yourself")
+    # 3. Developer & Creator ("who developed you", "who is your developer", "who created you", "who made you", "who built this project", etc.)
+    {
+        "id": "developer_and_creator",
+        "patterns": [
+            r"^(who\s+developed\s+you|who\s+is\s+your\s+developer|who\s+are\s+your\s+developers|who\s+created\s+you|who\s+is\s+your\s+creator|who\s+made\s+you|who\s+built\s+you|who\s+designed\s+you|who\s+coded\s+you|who\s+wrote\s+you|who\s+is\s+the\s+developer|who\s+is\s+the\s+creator|who\s+is\s+the\s+author|who\s+made\s+this|who\s+built\s+this|who\s+developed\s+this|who\s+created\s+this|who\s+built\s+this\s+project|who\s+developed\s+this\s+project|who\s+made\s+this\s+project|who\s+made\s+this\s+app|who\s+built\s+this\s+app|who\s+developed\s+this\s+app|who\s+is\s+behind\s+this|tell\s+me\s+about\s+your\s+developer|tell\s+me\s+about\s+your\s+creator|who\s+is\s+tarun|is\s+tarun\s+your\s+developer|is\s+tarun\s+your\s+creator|whose\s+project\s+is\s+this)$",
+            r"\b(who\s+developed\s+you|who\s+is\s+your\s+developer|who\s+created\s+you|who\s+is\s+your\s+creator|who\s+made\s+you|who\s+built\s+you|who\s+developed\s+this\s+project|who\s+built\s+this\s+project|who\s+made\s+this\s+project|tell\s+me\s+about\s+your\s+developer|who\s+is\s+the\s+author)\b",
+            r"\b(developed\s+by\s+whom|created\s+by\s+whom|made\s+by\s+whom|built\s+by\s+whom)\b",
+        ],
+        "response": (
+            "I was developed by **Tarun**, a B.Tech Computer Science (Data Science and AI) specialist and final-year student. 🎓💻\n\n"
+            "Tarun designed and engineered this platform (**RAG-Pro 2.0**) to solve personal workflows and real-world engineering problems across multiple disciplines (CS, Mechanical, Civil, Chemical, and Electrical), combining deep document intelligence, high-speed semantic retrieval, and technical problem-solving."
+        ),
+    },
+
+    # 4. Purpose & Identity ("what is your purpose", "who are you", "what is your role", "tell me about yourself")
     {
         "id": "purpose_and_identity",
         "patterns": [
-            r"^(what\s+is\s+your\s+purpose|whats\s+your\s+purpose|what\s+is\s+your\s+role|whats\s+your\s+role|who\s+are\s+you|what\s+are\s+you|what\s+is\s+your\s+name|whats\s+your\s+name|what\s+are\s+you\s+called|tell\s+me\s+about\s+yourself|who\s+created\s+you|who\s+made\s+you|what\s+is\s+this\s+app|what\s+is\s+this\s+project|what\s+is\s+rag\s*pro|what\s+does\s+rag\s*pro\s+do|why\s+were\s+you\s+created)$",
+            r"^(what\s+is\s+your\s+purpose|whats\s+your\s+purpose|what\s+is\s+your\s+role|whats\s+your\s+role|who\s+are\s+you|what\s+are\s+you|what\s+is\s+your\s+name|whats\s+your\s+name|what\s+are\s+you\s+called|tell\s+me\s+about\s+yourself|what\s+is\s+this\s+app|what\s+is\s+this\s+project|what\s+is\s+rag\s*pro|what\s+does\s+rag\s*pro\s+do|why\s+were\s+you\s+created)$",
             r"\b(what\s+is\s+your\s+purpose|whats\s+your\s+purpose|what\s+is\s+your\s+role|whats\s+your\s+role|who\s+are\s+you|tell\s+me\s+about\s+yourself|what\s+is\s+your\s+name|whats\s+your\s+name)\b",
         ],
         "response": (
-            "I am **RAG-Pro 2.0**, an AI-powered Enterprise Knowledge & Industrial Intelligence Assistant.\n\n"
-            "### 🎯 My Purpose:\n"
-            "- 📄 **Document Intelligence:** Ingest, parse, and search technical PDFs, Word docs, CSVs, and notes.\n"
+            "I am **RAG-Pro 2.0**, an AI-powered Enterprise Knowledge & Industrial Intelligence Assistant developed by **Tarun**, a B.Tech Computer Science (Data Science and AI) specialist and final-year student. 🎓💻\n\n"
+            "Tarun built this project for personal workflows and engineering-related problem-solving across technical domains.\n\n"
+            "### 🎯 Core Capabilities:\n"
+            "- 📄 **Document Intelligence:** Ingest, parse, and search technical PDFs, Word docs, CSVs, and notes with exact page citations.\n"
             "- ⚙️ **Engineering Problem-Solving:** Provide solutions, governing equations ($...$), and boundary conditions across CS, Mechanical, Civil, Chemical, and Electrical engineering.\n"
             "- 🔍 **Industrial Troubleshooting:** Diagnose faults and equipment failures using Root Cause Analysis (RCA) and compliance standards (ASME, IEEE, IS, ISO).\n"
             "- 👤 **Candidate Evaluation:** Perform structured resume assessments and hiring feasibility breakdowns.\n\n"
@@ -124,7 +139,7 @@ INTENT_PATTERNS = [
         ),
     },
 
-    # 8. AI / Bot Identity ("are you an ai", "are you a bot", "are you human", "what model are you")
+    # 9. AI / Bot Identity ("are you an ai", "are you a bot", "are you human", "what model are you")
     {
         "id": "ai_bot_identity",
         "patterns": [
@@ -132,8 +147,8 @@ INTENT_PATTERNS = [
             r"\b(what\s+model\s+are\s+you|what\s+llm\s+are\s+you|what\s+llm)\b",
         ],
         "response": (
-            "Yes, I am an AI assistant built on an advanced Retrieval-Augmented Generation (RAG) architecture. "
-            "I combine semantic vector search with large language model reasoning to deliver accurate, grounded technical answers."
+            "Yes, I am **RAG-Pro 2.0**, an AI assistant developed by **Tarun**, a B.Tech CS (Data Science and AI) specialist and final-year student. "
+            "I combine semantic vector search with large language model reasoning to deliver accurate, grounded technical answers for personal workflows and engineering problem-solving."
         ),
     },
 

@@ -24,6 +24,7 @@ with st.sidebar:
 
     st.title("🏭 RAG-Pro 2.0")
     st.caption("Enterprise AI Knowledge & Industrial Intelligence Platform")
+    st.caption("👨‍💻 Developed by **Tarun** | B.Tech CS (Data Science & AI)")
 
     st.divider()
 
@@ -159,16 +160,16 @@ with st.sidebar:
 
 # ---------------- MAIN ---------------- #
 
-st.title("🤖 Production RAG Assistant")
+st.title("🤖 Intelligent RAG Assistant")
 
-st.caption("FastAPI + LangChain + Pinecone + OpenRouter")
+st.caption("FastAPI + LangChain + Pinecone + Nvidia | Developed by Tarun (B.Tech CS - Data Science & AI)")
 
 for msg in st.session_state.messages:
 
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-prompt = st.chat_input("Ask anything...")
+prompt = st.chat_input("Ask query...")
 
 if prompt:
 
