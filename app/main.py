@@ -52,4 +52,13 @@ async def root():
     }
 
 
+@app.get("/health", tags=["System"])
+async def health():
+    return {
+        "status": "online",
+        "version": settings.APP_VERSION,
+        "app": settings.APP_NAME,
+    }
+
+
 app.include_router(router)
