@@ -6,6 +6,13 @@ from app.schemas.routing import RouteDecision
 logger = get_logger()
 
 
+GREETING_PATTERNS = {
+    "hi", "hello", "hey", "hola", "greetings", "good morning",
+    "good afternoon", "good evening", "how are you", "who are you",
+    "what can you do", "help", "bye", "goodbye", "see you"
+}
+
+
 class SupervisorService:
     """
     Determines the appropriate route for a user query.
@@ -20,10 +27,13 @@ class SupervisorService:
             max_tokens=120,
         ).llm
 
-        self.router = (
-            SUPERVISOR_PROMPT
-            | self.llm.with_structured_output(RouteDecision)
-        )
+        try:
+            self.router = (
+                SUPERVISOR_PROMPT
+                | self.llm.with_structured_output(RouteDecision)
+            )
+        except Exception:
+            self.router = None
 
         logger.info("Supervisor service initialized.")
 
@@ -31,25 +41,39 @@ class SupervisorService:
 
         logger.debug("Routing user query.")
 
-        try:
-            decision = self.router.invoke(
-                {
-                    "query": query
-                }
-            )
+        clean_query = query.strip().lower().rstrip("?!.,")
 
-            logger.info(
-                f"Supervisor route={decision.route} "
-                f"confidence={decision.confidence:.2f}"
-            )
-
-            return decision
-        except Exception as e:
-            logger.warning(
-                f"Supervisor routing failed ({e}). Falling back to 'rag' route."
-            )
+        # Fast rule-based routing for common conversational patterns
+        if clean_query in GREETING_PATTERNS:
+            logger.info("Supervisor routed to greeting via fast-path rule.")
             return RouteDecision(
-                route="rag",
+                route="greeting",
                 confidence=1.0,
-                reason="Fallback routing due to supervisor error",
+                reason="Direct conversational greeting match",
             )
+
+        # LLM classification
+        if self.router:
+            try:
+                decision = self.router.invoke(
+                    {
+                        "query": query
+                    }
+                )
+
+                logger.info(
+                    f"Supervisor route={decision.route} "
+                    f"confidence={decision.confidence:.2f}"
+                )
+
+                return decision
+            except Exception as e:
+                logger.warning(
+                    f"Supervisor LLM routing bypassed ({e}). Falling back to 'rag' route."
+                )
+
+        return RouteDecision(
+            route="rag",
+            confidence=1.0,
+            reason="Routed to RAG for document processing",
+        )

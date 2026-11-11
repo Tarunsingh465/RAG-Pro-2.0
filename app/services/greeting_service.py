@@ -27,15 +27,14 @@ class GreetingService:
     )
 
     def __init__(self):
-        is_nvidia = "nvidia" in settings.active_llm_base_url
-        model_name = "meta/llama-3.1-8b-instruct" if is_nvidia else "meta-llama/llama-3.1-8b-instruct"
+        model_name = settings.LLM_MODEL
 
         self.llm = ChatOpenAI(
             model=model_name,
             api_key=settings.active_llm_api_key,
             base_url=settings.active_llm_base_url,
             temperature=0.7,
-            max_tokens=80,
+            max_tokens=256,
             default_headers={
                 "HTTP-Referer": f"http://localhost",
                 "X-Title": settings.APP_NAME,

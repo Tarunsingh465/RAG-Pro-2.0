@@ -15,7 +15,7 @@ class LLMClient:
         self,
         *,
         temperature: float = 0.2,
-        max_tokens: int = 1024,
+        max_tokens: int = 2048,
     ):
         provider = "NVIDIA NIM" if "nvidia" in settings.active_llm_base_url else "OpenRouter"
         logger.info(f"Initializing {provider} LLM ({settings.LLM_MODEL})...")
