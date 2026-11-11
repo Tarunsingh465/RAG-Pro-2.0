@@ -22,6 +22,9 @@ DISCIPLINE_KEYWORDS: dict[str, dict[str, list[str]]] = {
     "cs_it": {
         "name": "Computer Science & Software Engineering",
         "terms": [
+            "computer science", "computer", "computing", "software engineering", "software",
+            "information technology", "data science", "artificial intelligence", "ai", "machine learning",
+            "deep learning", "programming", "coding", "developer", "development",
             "python", "java", "c++", "golang", "rust", "javascript", "typescript", "c#", "php",
             "algorithm", "data structure", "big-o", "time complexity", "space complexity",
             "recursion", "dynamic programming", "binary search", "graph", "tree", "hash table",
@@ -30,7 +33,7 @@ DISCIPLINE_KEYWORDS: dict[str, dict[str, list[str]]] = {
             "cache", "caching", "cache stampede", "distributed system", "lock", "locking",
             "fastapi", "django", "flask", "docker", "kubernetes", "microservices", "api",
             "rest", "graphql", "grpc", "git", "ci/cd", "devops", "cloud", "aws", "azure",
-            "machine learning", "deep learning", "neural network", "transformer", "llm", "rag",
+            "neural network", "transformer", "llm", "rag",
             "vector database", "embedding", "nlp", "computer vision", "pytorch", "tensorflow",
             "operating system", "linux", "kernel", "memory management", "garbage collection",
             "tcp/ip", "http", "dns", "socket", "network protocol", "cybersecurity", "encryption",
@@ -43,6 +46,7 @@ DISCIPLINE_KEYWORDS: dict[str, dict[str, list[str]]] = {
     "mechanical": {
         "name": "Mechanical Engineering & Thermal Systems",
         "terms": [
+            "mechanical engineering", "mechanical", "mechanics", "robotics", "mechatronics",
             "thermodynamics", "heat transfer", "fluid mechanics", "fluid dynamics", "cfd",
             "conduction", "convection", "radiation", "fourier", "nusselt", "prandtl", "reynolds",
             "thermal", "cooling", "heatsink", "temperature", "heat dissipation",
@@ -60,6 +64,7 @@ DISCIPLINE_KEYWORDS: dict[str, dict[str, list[str]]] = {
     "civil": {
         "name": "Civil & Structural Engineering",
         "terms": [
+            "civil engineering", "civil", "structural engineering", "structures",
             "concrete", "reinforced concrete", "rcc", "pre-stressed concrete", "cement", "mortar",
             "rebar", "tensile steel", "structural analysis", "truss", "cantilever", "simply supported",
             "deflection", "bending moment diagram", "shear force diagram", "bmd", "sfd",
@@ -75,6 +80,7 @@ DISCIPLINE_KEYWORDS: dict[str, dict[str, list[str]]] = {
     "chemical": {
         "name": "Chemical & Process Engineering",
         "terms": [
+            "chemical engineering", "chemical", "chemistry", "process engineering",
             "reaction kinetics", "chemical reaction", "reaction rate", "arrhenius", "activation energy",
             "cstr", "pfr", "plug flow", "batch reactor", "catalyst", "catalytic", "stoichiometry",
             "distillation", "distillation column", "reflux ratio", "mccabe-thiele", "fenske", "trays", "packing",
@@ -88,6 +94,7 @@ DISCIPLINE_KEYWORDS: dict[str, dict[str, list[str]]] = {
     "electrical": {
         "name": "Electrical, Electronics & Control Engineering",
         "terms": [
+            "electrical engineering", "electrical", "electronics engineering", "electronics",
             "voltage", "current", "resistance", "impedance", "reactance", "ohm's law", "kcl", "kvl",
             "kirchhoff", "thevenin", "norton", "ac circuit", "dc circuit", "power factor", "three phase",
             "transformer", "step up", "step down", "induction motor", "synchronous motor", "dc motor",
@@ -101,6 +108,7 @@ DISCIPLINE_KEYWORDS: dict[str, dict[str, list[str]]] = {
     "industrial_maintenance": {
         "name": "Industrial Reliability, QA & Maintenance",
         "terms": [
+            "industrial engineering", "engineering", "engineer",
             "root cause analysis", "rca", "5 whys", "fishbone", "ishikawa", "fmea", "fmeca",
             "reliability", "mtbf", "mean time between failures", "mttr", "mean time to repair",
             "availability", "overall equipment effectiveness", "oee", "preventive maintenance",
@@ -228,22 +236,26 @@ def classify_engineering_domain(text: str, filename: str = "") -> EngineeringCla
 
 def is_engineering_query(query: str) -> tuple[bool, str, str]:
     """
-    Check if a query asks an engineering/industrial question.
+    Check if a query asks an engineering/industrial/IT/technical question.
     Returns (is_eng, discipline, guidance_tag).
     """
     result = classify_engineering_domain(query)
     q_lower = query.lower()
 
-    # Look for engineering action intents
+    # Look for engineering action and conceptual query intents
     action_intents = [
-        "calculate", "derive", "formula", "equation", "design", "solve",
-        "troubleshoot", "why is", "failure", "tolerance", "specification",
-        "standard", "code", "deflection", "stress", "efficiency", "sizing",
-        "implement", "architecture", "algorithm", "optimize", "how does"
+        "what is", "what are", "explain", "define", "describe", "how does", "how do", "why is",
+        "why does", "calculate", "derive", "formula", "equation", "design", "solve",
+        "troubleshoot", "failure", "tolerance", "specification", "standard", "code",
+        "deflection", "stress", "efficiency", "sizing", "implement", "architecture",
+        "algorithm", "optimize", "how to fix", "how to resolve", "difference between"
     ]
     has_action = any(act in q_lower for act in action_intents)
 
-    if result["is_engineering"] or (has_action and result["confidence"] > 0.4):
+    if result["is_engineering"]:
+        return True, result["discipline"], result["discipline_name"]
+
+    if has_action and result["confidence"] >= 0.5 and result["discipline"] != "general":
         return True, result["discipline"], result["discipline_name"]
 
     return False, "general", "General"

@@ -126,12 +126,29 @@ class RagService:
         2. Answers in a concise paragraph explaining the problem and key corrective measures.
         3. Asks user to upload relevant docs if they need a detailed/site-specific solution.
         """
-        prompt = (
-            f"You are an engineering specialist. In one short technical paragraph (3-4 sentences), "
-            f"explain the engineering issue: '{question}'. "
-            f"State the primary root cause and the immediate corrective measures to take. "
-            f"Use bold for key terms. Do not include greetings or disclaimers."
+        is_issue = any(
+            kw in question.lower()
+            for kw in [
+                "why is", "why does", "heating", "failed", "failure", "crash",
+                "error", "deadlock", "troubleshoot", "fix", "resolve", "slow",
+                "overheating", "broken", "issue", "problem", "leak"
+            ]
         )
+
+        if is_issue:
+            prompt = (
+                f"You are an engineering specialist. In one short technical paragraph (3-4 sentences), "
+                f"explain the engineering issue: '{question}'. "
+                f"State the primary root cause and the immediate corrective measures to take. "
+                f"Use bold for key terms. Do not include greetings or disclaimers."
+            )
+        else:
+            prompt = (
+                f"You are an engineering and technical specialist. In one short technical paragraph (3-4 sentences), "
+                f"provide a direct, authoritative technical answer to: '{question}'. "
+                f"Define the core concept, its foundational pillars, and primary engineering applications. "
+                f"Use bold for key terms. Do not include greetings or disclaimers."
+            )
 
         try:
             llm = LLMClient(temperature=0.2, max_tokens=2048).llm
