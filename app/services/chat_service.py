@@ -1,3 +1,4 @@
+from app.core.engineering import is_engineering_query
 from app.core.logger import get_logger
 from app.services.conversational_engine import match_conversational_intent
 from app.services.greeting_service import GreetingService
@@ -73,11 +74,16 @@ class ChatService:
                         history=history,
                     )
 
+                is_eng, disc, _ = is_engineering_query(question)
+                if is_eng:
+                    logger.info(f"Out-of-scope query recognized as engineering ({disc}). Using engineering fallback.")
+                    return self.rag_service.answer_engineering_fallback(question, discipline=disc)
+
                 return {
                     "answer": (
-                        "I'm designed to answer questions "
-                        "about the documents provided to "
-                        "this RAG system."
+                        "⚠️ **Out-of-Domain Request:** The RAG system is not authorized to answer "
+                        "questions unrelated to your uploaded documents or technical engineering domains. "
+                        "Please upload a document to analyze or ask an engineering, IT, or candidate-evaluation question."
                     ),
                     "sources": [],
                 }
@@ -91,11 +97,18 @@ class ChatService:
                 )
 
                 if result.get("out_of_context"):
+                    is_eng, disc, _ = is_engineering_query(question)
+                    if is_eng:
+                        logger.info(
+                            f"Out-of-context RAG query recognized as engineering ({disc}). Using engineering fallback."
+                        )
+                        return self.rag_service.answer_engineering_fallback(question, discipline=disc)
+
                     return {
                         "answer": (
-                            "I couldn't find anything relevant to that in the indexed documents. "
-                            "If you haven't uploaded documents yet, please use the **Upload Documents** "
-                            "section in the sidebar to add your files (PDF, DOCX, TXT, CSV) and click **Upload & Index**."
+                            "⚠️ **Out-of-Domain Request:** The RAG system is not authorized to answer "
+                            "questions unrelated to your uploaded documents or technical engineering domains. "
+                            "Please upload a document to analyze or ask an engineering, IT, or candidate-evaluation question."
                         ),
                         "sources": [],
                     }

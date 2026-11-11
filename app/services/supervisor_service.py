@@ -1,3 +1,4 @@
+from app.core.engineering import is_engineering_query
 from app.core.logger import get_logger
 from app.core.prompts import SUPERVISOR_PROMPT
 from app.llm.client import LLMClient
@@ -25,7 +26,7 @@ class SupervisorService:
 
         self.llm = LLMClient(
             temperature=0.0,
-            max_tokens=120,
+            max_tokens=1024,
         ).llm
 
         try:
@@ -60,6 +61,26 @@ class SupervisorService:
                 route="greeting",
                 confidence=1.0,
                 reason="Direct conversational greeting match",
+            )
+
+        # Fast rule-based routing for engineering queries
+        is_eng, disc, disc_name = is_engineering_query(query)
+        if is_eng:
+            logger.info(f"Supervisor fast-path: recognized engineering query ({disc}) -> 'rag'.")
+            return RouteDecision(
+                route="rag",
+                confidence=1.0,
+                reason=f"Engineering discipline: {disc_name}",
+            )
+
+        # Fast rule-based routing for candidate / resume evaluation queries
+        eval_keywords = ["hire", "hiring", "recruit", "candidate", "resume", "qualification", "cv", "experience"]
+        if any(kw in query.lower() for kw in eval_keywords):
+            logger.info("Supervisor fast-path: candidate evaluation query -> 'rag'.")
+            return RouteDecision(
+                route="rag",
+                confidence=1.0,
+                reason="Candidate evaluation query",
             )
 
         # LLM classification

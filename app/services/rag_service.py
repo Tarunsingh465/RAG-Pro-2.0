@@ -2,6 +2,7 @@ from app.core.config import settings
 from app.core.engineering import is_engineering_query
 from app.core.logger import get_logger
 from app.llm.chain import RAGChain
+from app.llm.client import LLMClient
 from app.vectorstore.pinecone import PineconeManager
 
 logger = get_logger()
@@ -116,3 +117,50 @@ class RagService:
             "out_of_context": False,
             "similarity_score": top_score,
         }
+
+    def answer_engineering_fallback(self, question: str, discipline: str = "general") -> dict:
+        """
+        Provides a concise, grounded engineering explanation when no documents match in the RAG store.
+        Strictly follows user requirements:
+        1. Specifies upfront that no documents were uploaded/found, answered from general engineering principles.
+        2. Answers in a concise paragraph explaining the problem and key corrective measures.
+        3. Asks user to upload relevant docs if they need a detailed/site-specific solution.
+        """
+        prompt = (
+            f"You are an engineering specialist. In one short technical paragraph (3-4 sentences), "
+            f"explain the engineering issue: '{question}'. "
+            f"State the primary root cause and the immediate corrective measures to take. "
+            f"Use bold for key terms. Do not include greetings or disclaimers."
+        )
+
+        try:
+            llm = LLMClient(temperature=0.2, max_tokens=2048).llm
+            response = llm.invoke(prompt)
+            content = getattr(response, "content", "")
+            if not content:
+                content = str(response)
+
+            answer = (
+                "ℹ️ **Note:** No relevant documents were found in the uploaded knowledge base for this query. "
+                "The following answer is provided from general engineering principles:\n\n"
+                f"{content.strip()}\n\n"
+                "📂 *For a detailed, component-specific, or manufacturer-compliant solution, "
+                "please upload the relevant equipment manual, datasheet, or specification document to the sidebar.*"
+            )
+
+            return {
+                "answer": answer,
+                "sources": [],
+                "out_of_context": False,
+                "fallback": True,
+            }
+        except Exception as e:
+            logger.error(f"Error in engineering fallback generation: {e}")
+            return {
+                "answer": (
+                    "ℹ️ **Note:** No relevant documents were found in the uploaded knowledge base for this query.\n\n"
+                    "For this technical problem, inspect your physical hardware connections, thermal dissipation paths, "
+                    "and operational limits. Please upload the relevant equipment manual or datasheet to receive a complete diagnosis."
+                ),
+                "sources": [],
+            }

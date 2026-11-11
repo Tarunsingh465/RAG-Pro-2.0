@@ -34,7 +34,10 @@ DISCIPLINE_KEYWORDS: dict[str, dict[str, list[str]]] = {
             "vector database", "embedding", "nlp", "computer vision", "pytorch", "tensorflow",
             "operating system", "linux", "kernel", "memory management", "garbage collection",
             "tcp/ip", "http", "dns", "socket", "network protocol", "cybersecurity", "encryption",
-            "system design", "design pattern", "refactoring", "frontend", "backend", "full stack"
+            "system design", "design pattern", "refactoring", "frontend", "backend", "full stack",
+            "pc", "cpu", "gpu", "processor", "motherboard", "overheating", "heating",
+            "thermal", "throttling", "cooler", "cooling", "fan", "heatsink", "celcius", "celsius",
+            "hardware", "thermal paste", "bios", "ram", "ssd", "psu", "power supply"
         ]
     },
     "mechanical": {
@@ -42,6 +45,7 @@ DISCIPLINE_KEYWORDS: dict[str, dict[str, list[str]]] = {
         "terms": [
             "thermodynamics", "heat transfer", "fluid mechanics", "fluid dynamics", "cfd",
             "conduction", "convection", "radiation", "fourier", "nusselt", "prandtl", "reynolds",
+            "thermal", "cooling", "heatsink", "temperature", "heat dissipation",
             "carnot", "rankine", "otto cycle", "diesel cycle", "brayton", "entropy", "enthalpy",
             "stress", "strain", "shear stress", "normal stress", "bending moment", "torsion",
             "mohr's circle", "von mises", "tresca", "finite element", "fea", "ansys",
@@ -185,8 +189,11 @@ def classify_engineering_domain(text: str, filename: str = "") -> EngineeringCla
     top_discipline = max(scores, key=lambda k: scores[k])
     top_score = scores[top_discipline]
 
-    # Threshold for engineering domain recognition
-    if top_score < 3:
+    # Threshold for engineering domain recognition (1 match is sufficient for short user queries)
+    is_short_query = len(sample_text.split()) < 40
+    threshold = 1 if is_short_query else 3
+
+    if top_score < threshold:
         discipline = "general"
         discipline_name = "General Knowledge / Documentation"
         is_engineering = False
