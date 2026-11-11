@@ -85,10 +85,11 @@ RAG-Pro/
 
 | Key | Provider | Purpose |
 |-----|----------|---------|
-| `GOOGLE_API_KEY` | [Google AI Studio](https://aistudio.google.com/) | Embeddings |
-| `PINECONE_API_KEY` | [Pinecone](https://www.pinecone.io/) | Vector database |
-| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/) | LLM inference |
-| `MISTRAL_API_KEY` | [Mistral AI](https://console.mistral.ai/) | OCR extraction |
+| `NVIDIA_API_KEY` | [NVIDIA Build](https://build.nvidia.com/) | LLM inference (Free 1,000 credits, no card required) |
+| `GOOGLE_API_KEY` | [Google AI Studio](https://aistudio.google.com/) | Embeddings (100% Free) |
+| `PINECONE_API_KEY` | [Pinecone](https://www.pinecone.io/) | Vector database (Free Serverless tier) |
+| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/) | Alternative LLM inference (Optional) |
+| `MISTRAL_API_KEY` | [Mistral AI](https://console.mistral.ai/) | Cloud OCR extraction (Optional; local `pypdf` is used by default) |
 
 ## 📡 API Endpoints
 

@@ -17,17 +17,18 @@ class LLMClient:
         temperature: float = 0.2,
         max_tokens: int = 1024,
     ):
-        logger.info("Initializing OpenRouter LLM...")
+        provider = "NVIDIA NIM" if "nvidia" in settings.active_llm_base_url else "OpenRouter"
+        logger.info(f"Initializing {provider} LLM ({settings.LLM_MODEL})...")
 
         self._llm = ChatOpenAI(
             model=settings.LLM_MODEL,
-            api_key=settings.OPENROUTER_API_KEY,
-            base_url="https://openrouter.ai/api/v1",
+            api_key=settings.active_llm_api_key,
+            base_url=settings.active_llm_base_url,
             temperature=temperature,
             max_tokens=max_tokens,
         )
 
-        logger.success("OpenRouter initialized.")
+        logger.success(f"{provider} initialized.")
 
     @property
     def llm(self):

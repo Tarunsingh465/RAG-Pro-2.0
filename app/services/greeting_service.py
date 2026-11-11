@@ -27,11 +27,13 @@ class GreetingService:
     )
 
     def __init__(self):
+        is_nvidia = "nvidia" in settings.active_llm_base_url
+        model_name = "meta/llama-3.1-8b-instruct" if is_nvidia else "meta-llama/llama-3.1-8b-instruct"
 
         self.llm = ChatOpenAI(
-            model=self.MODEL,
-            api_key=settings.OPENROUTER_API_KEY,
-            base_url=self.OPENROUTER_BASE_URL,
+            model=model_name,
+            api_key=settings.active_llm_api_key,
+            base_url=settings.active_llm_base_url,
             temperature=0.7,
             max_tokens=80,
             default_headers={
@@ -40,7 +42,7 @@ class GreetingService:
             },
         )
 
-        logger.info(f"Greeting service initialized with model={self.MODEL}")
+        logger.info(f"Greeting service initialized with model={model_name}")
 
     def reply(self, question: str) -> dict:
         """

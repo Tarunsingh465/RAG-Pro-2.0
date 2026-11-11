@@ -16,18 +16,32 @@ class Settings(BaseSettings):
     )
 
     # API Keys
+    NVIDIA_API_KEY: str = ""
+    OPENROUTER_API_KEY: str = ""
     GOOGLE_API_KEY: str = ""
     PINECONE_API_KEY: str = ""
-    OPENROUTER_API_KEY: str = ""
     MISTRAL_API_KEY: str | None = None
 
     # Pinecone
     PINECONE_INDEX_NAME: str = "rag-pro"
     PINECONE_NAMESPACE: str = "default"
 
-    # Models
-    LLM_MODEL: str = "google/gemini-2.5-flash"
+    # Models & Endpoints
+    LLM_BASE_URL: str | None = None
+    LLM_MODEL: str = "meta/llama-3.3-70b-instruct"
     EMBEDDING_MODEL: str = "models/gemini-embedding-001"
+
+    @property
+    def active_llm_api_key(self) -> str:
+        return self.NVIDIA_API_KEY or self.OPENROUTER_API_KEY
+
+    @property
+    def active_llm_base_url(self) -> str:
+        if self.LLM_BASE_URL:
+            return self.LLM_BASE_URL
+        if self.NVIDIA_API_KEY:
+            return "https://integrate.api.nvidia.com/v1"
+        return "https://openrouter.ai/api/v1"
 
     # Retrieval
     TOP_K: int = Field(default=5)
