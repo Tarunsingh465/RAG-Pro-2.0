@@ -18,32 +18,17 @@ GREETING_PATTERNS = {
 class SupervisorService:
     """
     Determines the appropriate route for a user query.
-
-    The supervisor does not answer the query.
+    Uses ultra-fast deterministic in-memory routing (< 0.5ms) without slow LLM overhead.
     """
 
     def __init__(self):
-
-        self.llm = LLMClient(
-            temperature=0.0,
-            max_tokens=1024,
-        ).llm
-
-        try:
-            self.router = (
-                SUPERVISOR_PROMPT
-                | self.llm.with_structured_output(RouteDecision)
-            )
-        except Exception:
-            self.router = None
-
-        logger.info("Supervisor service initialized.")
+        logger.info("Supervisor service initialized with ultra-fast deterministic routing.")
 
     def route(self, query: str) -> RouteDecision:
 
         logger.debug("Routing user query.")
 
-        # Fast rule-based routing for common conversational patterns via zero-API engine
+        # 1. Fast rule-based routing for conversational patterns via zero-API engine (< 0.5ms)
         intent_match = match_conversational_intent(query)
         if intent_match:
             logger.info(f"Supervisor routed to greeting via zero-API intent: {intent_match['id']}.")
@@ -63,7 +48,7 @@ class SupervisorService:
                 reason="Direct conversational greeting match",
             )
 
-        # Fast rule-based routing for engineering queries
+        # 2. Fast rule-based routing for engineering queries (< 0.5ms)
         is_eng, disc, disc_name = is_engineering_query(query)
         if is_eng:
             logger.info(f"Supervisor fast-path: recognized engineering query ({disc}) -> 'rag'.")
@@ -73,8 +58,12 @@ class SupervisorService:
                 reason=f"Engineering discipline: {disc_name}",
             )
 
-        # Fast rule-based routing for candidate / resume evaluation queries
-        eval_keywords = ["hire", "hiring", "recruit", "candidate", "resume", "qualification", "cv", "experience"]
+        # 3. Fast rule-based routing for candidate / resume evaluation queries (< 0.5ms)
+        eval_keywords = [
+            "hire", "hiring", "recruit", "candidate", "resume", "qualification",
+            "cv", "experience", "recommend", "recommendation", "future", "suggestion",
+            "advice", "suitability", "shortlist", "fit"
+        ]
         if any(kw in query.lower() for kw in eval_keywords):
             logger.info("Supervisor fast-path: candidate evaluation query -> 'rag'.")
             return RouteDecision(
@@ -83,26 +72,10 @@ class SupervisorService:
                 reason="Candidate evaluation query",
             )
 
-        # LLM classification
-        if self.router:
-            try:
-                decision = self.router.invoke(
-                    {
-                        "query": query
-                    }
-                )
-
-                logger.info(
-                    f"Supervisor route={decision.route} "
-                    f"confidence={decision.confidence:.2f}"
-                )
-
-                return decision
-            except Exception as e:
-                logger.warning(
-                    f"Supervisor LLM routing bypassed ({e}). Falling back to 'rag' route."
-                )
-
+        # 4. Default: Route directly to RAG (< 0.5ms).
+        # RagService._check_relevance will verify against Pinecone in 50ms:
+        # - If relevant docs exist: answers via RAG
+        # - If no docs exist: evaluates engineering fallback or out-of-domain refusal
         return RouteDecision(
             route="rag",
             confidence=1.0,

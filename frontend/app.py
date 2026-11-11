@@ -192,9 +192,9 @@ if prompt:
                     f"{API_URL}/chat",
                     json={
                         "question": prompt,
-                        "history": st.session_state.messages[:-1][-6:],
+                        "history": st.session_state.messages[:-1][-4:],
                     },
-                    timeout=60,
+                    timeout=120,
                 )
 
                 if response.status_code == 200:

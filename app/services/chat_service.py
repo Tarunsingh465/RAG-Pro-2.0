@@ -113,6 +113,32 @@ class ChatService:
                         "sources": [],
                     }
 
+                # If LLM fell back to context-miss phrase, verify if question is engineering or out-of-domain
+                answer_text = result.get("answer", "") or ""
+                not_found_phrases = [
+                    "couldn't find information about that in the provided documents",
+                    "couldn't find anything relevant to that in the provided documents",
+                    "not mentioned in the provided documents",
+                    "cannot be found in the provided documents",
+                ]
+                if any(phrase in answer_text.lower() for phrase in not_found_phrases):
+                    is_eng, disc, _ = is_engineering_query(question)
+                    if is_eng:
+                        logger.info(
+                            f"LLM indicated context-miss for engineering query ({disc}). Using engineering fallback."
+                        )
+                        return self.rag_service.answer_engineering_fallback(question, discipline=disc)
+                    else:
+                        logger.info("LLM indicated context-miss for non-engineering query. Returning out-of-domain message.")
+                        return {
+                            "answer": (
+                                "⚠️ **Out-of-Domain Request:** The RAG system is not authorized to answer "
+                                "questions unrelated to your uploaded documents or technical engineering domains. "
+                                "Please upload a document to analyze or ask an engineering, IT, or candidate-evaluation question."
+                            ),
+                            "sources": [],
+                        }
+
                 return result
 
             logger.error(f"Unexpected route: {decision.route}")

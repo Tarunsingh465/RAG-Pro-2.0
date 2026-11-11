@@ -35,7 +35,7 @@ class RAGChain:
         self,
         question: str,
         document_id: str | None = None,
-        top_k: int = 5,
+        top_k: int = 4,
         history: list[dict] | None = None,
     ):
         is_evaluative = any(kw in question.lower() for kw in EVALUATIVE_KEYWORDS)
@@ -63,15 +63,16 @@ class RAGChain:
             for doc in docs
         )
 
-        # Format previous conversation turns if provided
+        # Format previous conversation turns concisely to avoid token bloat and long reasoning delays
         chat_history = "None."
         if history:
             history_lines = []
-            for msg in history[-6:]:
+            for msg in history[-3:]:
                 role = str(msg.get("role", "User")).capitalize()
                 content = str(msg.get("content", "")).strip()
                 if content:
-                    history_lines.append(f"{role}: {content}")
+                    compact = content[:350] + "..." if len(content) > 350 else content
+                    history_lines.append(f"{role}: {compact}")
             if history_lines:
                 chat_history = "\n".join(history_lines)
 

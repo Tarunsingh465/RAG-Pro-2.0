@@ -30,16 +30,22 @@ class GreetingService:
     def __init__(self):
         model_name = settings.LLM_MODEL
 
+        kwargs = {}
+        if "nvidia" in settings.active_llm_base_url:
+            kwargs["extra_body"] = {"chat_template_kwargs": {"enable_thinking": False}}
+
         self.llm = ChatOpenAI(
             model=model_name,
             api_key=settings.active_llm_api_key,
             base_url=settings.active_llm_base_url,
             temperature=0.7,
             max_tokens=256,
+            request_timeout=30,
             default_headers={
                 "HTTP-Referer": f"http://localhost",
                 "X-Title": settings.APP_NAME,
             },
+            **kwargs,
         )
 
         logger.info(f"Greeting service initialized with model={model_name}")

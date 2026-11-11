@@ -28,7 +28,7 @@ class Settings(BaseSettings):
 
     # Models & Endpoints
     LLM_BASE_URL: str | None = None
-    LLM_MODEL: str = "meta/llama-3.3-70b-instruct"
+    LLM_MODEL: str = "nvidia/nemotron-3.5-super-vl-120b-a12b"
     EMBEDDING_MODEL: str = "models/gemini-embedding-001"
 
     @property
