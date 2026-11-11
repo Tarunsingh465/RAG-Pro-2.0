@@ -33,17 +33,6 @@ status_text = "ONLINE" if is_online else "OFFLINE"
 status_class = "online" if is_online else "offline"
 blinker_class = "blinker-online" if is_online else "blinker-offline"
 
-# Upper-right corner floating blinker pill
-st.markdown(
-    f"""
-    <div class="backend-status-pill {status_class}" title="Backend FastAPI Server Status: {status_text}">
-        <span class="{blinker_class}"></span>
-        <span>{status_text}</span>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -81,7 +70,7 @@ with st.sidebar:
         help="Supports PDF, DOCX, CSV, Excel, TXT, and technical images.",
     )
 
-    if st.button("📤 Upload & Index", use_container_width=True, type="primary"):
+    if st.button("📤 Upload & Index", key="upload_index_btn", use_container_width=True, type="primary"):
         if not uploaded_files:
             st.warning("Please choose one or more documents.")
         elif not is_online:
@@ -190,7 +179,7 @@ with col_badge:
         f"""
         <div class="inline-status-badge {status_class}">
             <span class="{blinker_class}"></span>
-            <span>BACKEND {status_text}</span>
+            <span>{status_text}</span>
         </div>
         """,
         unsafe_allow_html=True,
