@@ -33,7 +33,7 @@ class GreetingService:
             api_key=settings.OPENROUTER_API_KEY,
             base_url=self.OPENROUTER_BASE_URL,
             temperature=0.7,
-            max_tokens=256,
+            max_tokens=80,
             default_headers={
                 "HTTP-Referer": f"http://localhost",
                 "X-Title": settings.APP_NAME,

@@ -17,7 +17,7 @@ class SupervisorService:
 
         self.llm = LLMClient(
             temperature=0.0,
-            max_tokens=256,
+            max_tokens=120,
         ).llm
 
         self.router = (
@@ -31,15 +31,25 @@ class SupervisorService:
 
         logger.debug("Routing user query.")
 
-        decision = self.router.invoke(
-            {
-                "query": query
-            }
-        )
+        try:
+            decision = self.router.invoke(
+                {
+                    "query": query
+                }
+            )
 
-        logger.info(
-            f"Supervisor route={decision.route} "
-            f"confidence={decision.confidence:.2f}"
-        )
+            logger.info(
+                f"Supervisor route={decision.route} "
+                f"confidence={decision.confidence:.2f}"
+            )
 
-        return decision
+            return decision
+        except Exception as e:
+            logger.warning(
+                f"Supervisor routing failed ({e}). Falling back to 'rag' route."
+            )
+            return RouteDecision(
+                route="rag",
+                confidence=1.0,
+                reason="Fallback routing due to supervisor error",
+            )
