@@ -1,4 +1,4 @@
-# 🧪 Test Execution Report — Phase 3.1 Evaluation Audit & Verification
+# 🧪 Test Execution Report — Phase 3.1 & Phase 3.1.1 Evaluation Integrity Check
 
 ## 1. Overview
 - **Execution Date**: 2026-11-12
@@ -7,7 +7,7 @@
 - **Total Tests Discovered**: **41**
 - **Total Tests Passed**: **41 (100%)**
 - **Failures / Errors**: **0**
-- **Execution Time**: **2.610 seconds**
+- **Execution Time**: **~2.6 seconds**
 
 ---
 
@@ -41,7 +41,7 @@
 | `test_dimension_mismatch_raises_error` | `vectorstore.pinecone` | Verifies ValueError raised when model and index dimensions mismatch | **PASSED** |
 | `test_startup_uses_cache_without_calling_embed_query`| `vectorstore.pinecone`| Verifies startup utilizes dimension cache without calling external embedding API | **PASSED** |
 
-### Phase 3.1 Evaluation & Benchmarking Suite (`tests/test_phase3_evaluation.py` — 21 tests)
+### Phase 3.1 & 3.1.1 Evaluation & Benchmarking Suite (`tests/test_phase3_evaluation.py` — 21 tests)
 | Test Name | Module Covered | Objective | Result |
 | :--- | :--- | :--- | :--- |
 | `test_precision_at_k_standard` | `evaluation.metrics` | Verifies Precision@K calculation on partially relevant retrieved list with deduplication | **PASSED** |
@@ -68,14 +68,19 @@
 
 ---
 
-## 3. Regression & Audit Verification
-- **BUG-001 (LLM Timeout)**: Verified that `enable_thinking=False` remains active in NVIDIA NIM client.
-- **BUG-002 (Data Leakage)**: Verified that active document filter and short-circuit remain 100% functional.
-- **BUG-003 (Startup Probe)**: Verified that cached dimension resolution executes with 0 external API calls.
-- **BUG-004 (Structured Extractors)**: Preserved and verified table, slide, and multi-sheet extractors.
-- **Phase 3.1 Audit Standards**:
-  - Eliminated synthetic chunk IDs (`item_0`, `item_1`) and virtual ground-truth IDs (`unretrieved_corpus_gt_`).
-  - Strict segregation of answerable queries (Information Retrieval metrics) and unanswerable queries (Abstention metrics).
-  - Ground-truth relevance grounded in canonical deterministic chunk IDs (`{file_name}_{strategy}_{index}`).
-  - Frozen optimal threshold $\tau^* = 0.65$ validated on Held-Out Test split ($N=15$) without data leakage.
-  - Zero metric invention: Every benchmark metric is computed directly from executed experiments.
+## 3. Phase 3.1.1 Integrity Check Verification
+- **Precision@5 Mathematical Ceiling Audit**:
+  - Proved analytically and verified numerically that Precision@5 = 0.2000 is the exact theoretical maximum bound when $|\mathcal{G}|=1$ under 100% Hit Rate.
+  - Generated `PER_QUESTION_EVALUATION_AUDIT.csv` containing full 150-row verification across all methods, splits, and queries.
+- **Corpus & Pinecone Vector Store Reconciliation**:
+  - Enforced deterministic IDs in `app/vectorstore/pinecone.py` (`add_documents(ids=...)`).
+  - Cleared and re-indexed Pinecone index to match exactly 30 unique medium chunks (`total_vector_count = 30`), eliminating 2 stale duplicate vectors.
+- **Independent BM25 Abstention Protocol**:
+  - Calibrated independent BM25 score cutoff $\tau_{\text{BM25}}^* = 5.0$ on the Development Split.
+  - Verified on Held-Out Test Split: 100% CAR (4/4 unanswerable) and 100% Hit Rate (11/11 answerable).
+- **Threshold Tie-Breaker Rationale & Sample-Size Boundaries**:
+  - Documented empirical tie between $\tau = 0.65$ and $\tau = 0.70$ on Dev split ($F_1 = 1.0000$), with selection justified as a buffer against false negatives.
+  - Stated explicitly that $N=4$ unanswerable test queries constitutes a diagnostic pilot rather than a population-level safety proof.
+- **Regression Invariants Maintained**:
+  - BUG-001 (LLM Timeout), BUG-002 (Data Leakage), BUG-003 (Startup Probe), BUG-004 (Structured Extractors) all verified intact.
+  - All 41 unit and regression tests pass without errors.

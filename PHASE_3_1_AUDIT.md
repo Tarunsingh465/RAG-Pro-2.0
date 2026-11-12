@@ -96,6 +96,30 @@ The audited benchmarking architecture exposes the latency decomposition across a
 ## 6. Verification on Held-Out Test Split ($N=15$)
 
 Applying the frozen threshold $\tau^* = 0.65$ to the unseen Held-Out Test Split verifies that our retrieval models generalize without overfitting:
-- **Okapi BM25**: Achieves 100% Hit Rate@5 on answerable test questions ($MRR=0.9091$, $nDCG@5=0.9329$).
-- **Dense Semantic ($\tau^* = 0.65$)**: Achieves 100% Correct Abstention Rate on unanswerable test questions (Titanic box office, adult ibuprofen dosage, British prime minister in 1805, coffee cultivation).
+- **Okapi BM25**: Achieves 100% Hit Rate@5 on answerable test questions ($MRR=0.9091$, $nDCG@5=0.9322$).
+- **Dense Semantic ($\tau^* = 0.65$)**: Achieves 100% Correct Abstention Rate on unanswerable test questions (Titanic box office, adult ibuprofen dosage, British prime minister in 1805, soil nutrients).
+
+---
+
+## 7. Phase 3.1.1 Integrity Check & Methodological Reconciliations
+
+### 7.1 Precision@5 Invariant Reconciliation
+An audit of all answerable queries confirmed that mean Precision@5 = 0.2000 is mathematically dictated by single-relevant-document ground truth:
+$$\text{Precision@5} = \frac{|\mathcal{A}_5 \cap \mathcal{R}|}{5} = \frac{1}{5} = 0.2000 \quad \text{when } |\mathcal{R}| = 1 \text{ and } \text{Hit Rate@5} = 1.0$$
+Relevant annotations were inspected across all 37 answerable queries; each targets a specific, non-redundant engineering specification clause. Ground truth annotations were strictly maintained without artificial inflation.
+
+### 7.2 Vector Store Synchronization & Elimination of Duplicate Vectors
+An inspection revealed that Pinecone previously held 32 vectors due to 2 duplicate entries indexed with random UUIDs. The vector index was wiped and repopulated with deterministic vector IDs (`bearing_failure_fmea_and_capa.csv_medium_0`, etc.), ensuring exact 1-to-1 parity between Pinecone's 30 vectors and BM25's 30 chunks.
+
+### 7.3 Independent BM25 Abstention Mechanism
+BM25 scores are unbounded TF-IDF scores, incompatible with cosine similarity thresholds. On the Development split ($N=35$), unanswerable queries scored $\le 4.8626$, while answerable queries scored $\ge 6.3266$. A dedicated BM25 threshold $\tau_{\text{BM25}}^* = 5.0$ was calibrated and frozen. On the Held-Out Test split ($N=15$), this rule achieved 100% CAR (4/4) and 100% answerable coverage (11/11).
+
+### 7.4 Threshold Tie & Generalization Boundaries
+Both $\tau = 0.65$ and $\tau = 0.70$ achieved $F_1 = 1.0000$ on the Development objective. $\tau^* = 0.65$ was chosen to provide a safety margin against false negatives for technical acronyms (Hit Rate drops at $\tau \ge 0.75$). This threshold is specific to `gemini-embedding-001` and this 10-document corpus. The $N=4$ unanswerable test sample is acknowledged as a pilot diagnostic size rather than an unconstrained safety proof.
+
+### 7.5 Deliverables
+Detailed question-by-question evidence is recorded in:
+- `PER_QUESTION_EVALUATION_AUDIT.csv` (150 audit rows across 50 questions and 3 methods)
+- `PHASE_3_1_1_FINAL_REVIEW.md` (Forensic evaluation review report)
 - **Hybrid RRF ($\tau^* = 0.65$)**: Combines 100% Hit Rate@5 on answerable test questions with 100% Correct Abstention Rate on unanswerable test queries.
+

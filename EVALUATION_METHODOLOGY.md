@@ -78,6 +78,10 @@ $$\text{DCG@K} = \sum_{i=1}^{K} \frac{\mathbb{I}(\mathcal{R}_K[i] \in \mathcal{G
 $$\text{nDCG@K} = \begin{cases} \frac{\text{DCG@K}}{\text{IDCG@K}} & \text{if } \text{IDCG@K} > 0 \\ 0.0 & \text{otherwise} \end{cases}$$
 
 > [!NOTE]
+> **Precision@K Ceiling Effect**: When an evaluation question targets a specific, non-redundant engineering clause, the ground-truth set size is $|\mathcal{G}| = 1$. The maximum possible Precision@K is strictly bounded by:
+> $$\text{Precision@}K \le \frac{\min(K, |\mathcal{G}|)}{K} = \frac{1}{5} = \mathbf{0.2000}$$
+> A reported Precision@5 of 0.2000 under 100% Hit Rate@5 reflects the mathematical ceiling of single-item retrieval, not an algorithmic defect or synthetic constant.
+>
 > Retrieval metrics are evaluated **exclusively on answerable queries** ($|\mathcal{G}| > 0$). If an answerable query has an empty ground truth set, the evaluation framework raises a validation error rather than calculating a score.
 
 ### 3.2 Unanswerable Abstention Metrics
@@ -105,6 +109,9 @@ For dense vector retrieval using cosine similarity $s = 1 - \text{cosine\_distan
    - Compute Balanced F1-Score:
      $$F_1(\tau) = \frac{2 \cdot H(\tau) \cdot \text{CAR}(\tau)}{H(\tau) + \text{CAR}(\tau)}$$
 3. Select $\tau^*$ maximizing $F_1(\tau)$ on the Development Split.
+   - **Tie-Breaker Rationale**: Both $\tau = 0.65$ and $\tau = 0.70$ achieved identical $F_1 = 1.0000$ on the Development Split (26/26 answerable hits, 9/9 unanswerable abstentions). $\tau^* = 0.65$ was chosen to provide a 0.05 safety buffer against false negatives for specialized acronyms and paraphrased queries, since Hit Rate drops to 88.5% at $\tau \ge 0.75$.
+   - **Scope Boundaries**: This threshold is strictly calibrated for `models/gemini-embedding-001` (3072d) under cosine distance on this 10-document technical corpus. It is **not** claimed as a universal threshold across different embedding spaces or corpora.
+   - **Sample Size Limitation**: The held-out unanswerable set contains $N=4$ queries. While achieving 100% CAR (4/4) demonstrates that code pathways reject out-of-domain queries, $N=4$ is statistically insufficient for population-level safety claims.
 4. Freeze $\tau^*$ and apply it to the Held-Out Test Split.
 
 ---
@@ -116,7 +123,7 @@ $$T_{\text{total}} = T_{\text{prep}} + T_{\text{emb}} + T_{\text{pinecone}} + T_
 
 Where:
 - $T_{\text{prep}}$: Local CPU query string sanitization and lowercase tokenization.
-- $T_{\text{emb}}$: Remote cloud embedding API call (`text-embedding-004`).
+- $T_{\text{emb}}$: Remote cloud embedding API call (`models/gemini-embedding-001`).
 - $T_{\text{pinecone}}$: Remote vector database network search and cosine distance ranking.
 - $T_{\text{bm25}}$: In-memory Okapi BM25 inverted index frequency scoring.
 - $T_{\text{rrf}}$: Reciprocal Rank Fusion score aggregation ($k=60$) across sorted ordinal ranks.
@@ -130,3 +137,14 @@ To ensure statistical rigor without assuming normal distributions:
 - Resampling iterations: $B = 1,000$ with replacement.
 - Seed: 42 (deterministic reproducibility).
 - Confidence interval: $\alpha = 0.05 \implies 95\%$ two-sided empirical percentile interval $[B_{\alpha/2}, B_{1 - \alpha/2}]$.
+
+---
+
+## 7. Independent BM25 Abstention Protocol
+
+BM25 scores represent unbounded term-frequency weights, making cosine thresholds inapplicable:
+1. Evaluate top BM25 scores across all 35 Development Split queries.
+2. Observe separation: Development unanswerable scores span $[0.0000, 4.8626]$ (accidental single-word token overlaps), while answerable scores span $[6.3266, 27.5914]$.
+3. Calibrate cutoff threshold **$\tau_{\text{BM25}}^* = 5.0$** on Development data.
+4. Freeze $\tau_{\text{BM25}}^* = 5.0$ and evaluate on the Held-Out Test split ($N=15$), verifying that all 11 answerable queries pass ($S \ge 7.21$) and all 4 unanswerable queries abstain ($S \le 2.64$).
+

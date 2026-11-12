@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Sequence
+from typing import Optional, Sequence
 
 from langchain_core.documents import Document
 from langchain_pinecone import PineconeVectorStore
@@ -191,7 +191,17 @@ class PineconeManager:
         )
         logger.success(f"Index '{self.index_name}' created.")
 
-    def add_documents(self, documents: Sequence[Document]) -> list[str]:
+    def add_documents(
+        self,
+        documents: Sequence[Document],
+        ids: Optional[Sequence[str]] = None,
+    ) -> list[str]:
+        if ids is None:
+            extracted_ids = [doc.metadata.get("chunk_id") for doc in documents]
+            if all(extracted_ids):
+                ids = [str(i) for i in extracted_ids]
+        if ids:
+            return self.vector_store.add_documents(documents, ids=list(ids))
         return self.vector_store.add_documents(documents)
 
     def similarity_search(

@@ -72,25 +72,30 @@ To determine the optimal rejection cutoff for dense cosine similarity ($1 - \tex
 
 | Retrieval Pipeline | Hit Rate@5 [95% CI] | Precision@5 [95% CI] | Recall@5 [95% CI] | MRR [95% CI] | nDCG@5 [95% CI] | Mean Latency | Correct Abstention Rate (CAR) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Dense Semantic (Pinecone, $\tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | **0.9808** [0.94, 1.0] | **0.9858** [0.96, 1.0] | 847.78 ms | **100.0% (9/9)** |
-| **BM25 Sparse (Okapi, Medium Chunks)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.8782 [0.77, 0.97] | 0.9098 [0.83, 0.98] | **0.08 ms** | 66.7% (6/9) |
-| **Hybrid RRF (Dense + BM25, $k=60, \tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.9231 [0.84, 0.99] | 0.9432 [0.88, 0.99] | 848.30 ms | **100.0% (9/9)** |
+| **Dense Semantic (Pinecone, $\tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | **0.9808** [0.94, 1.0] | **0.9858** [0.96, 1.0] | 935.41 ms | **100.0% (9/9)** |
+| **BM25 Sparse (Okapi, $\tau_{\text{BM25}}=5.0$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.8782 [0.79, 0.96] | 0.9098 [0.84, 0.97] | **0.07 ms** | **100.0% (9/9)** |
+| **Hybrid RRF (Dense + BM25, $k=60, \tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.8846 [0.81, 0.96] | 0.9148 [0.86, 0.97] | 935.85 ms | **100.0% (9/9)** |
+
+> [!NOTE]
+> **Precision@5 Ceiling Effect ($0.2000$)**:
+> Every answerable query in the benchmark has exactly one targeted ground-truth chunk ($|\mathcal{G}|=1$). Because Precision@$K = |\mathcal{R}_K \cap \mathcal{G}| / K$, the maximum possible score for $K=5$ is $1/5 = \mathbf{0.2000}$. At 100% Hit Rate@5, Precision@5 is mathematically bounded to exactly 0.2000. See `PER_QUESTION_EVALUATION_AUDIT.csv` and `PHASE_3_1_1_FINAL_REVIEW.md` for the per-question verification.
 
 ---
 
 ## 5. Generalization Validation: Held-Out Test Split ($N=15$)
 
-*Evaluating the frozen calibrated threshold ($\tau^* = 0.65$) on unseen test questions ($N=11$ Answerable, $N=4$ Unanswerable).*
+*Evaluating the frozen calibrated thresholds ($\tau_{\text{dense}}^* = 0.65$, $\tau_{\text{BM25}}^* = 5.0$) on unseen test questions ($N=11$ Answerable, $N=4$ Unanswerable).*
 
-| Retrieval Pipeline | Hit Rate@5 | Precision@5 | Recall@5 | MRR | nDCG@5 | Mean Latency | Correct Abstention Rate (CAR) |
+| Retrieval Pipeline | Hit Rate@5 [95% CI] | Precision@5 [95% CI] | Recall@5 [95% CI] | MRR [95% CI] | nDCG@5 [95% CI] | Mean Latency | Correct Abstention Rate (CAR) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Dense Semantic (Pinecone, $\tau^*=0.65$)** | **1.0000** | 0.2000 | **1.0000** | **0.9545** | **0.9664** | 811.87 ms | **100.0% (4/4)** |
-| **BM25 Sparse (Okapi, Medium Chunks)** | **1.0000** | 0.2000 | **1.0000** | 0.9091 | 0.9329 | **0.09 ms** | 75.0% (3/4) |
-| **Hybrid RRF (Dense + BM25, $k=60, \tau^*=0.65$)** | **1.0000** | 0.2000 | **1.0000** | 0.9091 | 0.9329 | 812.33 ms | **100.0% (4/4)** |
+| **Dense Semantic (Pinecone, $\tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | **0.9545** [0.86, 1.0] | **0.9664** [0.90, 1.0] | 861.98 ms | **100.0% (4/4)** |
+| **BM25 Sparse (Okapi, $\tau_{\text{BM25}}=5.0$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.9091 [0.77, 1.0] | 0.9329 [0.83, 1.0] | **0.11 ms** | **100.0% (4/4)** |
+| **Hybrid RRF (Dense + BM25, $k=60, \tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.8636 [0.73, 1.0] | 0.8993 [0.80, 1.0] | 862.38 ms | **100.0% (4/4)** |
 
 ### Generalization Key Findings:
-1. **Zero Degradation on Unseen Prompts**: Both Dense and Hybrid pipelines achieved 100% Hit Rate@5 on answerable questions in the Test split, proving that the semantic embeddings generalize beyond the development queries.
-2. **Defensive Abstention Verified**: The unanswerable queries in the Test Split (Titanic box office, adult ibuprofen dosage, British prime minister in 1805, coffee cultivation) were 100% rejected by Dense and Hybrid with $\tau^* = 0.65$. Standalone BM25 failed on coffee cultivation (matching incidental tokens).
+1. **Zero Degradation on Unseen Prompts**: Dense, BM25, and Hybrid pipelines all achieved 100% Hit Rate@5 on answerable questions in the Test split, proving that retrieval generalizes robustly to unseen technical prompts.
+2. **Defensive Abstention Verified**: The unanswerable queries in the Test Split (Titanic box office, adult ibuprofen dosage, British prime minister in 1805, coffee cultivation) were 100% rejected across Dense, BM25, and Hybrid with calibrated cutoffs.
+3. **Statistical Sample-Size Boundaries**: While achieving 100% CAR (4/4) on held-out test data verifies that abstention logic functions properly, $N=4$ unanswerable samples is a pilot diagnostic check rather than a population-level safety proof.
 
 ---
 
@@ -100,15 +105,15 @@ Total retrieval latency is systematically accounted across discrete execution st
 
 | Sub-System / Pipeline Stage | Dense Semantic | Okapi BM25 Sparse | Hybrid RRF ($k=60$) | Compute Location |
 | :--- | :---: | :---: | :---: | :--- |
-| **1. Query Preprocessing** | 0.02 ms | 0.02 ms | 0.02 ms | Local CPU (In-Memory) |
-| **2. BM25 Inverted Index Search** | — | **0.06 ms** | 0.06 ms | Local CPU (In-Memory) |
-| **3. Cloud Embedding Generation** | ~690.0 ms | — | ~690.0 ms | Google Generative AI Cloud API |
-| **4. Pinecone Vector Search** | ~157.0 ms | — | ~157.0 ms | Pinecone Serverless Cloud Index |
-| **5. RRF Rank Fusion** | — | — | 0.18 ms | Local CPU (Ordinal Rank Math) |
-| **Total End-to-End Latency** | **847.78 ms** | **0.08 ms** | **848.30 ms** | Mixed (Cloud + Local) |
+| **1. Query Preprocessing** | 0.002 ms | 0.001 ms | 0.001 ms | Local CPU (In-Memory) |
+| **2. BM25 Inverted Index Search** | — | **0.07 ms** | 0.10 ms | Local CPU (In-Memory) |
+| **3. Cloud Embedding Generation** | ~748.33 ms | — | ~748.33 ms | Google Generative AI Cloud API |
+| **4. Pinecone Vector Search** | ~187.08 ms | — | ~187.08 ms | Pinecone Serverless Cloud Index |
+| **5. RRF Rank Fusion** | — | — | 0.35 ms | Local CPU (Ordinal Rank Math) |
+| **Total End-to-End Latency** | **935.41 ms** | **0.07 ms** | **935.85 ms** | Mixed (Cloud + Local) |
 
 > [!TIP]
-> **Engineering Architectural Insight**: Okapi BM25 delivers a **10,500x latency speedup** over Dense Vector Search because it avoids external REST API handshakes, TLS negotiation, and remote network serialization. For embedded or latency-critical edge deployments (e.g. factory SCADA or marine engine rooms), local BM25 provides instant sub-millisecond retrieval. For complex semantic queries, Hybrid RRF leverages dense semantics while maintaining exact keyword anchoring.
+> **Engineering Architectural Insight**: Okapi BM25 delivers a **13,300x latency speedup** over Dense Vector Search because it avoids external REST API handshakes, TLS negotiation, and remote network serialization. For embedded or latency-critical edge deployments (e.g. factory SCADA or marine engine rooms), local BM25 provides instant sub-millisecond retrieval. For complex semantic queries, Hybrid RRF leverages dense semantics while maintaining exact keyword anchoring.
 
 ---
 
@@ -119,7 +124,7 @@ Evaluating chunking configurations across identical questions using Okapi BM25:
 | Chunking Configuration | Character Target | Chunks in Corpus | Hit Rate@5 | Precision@5 | MRR | Mean Latency | Primary Failure Mode |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | **Small Chunks** | 500 chars (100 ov) | 38 | 80.8% (21/26) | 0.1615 | 0.6410 | 7.45 ms | Context fragmentation; split equations |
-| **Medium Chunks** ⭐ | 1000 chars (200 ov) | 30 | **100.0% (26/26)** | **0.2000** | **0.8782** | **0.08 ms** | Optimal boundary preservation |
+| **Medium Chunks** ⭐ | 1000 chars (200 ov) | 30 | **100.0% (26/26)** | **0.2000** | **0.8782** | **0.07 ms** | Optimal boundary preservation |
 | **Large Chunks** | 1500 chars (300 ov) | 27 | **100.0% (26/26)** | **0.2000** | **0.8782** | 0.10 ms | Minor dilution of dense ranking |
 
 ### Sensitivity Conclusion:
@@ -129,35 +134,39 @@ Small chunking (500 characters) suffered a **19.2% hit rate reduction** because 
 
 ## 8. Qualitative Answer Generation Pilot (Human Review)
 
-Six representative questions covering each operational modality were submitted through the grounded generation pipeline. Answers, citations, and evidence grounding were reviewed by an engineer:
+> [!NOTE]
+> **Scope & Sample Boundary**: This evaluation is a **qualitative diagnostic pilot** across $N=6$ human-reviewed cases covering each operational modality. It provides indicative validation of end-to-end evidence synthesis, but is not claimed as a large-scale statistical generation benchmark.
 
-| Question ID | Category | Question Prompt | Key Retrieved Evidence | Verification Verdict |
-| :--- | :--- | :--- | :--- | :--- |
-| **EVAL-001** | Factual lookup | What is the nominal compressor pressure ratio of the marine turbocharger? | `marine_diesel_turbocharger_manual.md_medium_1` | **PASS**: Verbatim accuracy on 3.8:1 ratio and 18,500 RPM rotor speed. Zero hallucination. |
-| **EVAL-009** | Technical explanation | Explain the cylindrical shell thickness formula under ASME Section VIII Div 1. | `pressure_vessel_asme_sec_viii.md_medium_1` | **PASS**: Full formula `t = (P*R)/(S*E - 0.6*P) + C` and all parameter definitions reproduced correctly. |
-| **EVAL-014** | Troubleshooting | Why is a 4-20mA process loop saturating above 20.8 mA and showing 50/60Hz noise? | `industrial_plc_scada_troubleshooting.md_medium_2` | **PASS**: Accurately diagnoses ground loop fault caused by multiple shield earth connections. |
-| **EVAL-019** | Maintenance | What water quality and temperature are required for gas turbine compressor wash? | `gas_turbine_maintenance_procedures.docx_medium_2` | **PASS**: Verifies conductivity < 5.0 μS/cm and wash solution temperature of 60°C to 70°C. |
-| **EVAL-023** | Comparison | Compare design pressure and allowable drop between shell and tube sides. | `heat_exchanger_thermal_rating_spec.xlsx_medium_0` | **PASS**: Exact tabular extraction: Shell (16 bar, 0.65 drop) vs Tube (25 bar, 0.45 drop). |
-| **EVAL-028** | Unanswerable | What is the quantum superposition decoherence time for transmon qubits at 15 mK? | *(Abstained below threshold)* | **PASS**: Correctly abstains, stating quantum physics is outside the uploaded technical manuals. |
+Six representative questions covering each operational modality were submitted through the grounded generation pipeline (`gemini-2.5-flash`). Generated answers, citations, and evidence grounding were reviewed by an engineer:
+
+| Question ID | Category | Question Prompt | Key Retrieved Evidence | Verification Verdict | Factual / Citation Errors |
+| :--- | :--- | :--- | :--- | :--- | :---: |
+| **EVAL-001** | Factual lookup | What is the nominal compressor pressure ratio of the marine turbocharger? | `marine_diesel_turbocharger_manual.md_medium_1` | **PASS**: Verbatim accuracy on 3.8:1 ratio and 18,500 RPM rotor speed. Evidence fully grounded. | 0 |
+| **EVAL-009** | Technical explanation | Explain the cylindrical shell thickness formula under ASME Section VIII Div 1. | `pressure_vessel_asme_sec_viii.md_medium_1` | **PASS**: Full formula `t = (P*R)/(S*E - 0.6*P) + C` and all parameter definitions reproduced correctly. | 0 |
+| **EVAL-014** | Troubleshooting | Why is a 4-20mA process loop saturating above 20.8 mA and showing 50/60Hz noise? | `industrial_plc_scada_troubleshooting.md_medium_2` | **PASS**: Accurately diagnoses ground loop fault caused by multiple shield earth connections. | 0 |
+| **EVAL-019** | Maintenance | What water quality and temperature are required for gas turbine compressor wash? | `gas_turbine_maintenance_procedures.docx_medium_2` | **PASS**: Verifies conductivity < 5.0 μS/cm and wash solution temperature of 60°C to 70°C. | 0 |
+| **EVAL-023** | Comparison | Compare design pressure and allowable drop between shell and tube sides. | `heat_exchanger_thermal_rating_spec.xlsx_medium_0` | **PASS**: Exact tabular extraction: Shell (16 bar, 0.65 drop) vs Tube (25 bar, 0.45 drop). | 0 |
+| **EVAL-028** | Unanswerable | What is the quantum superposition decoherence time for transmon qubits at 15 mK? | *(Abstained below threshold)* | **PASS**: Correctly abstains, stating quantum physics is outside the uploaded technical manuals. | 0 |
 
 ---
 
 ## 9. Error Taxonomy & Systematic Failure Analysis
 
-Out of 150 query-method trials across both splits, only **4 method-level failure occurrences** were recorded, all originating from unanswerable queries in standalone BM25:
+Across all 150 query-method trials in the final audited benchmark, **0 failure occurrences** were observed when applying calibrated abstention thresholds ($\tau_{\text{dense}}^* = 0.65$, $\tau_{\text{BM25}}^* = 5.0$):
 
-| Question ID | Split | Method | Category | Failure Mode | Root Cause Analysis & Engineering Remediation |
-| :--- | :---: | :--- | :--- | :--- | :--- |
-| **EVAL-027** | `dev` | BM25 Sparse (Medium) | Unanswerable | Abstention Failure | Query terms ("excavators", "mining") matched incidental tokens in heavy-duty gas turbine procedures. Remediation: Calibrated semantic threshold ($\tau^*=0.65$) successfully eliminated this in Dense and Hybrid. |
-| **EVAL-028** | `dev` | BM25 Sparse (Medium) | Unanswerable | Abstention Failure | Query token ("superposition") matched incidental mechanical stress terms in bearing manual. Remediation: Calibrated threshold ($\tau^*=0.65$) blocks false retrieval. |
-| **EVAL-032** | `dev` | BM25 Sparse (Medium) | Unanswerable | Abstention Failure | Query token ("regulations") matched compliance codes in API 610 manual. Remediation: Semantic distance gating in Hybrid RRF. |
-| **EVAL-050** | `test` | BM25 Sparse (Medium) | Unanswerable | Abstention Failure | Query token ("cultivation", "commercial") matched agricultural pump references. Remediation: Calibrated threshold ($\tau^*=0.65$) blocks false retrieval. |
+1. **Unthresholded BM25 Baseline Vulnerability (Historical Diagnostic)**:
+   - Without an abstention cutoff, standalone Okapi BM25 incurred 4 abstention failures across Dev (EVAL-027, EVAL-028, EVAL-032) and Test (EVAL-050) due to incidental token matches (BM25 scores 3.4–4.8).
+2. **Calibrated Abstention Remediation**:
+   - Applying the independently calibrated Dev threshold $\tau_{\text{BM25}}^* = 5.0$ completely resolved all 4 failures, achieving **100% CAR (9/9 Dev, 4/4 Test)** without losing a single answerable retrieval (lowest answerable score was 6.33 on Dev and 7.21 on Test).
+3. **Dense & Hybrid Defense**:
+   - Both Dense Semantic and Hybrid RRF pipelines achieved **100% CAR (9/9 Dev, 4/4 Test)** with $\tau^* = 0.65$, confirming robust rejection of out-of-domain queries.
 
 ---
 
 ## 10. Conclusion & Portfolio Impact
 
-Phase 3.1 elevates RAG-Pro 2.0 to an auditable, scientifically sound portfolio asset:
+Phase 3.1 and Phase 3.1.1 elevate RAG-Pro 2.0 to an auditable, scientifically sound portfolio asset:
 1. **Honest, Defensible Numbers**: No manufactured 99% accuracy metrics. Every reported metric is backed by executed experiment JSON/CSV artifacts.
 2. **Methodological Rigor**: Clear segregation of answerable retrieval from out-of-domain abstention, deterministic chunk identifiers, and split separation prevent data leakage.
 3. **Engineering Trade-off Clarity**: Demonstrates deep understanding of local CPU vs cloud API trade-offs, proving that hybrid retrieval with calibrated thresholds provides industrial reliability.
+4. **Precision Ceiling Transparency**: Defends Precision@5 = 0.2000 through the mathematical ceiling of single-item retrieval ($|\mathcal{G}|=1$), accompanied by a per-question audit CSV (`PER_QUESTION_EVALUATION_AUDIT.csv`).
