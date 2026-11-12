@@ -40,48 +40,63 @@ Instead of passing raw questions blindly to an LLM, RAG-Pro employs a **multi-ti
 
 ```mermaid
 flowchart TD
-    User([👤 User / Recruiter]) -->|Upload Files| UI[🖥️ Streamlit Frontend]
-    User -->|Ask Question| UI
-    
-    UI -->|POST /api/v1/upload| IngestAPI[FastAPI Ingestion Pipeline]
-    UI -->|POST /api/v1/chat| ChatAPI[FastAPI Chat Endpoint]
-
-    subgraph INGESTION ["📥 Document Ingestion Pipeline"]
-        IngestAPI --> Loader[Document Loader]
-        Loader -->|PDF| PdfExtractor[pypdf Local Extractor]
-        Loader -->|Office| OfficeExtractor[DOCX / PPTX]
-        Loader -->|Tables| TabularExtractor[CSV / XLSX via Pandas]
-        Loader -->|Text| TextExtractor[TXT / MD]
-        Loader -->|Scanned/Image Optional| MistralOCR[Mistral OCR]
-        
-        PdfExtractor & OfficeExtractor & TabularExtractor & TextExtractor --> Splitter[Recursive Character Text Splitter]
-        Splitter --> Embedder[Google GenAI: gemini-embedding-001 (3072-dim)]
-        Embedder --> PineconeIndex[(🌲 Pinecone Vector DB)]
+    subgraph UI ["🖥️ Presentation Layer"]
+        Streamlit["Streamlit Web Interface\n(frontend/app.py)"]
     end
 
-    subgraph QUERY_PIPELINE ["🧠 Query Processing & Routing"]
-        ChatAPI --> Supervisor[Supervisor Router (OpenRouter: gemini-2.5-flash)]
-        
-        Supervisor -->|greeting| GreetService[Greeting Service (llama-3.1-8b)]
-        Supervisor -->|guardrail| GuardService[Guardrail Filter]
-        Supervisor -->|out_of_scope| ScopeCheck{Matches in Vector Store?}
-        ScopeCheck -->|No| Reject[Out-of-Scope Polite Notice]
-        ScopeCheck -->|Yes Override| RAGService
-        Supervisor -->|rag| RAGService[RAG Service]
-        
-        RAGService --> QueryExpander{Is Evaluative / Hiring Question?}
-        QueryExpander -->|Yes| ExpandedSearch[Expand: skills + experience + projects]
-        QueryExpander -->|No| StandardSearch[Standard Query Search]
-        
-        ExpandedSearch & StandardSearch --> PineconeQuery[(Pinecone Similarity Search)]
-        PineconeQuery --> ThresholdCheck{Score >= Threshold?}
-        
-        ThresholdCheck -->|No| NoMatch[Polite Context Missing Notice]
-        ThresholdCheck -->|Yes| LLMChain[RAG Prompt + Gemini-2.5-Flash]
-        LLMChain --> ResponseGen[Structured Markdown Answer + Page Sources]
+    subgraph API ["⚡ API & Orchestration Layer (FastAPI)"]
+        FastAPI["FastAPI REST Endpoints\n(app/main.py, app/api/routes.py)"]
+        Supervisor["Supervisor & Intent Router\n(app/services/supervisor_service.py)"]
+        RelevanceFilter{"Similarity Gating\n(τ_dense >= 0.65, τ_bm25 >= 5.0)"}
     end
 
-    GreetService & GuardService & Reject & NoMatch & ResponseGen --> UI
+    subgraph INGEST ["📥 Ingestion Pipeline (app/ingestion)"]
+        DocLoader["Multi-Format Document Loader\n(PDF, DOCX, PPTX, XLSX, CSV, MD, TXT)"]
+        Splitter["DocumentSplitter\n(Small: 500, Medium: 1000, Large: 1500)"]
+        GeminiEmbed["Google Gemini Embeddings\n(models/gemini-embedding-001, 3072d)"]
+    end
+
+    subgraph STORAGE ["💾 Storage & Indexing Layer"]
+        PineconeIndex[("🌲 Pinecone Vector DB\n(Serverless, Cosine Similarity)")]
+        BM25Store[("📄 Local BM25 Index\n(CPU In-Memory, JSON Persisted)")]
+    end
+
+    subgraph RETRIEVAL ["🔍 Hybrid Retrieval Engine (app/retrieval)"]
+        DenseRetriever["Dense Semantic Retrieval\n(PineconeManager)"]
+        BM25Retriever["Sparse Lexical Retrieval\n(BM25Index)"]
+        RRF["Reciprocal Rank Fusion\n(RRF Score: Σ 1 / (60 + rank))"]
+    end
+
+    subgraph LLM ["🤖 LLM Generation Layer (app/llm)"]
+        ContextAssembler["Context & History Assembler\n(Top-K Chunks + Metadata)"]
+        LLMInference["LLM Client\n(NVIDIA NIM / OpenRouter)"]
+        GroundedAnswer["Grounded Response\n(Markdown Answer + Source Citations)"]
+    end
+
+    %% Flows
+    Streamlit -->|"POST /api/v1/upload"| FastAPI
+    FastAPI --> DocLoader
+    DocLoader --> Splitter
+    Splitter --> GeminiEmbed
+    Splitter --> BM25Store
+    GeminiEmbed --> PineconeIndex
+
+    Streamlit -->|"POST /api/v1/chat"| FastAPI
+    FastAPI --> Supervisor
+    Supervisor -->|"Route: RAG"| RelevanceFilter
+    RelevanceFilter -->|"Passes Cutoff"| DenseRetriever
+    RelevanceFilter -->|"Passes Cutoff"| BM25Retriever
+    RelevanceFilter -->|"Below Cutoff (Abstain)"| Streamlit
+
+    DenseRetriever <--> PineconeIndex
+    BM25Retriever <--> BM25Store
+
+    DenseRetriever --> RRF
+    BM25Retriever --> RRF
+    RRF --> ContextAssembler
+    ContextAssembler --> LLMInference
+    LLMInference --> GroundedAnswer
+    GroundedAnswer --> Streamlit
 ```
 
 ---
