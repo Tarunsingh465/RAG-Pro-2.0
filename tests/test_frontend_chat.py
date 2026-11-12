@@ -84,5 +84,168 @@ class TestFrontendChatLayout(unittest.TestCase):
             self.assertEqual(len(at.chat_input), 1)
 
 
+class TestFrontendSidebarLayout(unittest.TestCase):
+    """Verifies that sidebar components render exactly once across all application states."""
+
+    def setUp(self):
+        def mock_get(url, *args, **kwargs):
+            m = MagicMock()
+            if "health" in url:
+                m.status_code = 200
+            elif "documents" in url:
+                m.status_code = 200
+                m.json.return_value = {"documents": ["industrial_turbine_manual.pdf"]}
+            return m
+
+        def mock_post(url, *args, **kwargs):
+            m = MagicMock()
+            m.status_code = 200
+            q = kwargs.get("json", {}).get("question", "Unknown")
+            m.json.return_value = {
+                "answer": f"Simulated technical answer for '{q}'.",
+                "sources": [{"source": "industrial_turbine_manual.pdf", "page": 12}],
+            }
+            return m
+
+        self.mock_get = mock_get
+        self.mock_post = mock_post
+
+    def test_sidebar_single_rendering_initial_load(self):
+        """Verify each sidebar section renders exactly once on initial load."""
+        with patch("requests.get", side_effect=self.mock_get):
+            at = AppTest.from_file(APP_PATH).run()
+
+            # 1. File Uploader: exactly 1 instance with key 'sidebar_file_uploader'
+            self.assertEqual(len(at.sidebar.file_uploader), 1, "Expected exactly 1 file uploader in sidebar.")
+            self.assertEqual(at.sidebar.file_uploader[0].key, "sidebar_file_uploader")
+
+            # 2. Project Branding: exactly 1 title and 1 developer badge
+            branding_titles = [m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]
+            self.assertEqual(len(branding_titles), 1, "Branding title must render exactly once.")
+
+            dev_cards = [m for m in at.sidebar.markdown if "developer-badge" in m.value]
+            self.assertEqual(len(dev_cards), 1, "Developer card must render exactly once.")
+
+            # 3. Section Headers: exactly 1 Upload header and 1 Knowledge Base header
+            upload_headers = [m for m in at.sidebar.markdown if "#### 📂 Upload & Ingest" in m.value]
+            self.assertEqual(len(upload_headers), 1, "Upload & Ingest header must render exactly once.")
+
+            kb_headers = [m for m in at.sidebar.markdown if "#### 📄 Knowledge Base Documents" in m.value]
+            self.assertEqual(len(kb_headers), 1, "Knowledge Base Documents header must render exactly once.")
+
+            # 4. Buttons: exact unique keys for upload, wipe, clear, and item deletion
+            button_keys = [b.key for b in at.sidebar.button]
+            self.assertEqual(button_keys.count("upload_index_btn"), 1)
+            self.assertEqual(button_keys.count("wipe_all_docs_btn"), 1)
+            self.assertEqual(button_keys.count("clear_chat_history_btn"), 1)
+            self.assertEqual(button_keys.count("del_industrial_turbine_manual.pdf"), 1)
+
+    def test_sidebar_no_duplication_after_multi_turn_reruns(self):
+        """Verify sidebar elements do not duplicate across consecutive chat turns."""
+        with patch("requests.get", side_effect=self.mock_get), patch("requests.post", side_effect=self.mock_post):
+            at = AppTest.from_file(APP_PATH).run()
+
+            for q in ["Query 1: Pump pressure", "Query 2: Bearing clearance", "Query 3: Oil filter"]:
+                at.chat_input[0].set_value(q).run()
+
+                # Verify sidebar remains singleton
+                self.assertEqual(len(at.sidebar.file_uploader), 1)
+                self.assertEqual(
+                    len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1
+                )
+                self.assertEqual(
+                    len([m for m in at.sidebar.markdown if "#### 📂 Upload & Ingest" in m.value]), 1
+                )
+                self.assertEqual(
+                    len([m for m in at.sidebar.markdown if "#### 📄 Knowledge Base Documents" in m.value]), 1
+                )
+                button_keys = [b.key for b in at.sidebar.button]
+                self.assertEqual(button_keys.count("upload_index_btn"), 1)
+                self.assertEqual(button_keys.count("clear_chat_history_btn"), 1)
+
+    def test_sidebar_empty_knowledge_base_state(self):
+        """Verify empty documents list renders empty state message without duplicating sections."""
+        def mock_get_empty(url, *args, **kwargs):
+            m = MagicMock()
+            if "health" in url:
+                m.status_code = 200
+            elif "documents" in url:
+                m.status_code = 200
+                m.json.return_value = {"documents": []}
+            return m
+
+        with patch("requests.get", side_effect=mock_get_empty):
+            at = AppTest.from_file(APP_PATH).run()
+
+            self.assertEqual(len(at.sidebar.file_uploader), 1)
+            self.assertEqual(
+                len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1
+            )
+            self.assertEqual(len(at.sidebar.info), 1)
+            self.assertIn("No documents uploaded yet.", at.sidebar.info[0].value)
+
+    def test_sidebar_offline_backend_state(self):
+        """Verify backend offline warning does not duplicate sidebar sections."""
+        def mock_get_offline(url, *args, **kwargs):
+            raise requests.exceptions.ConnectionError("Connection refused")
+
+        with patch("requests.get", side_effect=mock_get_offline):
+            at = AppTest.from_file(APP_PATH).run()
+
+            self.assertEqual(len(at.sidebar.file_uploader), 1)
+            self.assertEqual(
+                len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1
+            )
+            self.assertEqual(
+                len([m for m in at.sidebar.markdown if "#### 📂 Upload & Ingest" in m.value]), 1
+            )
+            self.assertTrue(any("Backend Offline" in w.value for w in at.sidebar.warning))
+
+    def test_sidebar_clear_chat_history_action(self):
+        """Verify clicking Clear Chat History clears messages without duplicating sidebar elements."""
+        with patch("requests.get", side_effect=self.mock_get), patch("requests.post", side_effect=self.mock_post):
+            at = AppTest.from_file(APP_PATH).run()
+            at.chat_input[0].set_value("Test query").run()
+            self.assertEqual(len(at.chat_message), 2)
+
+            # Click clear chat history
+            clear_btn = [b for b in at.sidebar.button if b.key == "clear_chat_history_btn"][0]
+            clear_btn.click().run()
+
+            # Messages reset, sidebar remains unique
+            self.assertEqual(len(at.chat_message), 0)
+            self.assertEqual(len(at.sidebar.file_uploader), 1)
+            self.assertEqual(len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1)
+            self.assertEqual(len([b for b in at.sidebar.button if b.key == "clear_chat_history_btn"]), 1)
+
+    def test_sidebar_document_delete_action(self):
+        """Verify clicking delete document keeps sidebar singletons intact."""
+        def mock_delete(url, *args, **kwargs):
+            m = MagicMock()
+            m.status_code = 200
+            return m
+
+        with patch("requests.get", side_effect=self.mock_get), patch("requests.delete", side_effect=mock_delete):
+            at = AppTest.from_file(APP_PATH).run()
+            del_btn = [b for b in at.sidebar.button if b.key == "del_industrial_turbine_manual.pdf"][0]
+            del_btn.click().run()
+
+            self.assertEqual(len(at.sidebar.file_uploader), 1)
+            self.assertEqual(len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1)
+            self.assertEqual(len([m for m in at.sidebar.markdown if "#### 📂 Upload & Ingest" in m.value]), 1)
+
+    def test_sidebar_upload_action_no_file(self):
+        """Verify clicking Upload & Index without files maintains singleton layout."""
+        with patch("requests.get", side_effect=self.mock_get):
+            at = AppTest.from_file(APP_PATH).run()
+            up_btn = [b for b in at.sidebar.button if b.key == "upload_index_btn"][0]
+            up_btn.click().run()
+
+            self.assertEqual(len(at.sidebar.file_uploader), 1)
+            self.assertEqual(len(at.sidebar.warning), 1)
+            self.assertIn("Please choose one or more documents.", at.sidebar.warning[0].value)
+            self.assertEqual(len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

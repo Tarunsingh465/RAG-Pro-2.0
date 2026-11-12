@@ -45,137 +45,155 @@ if "quick_prompt" not in st.session_state:
 
 
 # ---------------- SIDEBAR ---------------- #
-with st.sidebar:
-    st.markdown("### 🏭 RAG-Pro 2.0")
-    st.caption("Industrial Knowledge Intelligence & Decision Support System")
-    st.markdown(
-        """
-        <div class="developer-badge">
-            <span>👨‍💻</span>
-            <span>Developed by <b>Tarun</b> · B.Tech CS (Data Science & AI)</span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+def render_sidebar(is_online: bool) -> None:
+    """Authoritative, single-location renderer for the Streamlit sidebar.
 
-    st.divider()
+    Renders each section exactly once in strict sequence:
+    1. Project Branding (Title, description, developer card)
+    2. Upload & Ingest (File uploader, supported file types, upload button)
+    3. Knowledge Base Documents (Document listing, delete buttons, wipe button, empty state)
+    4. Clear Chat History (Session reset button)
+    """
+    with st.sidebar:
+        # 1. Project Branding
+        st.markdown("### 🏭 RAG-Pro 2.0")
+        st.caption("Industrial Knowledge Intelligence & Decision Support System")
+        st.markdown(
+            """
+            <div class="developer-badge">
+                <span>👨‍💻</span>
+                <span>Developed by <b>Tarun</b> · B.Tech CS (Data Science & AI)</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    st.markdown("#### 📂 Upload & Ingest")
-    SUPPORTED_TYPES = [
-        "pdf", "docx", "pptx", "txt", "md",
-        "csv", "xlsx", "png", "jpg", "jpeg",
-        "tiff", "bmp", "webp",
-    ]
+        st.divider()
 
-    uploaded_files = st.file_uploader(
-        "Upload Technical Files or Manuals",
-        type=SUPPORTED_TYPES,
-        accept_multiple_files=True,
-        help="Supports PDF, DOCX, CSV, Excel, TXT, and technical images.",
-    )
+        # 2. Upload & Ingest
+        st.markdown("#### 📂 Upload & Ingest")
+        SUPPORTED_TYPES = [
+            "pdf", "docx", "pptx", "txt", "md",
+            "csv", "xlsx", "png", "jpg", "jpeg",
+            "tiff", "bmp", "webp",
+        ]
 
-    if st.button("📤 Upload & Index", key="upload_index_btn", use_container_width=True, type="primary"):
-        if not uploaded_files:
-            st.warning("Please choose one or more documents.")
-        elif not is_online:
-            st.error("Cannot upload: Backend is currently OFFLINE.")
-        else:
-            with st.spinner("Uploading, chunking & embedding into Pinecone..."):
-                files = []
-                for uploaded_file in uploaded_files:
-                    files.append(
-                        (
-                            "files",
+        uploaded_files = st.file_uploader(
+            "Upload Technical Files or Manuals",
+            type=SUPPORTED_TYPES,
+            accept_multiple_files=True,
+            help="Supports PDF, DOCX, CSV, Excel, TXT, and technical images.",
+            key="sidebar_file_uploader",
+        )
+
+        if st.button("📤 Upload & Index", key="upload_index_btn", use_container_width=True, type="primary"):
+            if not uploaded_files:
+                st.warning("Please choose one or more documents.")
+            elif not is_online:
+                st.error("Cannot upload: Backend is currently OFFLINE.")
+            else:
+                with st.spinner("Uploading, chunking & embedding into Pinecone..."):
+                    files = []
+                    for uploaded_file in uploaded_files:
+                        files.append(
                             (
-                                uploaded_file.name,
-                                uploaded_file,
-                                uploaded_file.type or "application/octet-stream",
-                            ),
-                        )
-                    )
-
-                try:
-                    response = requests.post(
-                        f"{API_URL}/upload",
-                        files=files,
-                        timeout=120,
-                    )
-
-                    if response.status_code == 200:
-                        result = response.json()
-                        disciplines = result.get("disciplines", [])
-                        disc_str = f"\n\n**Disciplines:** {', '.join(disciplines)}" if disciplines else ""
-
-                        st.success(f"✅ Indexed {len(result.get('files', []))} file(s)")
-                        st.info(
-                            f"**Documents:** {result.get('documents', 0)}  \n"
-                            f"**Chunks:** {result.get('chunks', 0)}{disc_str}"
-                        )
-                    else:
-                        st.error(response.text)
-                except requests.exceptions.ConnectionError:
-                    st.error("Cannot connect to backend server.")
-                except Exception as e:
-                    st.error(f"Backend Error: {e}")
-
-    st.divider()
-
-    st.markdown("#### 📄 Knowledge Base Documents")
-
-    if is_online:
-        try:
-            response = requests.get(f"{API_URL}/documents", timeout=5)
-            if response.status_code == 200:
-                data = response.json()
-                docs = data.get("documents", [])
-
-                if not docs:
-                    st.info("No documents uploaded yet.")
-                else:
-                    st.caption(f"📚 {len(docs)} document(s) available")
-                    for doc in docs:
-                        col_doc, col_del = st.columns([4, 1])
-                        with col_doc:
-                            st.markdown(
-                                f'<div class="document-name" title="{doc}">📄 {doc}</div>',
-                                unsafe_allow_html=True,
+                                "files",
+                                (
+                                    uploaded_file.name,
+                                    uploaded_file,
+                                    uploaded_file.type or "application/octet-stream",
+                                ),
                             )
-                        with col_del:
-                            if st.button("🗑", key=f"del_{doc}", help=f"Delete {doc}"):
+                        )
+
+                    try:
+                        response = requests.post(
+                            f"{API_URL}/upload",
+                            files=files,
+                            timeout=120,
+                        )
+
+                        if response.status_code == 200:
+                            result = response.json()
+                            disciplines = result.get("disciplines", [])
+                            disc_str = f"\n\n**Disciplines:** {', '.join(disciplines)}" if disciplines else ""
+
+                            st.success(f"✅ Indexed {len(result.get('files', []))} file(s)")
+                            st.info(
+                                f"**Documents:** {result.get('documents', 0)}  \n"
+                                f"**Chunks:** {result.get('chunks', 0)}{disc_str}"
+                            )
+                        else:
+                            st.error(response.text)
+                    except requests.exceptions.ConnectionError:
+                        st.error("Cannot connect to backend server.")
+                    except Exception as e:
+                        st.error(f"Backend Error: {e}")
+
+        st.divider()
+
+        # 3. Knowledge Base Documents
+        st.markdown("#### 📄 Knowledge Base Documents")
+
+        if is_online:
+            try:
+                response = requests.get(f"{API_URL}/documents", timeout=5)
+                if response.status_code == 200:
+                    data = response.json()
+                    docs = data.get("documents", [])
+
+                    if not docs:
+                        st.info("No documents uploaded yet.")
+                    else:
+                        st.caption(f"📚 {len(docs)} document(s) available")
+                        for doc in docs:
+                            col_doc, col_del = st.columns([4, 1])
+                            with col_doc:
+                                st.markdown(
+                                    f'<div class="document-name" title="{doc}">📄 {doc}</div>',
+                                    unsafe_allow_html=True,
+                                )
+                            with col_del:
+                                if st.button("🗑", key=f"del_{doc}", help=f"Delete {doc}"):
+                                    try:
+                                        del_resp = requests.delete(f"{API_URL}/documents/{doc}", timeout=10)
+                                        if del_resp.status_code == 200:
+                                            st.toast(f"Removed {doc}", icon="✅")
+                                            st.rerun()
+                                        else:
+                                            st.error(f"Failed to delete {doc}: {del_resp.text}")
+                                    except Exception as e:
+                                        st.error(f"Failed to delete: {e}")
+                        if docs:
+                            st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+                            if st.button("🗑 Wipe All Documents", key="wipe_all_docs_btn", use_container_width=True, help="Removes all uploaded documents and resets Pinecone index"):
                                 try:
-                                    del_resp = requests.delete(f"{API_URL}/documents/{doc}", timeout=10)
-                                    if del_resp.status_code == 200:
-                                        st.toast(f"Removed {doc}", icon="✅")
+                                    del_all_resp = requests.delete(f"{API_URL}/documents", timeout=10)
+                                    if del_all_resp.status_code == 200:
+                                        st.toast("Knowledge base cleared!", icon="✅")
                                         st.rerun()
                                     else:
-                                        st.error(f"Failed to delete {doc}: {del_resp.text}")
+                                        st.error(f"Failed to clear knowledge base: {del_all_resp.text}")
                                 except Exception as e:
-                                    st.error(f"Failed to delete: {e}")
-                    if docs:
-                        st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
-                        if st.button("🗑 Wipe All Documents", use_container_width=True, help="Removes all uploaded documents and resets Pinecone index"):
-                            try:
-                                del_all_resp = requests.delete(f"{API_URL}/documents", timeout=10)
-                                if del_all_resp.status_code == 200:
-                                    st.toast("Knowledge base cleared!", icon="✅")
-                                    st.rerun()
-                                else:
-                                    st.error(f"Failed to clear knowledge base: {del_all_resp.text}")
-                            except Exception as e:
-                                st.error(f"Failed to clear knowledge base: {e}")
-            else:
-                st.warning("Could not fetch document list.")
-        except Exception:
-            st.warning("Backend Offline (unable to load documents)")
-    else:
-        st.warning("⚠️ Backend Offline")
+                                    st.error(f"Failed to clear knowledge base: {e}")
+                else:
+                    st.warning("Could not fetch document list.")
+            except Exception:
+                st.warning("Backend Offline (unable to load documents)")
+        else:
+            st.warning("⚠️ Backend Offline")
 
-    st.divider()
+        st.divider()
 
-    if st.button("🧹 Clear Chat History", use_container_width=True):
-        st.session_state.messages = []
-        st.session_state.quick_prompt = None
-        st.rerun()
+        # 4. Clear Chat History
+        if st.button("🧹 Clear Chat History", key="clear_chat_history_btn", use_container_width=True):
+            st.session_state.messages = []
+            st.session_state.quick_prompt = None
+            st.rerun()
+
+
+# Render authoritative sidebar once
+render_sidebar(is_online)
 
 
 # ---------------- MAIN CONTENT ---------------- #
