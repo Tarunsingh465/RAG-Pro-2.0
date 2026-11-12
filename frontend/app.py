@@ -62,7 +62,7 @@ def render_sidebar(is_online: bool) -> None:
             """
             <div class="developer-badge">
                 <span>👨‍💻</span>
-                <span>Developed by <b>Tarun</b> · B.Tech CS (Data Science & AI)</span>
+                <span>Developed by <b>Tarun</b> · B.Tech · Data Science & AI</span>
             </div>
             """,
             unsafe_allow_html=True,
