@@ -59,29 +59,47 @@ class RetrievalDiagnostics:
         return asdict(self)
 
 
+import re
+
+
 def get_canonical_chunk_id(doc: Document) -> str:
     """
-    Extracts canonical deterministic chunk_id.
-    - If metadata has 'file_name' and 'chunk_index', returns '{file_name}_{chunk_strategy}_{chunk_index}'.
-    - Else if metadata has 'chunk_id', returns that 'chunk_id'.
-    - Else falls back to source or content hash.
+    Extracts canonical deterministic chunk_id: {file_name}_{strategy}_{index}.
+    Safely normalizes numeric chunk indices (e.g. 0.0 -> 0) and strips float suffixes.
+    Prioritizes existing well-formed chunk_id in metadata.
     """
     meta = doc.metadata or {}
+    raw_id = str(meta.get("chunk_id") or "").strip()
+    if raw_id:
+        # Normalize if ends with .0 (e.g. from vector store float metadata serialization)
+        return re.sub(r"\_(\d+)\.0$", r"_\1", raw_id)
+
     if "file_name" in meta and "chunk_index" in meta:
         fn = meta["file_name"]
         strat = meta.get("chunk_strategy", "medium")
-        idx = meta["chunk_index"]
+        try:
+            idx = int(float(meta["chunk_index"]))
+        except (ValueError, TypeError):
+            idx = 0
         return f"{fn}_{strat}_{idx}"
-    
-    if meta.get("chunk_id"):
-        return str(meta["chunk_id"])
-        
+
     source = meta.get("source")
     if source and "chunk_index" in meta:
         strat = meta.get("chunk_strategy", "medium")
-        idx = meta["chunk_index"]
+        try:
+            idx = int(float(meta["chunk_index"]))
+        except (ValueError, TypeError):
+            idx = 0
         return f"{source}_{strat}_{idx}"
-        
+
+    if meta.get("file_name"):
+        strat = meta.get("chunk_strategy", "medium")
+        try:
+            idx = int(float(meta.get("chunk_index", 0)))
+        except (ValueError, TypeError):
+            idx = 0
+        return f"{meta['file_name']}_{strat}_{idx}"
+
     return hashlib.md5(doc.page_content.encode("utf-8")).hexdigest()[:16]
 
 
@@ -122,20 +140,23 @@ def reciprocal_rank_fusion(
     # 1. Process Dense Results (1-indexed ranks)
     for rank_idx, (doc, score) in enumerate(dense_results, start=1):
         cid = get_chunk_identifier(doc)
-        chunk_map[cid] = doc
-        dense_ranks[cid] = rank_idx
-        dense_scores[cid] = float(score)
-        rrf_scores[cid] = 1.0 / (k + rank_idx)
+        if cid not in chunk_map:
+            chunk_map[cid] = doc
+        if cid not in dense_ranks:
+            dense_ranks[cid] = rank_idx
+            dense_scores[cid] = float(score)
+            rrf_scores[cid] = 1.0 / (k + rank_idx)
 
     # 2. Process BM25 Sparse Results (1-indexed ranks)
     for rank_idx, (doc, score) in enumerate(bm25_results, start=1):
         cid = get_chunk_identifier(doc)
         if cid not in chunk_map:
             chunk_map[cid] = doc
-        bm25_ranks[cid] = rank_idx
-        bm25_scores[cid] = float(score)
-        term = 1.0 / (k + rank_idx)
-        rrf_scores[cid] = rrf_scores.get(cid, 0.0) + term
+        if cid not in bm25_ranks:
+            bm25_ranks[cid] = rank_idx
+            bm25_scores[cid] = float(score)
+            term = 1.0 / (k + rank_idx)
+            rrf_scores[cid] = rrf_scores.get(cid, 0.0) + term
 
     # 3. Deterministic Sorting:
     # Primary: Descending RRF score
@@ -164,6 +185,7 @@ def reciprocal_rank_fusion(
             page_content=orig_doc.page_content,
             metadata=dict(orig_doc.metadata),
         )
+        doc_copy.metadata["chunk_id"] = cid
         doc_copy.metadata["rrf_score"] = final_score
         doc_copy.metadata["dense_rank"] = dense_ranks.get(cid)
         doc_copy.metadata["bm25_rank"] = bm25_ranks.get(cid)

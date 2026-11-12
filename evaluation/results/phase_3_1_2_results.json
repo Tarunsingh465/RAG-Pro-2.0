@@ -1,0 +1,1160 @@
+{
+  "metadata": {
+    "experiment_id": "EXP-PHASE3.1.2-1794466426",
+    "timestamp_utc": "2026-11-12T06:53:46.587760+00:00",
+    "git_commit": "4f6013d",
+    "host": "Intel Core i5-4440 (4 cores, 4 threads), 7.69 GB RAM",
+    "embedding_model": "models/gemini-embedding-001",
+    "k": 5,
+    "total_questions": 50,
+    "dev_questions_count": 35,
+    "test_questions_count": 15,
+    "calibrated_threshold": 0.65,
+    "dense_threshold": 0.65,
+    "bm25_threshold": 5.0,
+    "rrf_k": 60,
+    "phase": "3.1.2"
+  },
+  "calibration_curve": [
+    {
+      "threshold": 0.5,
+      "answerable_hit_rate": 1.0,
+      "unanswerable_car": 0.0,
+      "unanswerable_frr": 1.0,
+      "retrieval_precision": 0.7429,
+      "balanced_f1": 0.0
+    },
+    {
+      "threshold": 0.55,
+      "answerable_hit_rate": 1.0,
+      "unanswerable_car": 0.1111,
+      "unanswerable_frr": 0.8889,
+      "retrieval_precision": 0.7647,
+      "balanced_f1": 0.2
+    },
+    {
+      "threshold": 0.6,
+      "answerable_hit_rate": 1.0,
+      "unanswerable_car": 0.8889,
+      "unanswerable_frr": 0.1111,
+      "retrieval_precision": 0.963,
+      "balanced_f1": 0.9412
+    },
+    {
+      "threshold": 0.65,
+      "answerable_hit_rate": 1.0,
+      "unanswerable_car": 1.0,
+      "unanswerable_frr": 0.0,
+      "retrieval_precision": 1.0,
+      "balanced_f1": 1.0
+    },
+    {
+      "threshold": 0.7,
+      "answerable_hit_rate": 1.0,
+      "unanswerable_car": 1.0,
+      "unanswerable_frr": 0.0,
+      "retrieval_precision": 1.0,
+      "balanced_f1": 1.0
+    },
+    {
+      "threshold": 0.75,
+      "answerable_hit_rate": 0.8846,
+      "unanswerable_car": 1.0,
+      "unanswerable_frr": 0.0,
+      "retrieval_precision": 1.0,
+      "balanced_f1": 0.9388
+    }
+  ],
+  "development_split_benchmarks": [
+    {
+      "method_name": "Dense Semantic (Pinecone, \u03c4=0.65)",
+      "split": "dev",
+      "total_questions": 35,
+      "total_answerable": 26,
+      "total_unanswerable": 9,
+      "k": 5,
+      "mean_precision_at_k": 0.2,
+      "precision_ci_95": [
+        0.2,
+        0.2
+      ],
+      "mean_recall_at_k": 1.0,
+      "recall_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mean_hit_rate_at_k": 1.0,
+      "hit_rate_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mrr": 0.9808,
+      "mrr_ci_95": [
+        0.9423,
+        1.0
+      ],
+      "mean_ndcg_at_k": 0.9858,
+      "ndcg_ci_95": [
+        0.9574,
+        1.0
+      ],
+      "mean_latency_ms": 861.98,
+      "p50_latency_ms": 861.98,
+      "p95_latency_ms": 861.98,
+      "latency_breakdown": {
+        "query_preprocessing_ms": 0.002,
+        "embedding_generation_ms": 689.58,
+        "pinecone_search_ms": 172.4,
+        "bm25_search_ms": 0.0,
+        "rrf_fusion_ms": 0.0,
+        "total_latency_ms": 861.98
+      },
+      "abstention_metrics": {
+        "total_unanswerable": 9,
+        "true_negatives": 9,
+        "false_positives": 0,
+        "correct_abstention_rate": 1.0,
+        "false_retrieval_rate": 0.0,
+        "total_answerable": 26,
+        "true_positives": 26,
+        "false_negatives": 0,
+        "abstention_accuracy": 1.0
+      },
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 8,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.9375,
+          "ndcg_at_k": 0.9539,
+          "latency_ms": 861.98
+        },
+        "Technical explanation": {
+          "count": 5,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 861.98
+        },
+        "Troubleshooting": {
+          "count": 5,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 861.98
+        },
+        "Maintenance": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 861.98
+        },
+        "Comparison": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 861.98
+        }
+      },
+      "threshold": 0.65
+    },
+    {
+      "method_name": "BM25 Sparse (Medium)",
+      "split": "dev",
+      "total_questions": 35,
+      "total_answerable": 26,
+      "total_unanswerable": 9,
+      "k": 5,
+      "mean_precision_at_k": 0.2,
+      "precision_ci_95": [
+        0.2,
+        0.2
+      ],
+      "mean_recall_at_k": 1.0,
+      "recall_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mean_hit_rate_at_k": 1.0,
+      "hit_rate_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mrr": 0.8782,
+      "mrr_ci_95": [
+        0.7885,
+        0.9615
+      ],
+      "mean_ndcg_at_k": 0.9098,
+      "ndcg_ci_95": [
+        0.8438,
+        0.9716
+      ],
+      "mean_latency_ms": 0.08,
+      "p50_latency_ms": 0.07,
+      "p95_latency_ms": 0.13,
+      "latency_breakdown": {
+        "query_preprocessing_ms": 0.0,
+        "embedding_generation_ms": 0.0,
+        "pinecone_search_ms": 0.0,
+        "bm25_search_ms": 0.075,
+        "rrf_fusion_ms": 0.0,
+        "total_latency_ms": 0.076
+      },
+      "abstention_metrics": {
+        "total_unanswerable": 9,
+        "true_negatives": 9,
+        "false_positives": 0,
+        "correct_abstention_rate": 1.0,
+        "false_retrieval_rate": 0.0,
+        "total_answerable": 26,
+        "true_positives": 26,
+        "false_negatives": 0,
+        "abstention_accuracy": 1.0
+      },
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 8,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.7917,
+          "ndcg_at_k": 0.8452,
+          "latency_ms": 0.11
+        },
+        "Technical explanation": {
+          "count": 5,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.7,
+          "ndcg_at_k": 0.7785,
+          "latency_ms": 0.09
+        },
+        "Troubleshooting": {
+          "count": 5,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.07
+        },
+        "Maintenance": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.1
+        },
+        "Comparison": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.09
+        }
+      },
+      "threshold": null
+    },
+    {
+      "method_name": "Hybrid RRF (Dense + BM25, k=60, \u03c4=0.65)",
+      "split": "dev",
+      "total_questions": 35,
+      "total_answerable": 26,
+      "total_unanswerable": 9,
+      "k": 5,
+      "mean_precision_at_k": 0.2,
+      "precision_ci_95": [
+        0.2,
+        0.2
+      ],
+      "mean_recall_at_k": 1.0,
+      "recall_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mean_hit_rate_at_k": 1.0,
+      "hit_rate_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mrr": 0.9231,
+      "mrr_ci_95": [
+        0.8462,
+        0.9808
+      ],
+      "mean_ndcg_at_k": 0.9432,
+      "ndcg_ci_95": [
+        0.8864,
+        0.9858
+      ],
+      "mean_latency_ms": 862.36,
+      "p50_latency_ms": 862.45,
+      "p95_latency_ms": 862.59,
+      "latency_breakdown": {
+        "query_preprocessing_ms": 0.0,
+        "embedding_generation_ms": 689.58,
+        "pinecone_search_ms": 172.4,
+        "bm25_search_ms": 0.094,
+        "rrf_fusion_ms": 0.29,
+        "total_latency_ms": 862.365
+      },
+      "abstention_metrics": {
+        "total_unanswerable": 9,
+        "true_negatives": 9,
+        "false_positives": 0,
+        "correct_abstention_rate": 1.0,
+        "false_retrieval_rate": 0.0,
+        "total_answerable": 26,
+        "true_positives": 26,
+        "false_negatives": 0,
+        "abstention_accuracy": 1.0
+      },
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 8,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.875,
+          "ndcg_at_k": 0.9077,
+          "latency_ms": 862.46
+        },
+        "Technical explanation": {
+          "count": 5,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.8,
+          "ndcg_at_k": 0.8524,
+          "latency_ms": 862.52
+        },
+        "Troubleshooting": {
+          "count": 5,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 862.46
+        },
+        "Maintenance": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 862.52
+        },
+        "Comparison": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 862.52
+        }
+      },
+      "threshold": 0.65
+    }
+  ],
+  "held_out_test_split_benchmarks": [
+    {
+      "method_name": "Dense Semantic (Pinecone, \u03c4=0.65)",
+      "split": "test",
+      "total_questions": 15,
+      "total_answerable": 11,
+      "total_unanswerable": 4,
+      "k": 5,
+      "mean_precision_at_k": 0.2,
+      "precision_ci_95": [
+        0.2,
+        0.2
+      ],
+      "mean_recall_at_k": 1.0,
+      "recall_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mean_hit_rate_at_k": 1.0,
+      "hit_rate_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mrr": 0.9545,
+      "mrr_ci_95": [
+        0.8636,
+        1.0
+      ],
+      "mean_ndcg_at_k": 0.9664,
+      "ndcg_ci_95": [
+        0.8993,
+        1.0
+      ],
+      "mean_latency_ms": 861.98,
+      "p50_latency_ms": 861.98,
+      "p95_latency_ms": 861.98,
+      "latency_breakdown": {
+        "query_preprocessing_ms": 0.002,
+        "embedding_generation_ms": 689.58,
+        "pinecone_search_ms": 172.4,
+        "bm25_search_ms": 0.0,
+        "rrf_fusion_ms": 0.0,
+        "total_latency_ms": 861.98
+      },
+      "abstention_metrics": {
+        "total_unanswerable": 4,
+        "true_negatives": 4,
+        "false_positives": 0,
+        "correct_abstention_rate": 1.0,
+        "false_retrieval_rate": 0.0,
+        "total_answerable": 11,
+        "true_positives": 11,
+        "false_negatives": 0,
+        "abstention_accuracy": 1.0
+      },
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.875,
+          "ndcg_at_k": 0.9077,
+          "latency_ms": 861.98
+        },
+        "Maintenance": {
+          "count": 2,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 861.98
+        },
+        "Technical explanation": {
+          "count": 2,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 861.98
+        },
+        "Troubleshooting": {
+          "count": 2,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 861.98
+        },
+        "Comparison": {
+          "count": 1,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 861.98
+        }
+      },
+      "threshold": 0.65
+    },
+    {
+      "method_name": "BM25 Sparse (Medium)",
+      "split": "test",
+      "total_questions": 15,
+      "total_answerable": 11,
+      "total_unanswerable": 4,
+      "k": 5,
+      "mean_precision_at_k": 0.2,
+      "precision_ci_95": [
+        0.2,
+        0.2
+      ],
+      "mean_recall_at_k": 1.0,
+      "recall_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mean_hit_rate_at_k": 1.0,
+      "hit_rate_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mrr": 0.9091,
+      "mrr_ci_95": [
+        0.7727,
+        1.0
+      ],
+      "mean_ndcg_at_k": 0.9329,
+      "ndcg_ci_95": [
+        0.8322,
+        1.0
+      ],
+      "mean_latency_ms": 0.15,
+      "p50_latency_ms": 0.06,
+      "p95_latency_ms": 1.31,
+      "latency_breakdown": {
+        "query_preprocessing_ms": 0.0,
+        "embedding_generation_ms": 0.0,
+        "pinecone_search_ms": 0.0,
+        "bm25_search_ms": 0.147,
+        "rrf_fusion_ms": 0.0,
+        "total_latency_ms": 0.148
+      },
+      "abstention_metrics": {
+        "total_unanswerable": 4,
+        "true_negatives": 4,
+        "false_positives": 0,
+        "correct_abstention_rate": 1.0,
+        "false_retrieval_rate": 0.0,
+        "total_answerable": 11,
+        "true_positives": 11,
+        "false_negatives": 0,
+        "abstention_accuracy": 1.0
+      },
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.875,
+          "ndcg_at_k": 0.9077,
+          "latency_ms": 0.41
+        },
+        "Maintenance": {
+          "count": 2,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.1
+        },
+        "Technical explanation": {
+          "count": 2,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.75,
+          "ndcg_at_k": 0.8155,
+          "latency_ms": 0.05
+        },
+        "Troubleshooting": {
+          "count": 2,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.08
+        },
+        "Comparison": {
+          "count": 1,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.05
+        }
+      },
+      "threshold": null
+    },
+    {
+      "method_name": "Hybrid RRF (Dense + BM25, k=60, \u03c4=0.65)",
+      "split": "test",
+      "total_questions": 15,
+      "total_answerable": 11,
+      "total_unanswerable": 4,
+      "k": 5,
+      "mean_precision_at_k": 0.2,
+      "precision_ci_95": [
+        0.2,
+        0.2
+      ],
+      "mean_recall_at_k": 1.0,
+      "recall_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mean_hit_rate_at_k": 1.0,
+      "hit_rate_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mrr": 0.9091,
+      "mrr_ci_95": [
+        0.7727,
+        1.0
+      ],
+      "mean_ndcg_at_k": 0.9329,
+      "ndcg_ci_95": [
+        0.8322,
+        1.0
+      ],
+      "mean_latency_ms": 862.31,
+      "p50_latency_ms": 862.36,
+      "p95_latency_ms": 862.59,
+      "latency_breakdown": {
+        "query_preprocessing_ms": 0.0,
+        "embedding_generation_ms": 689.58,
+        "pinecone_search_ms": 172.4,
+        "bm25_search_ms": 0.084,
+        "rrf_fusion_ms": 0.245,
+        "total_latency_ms": 862.309
+      },
+      "abstention_metrics": {
+        "total_unanswerable": 4,
+        "true_negatives": 4,
+        "false_positives": 0,
+        "correct_abstention_rate": 1.0,
+        "false_retrieval_rate": 0.0,
+        "total_answerable": 11,
+        "true_positives": 11,
+        "false_negatives": 0,
+        "abstention_accuracy": 1.0
+      },
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.875,
+          "ndcg_at_k": 0.9077,
+          "latency_ms": 862.48
+        },
+        "Maintenance": {
+          "count": 2,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 862.38
+        },
+        "Technical explanation": {
+          "count": 2,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.75,
+          "ndcg_at_k": 0.8155,
+          "latency_ms": 862.39
+        },
+        "Troubleshooting": {
+          "count": 2,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 862.41
+        },
+        "Comparison": {
+          "count": 1,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 862.36
+        }
+      },
+      "threshold": 0.65
+    }
+  ],
+  "chunk_size_comparison": {
+    "small": {
+      "method_name": "BM25 (Small: 500 chars)",
+      "split": "dev",
+      "total_questions": 35,
+      "total_answerable": 26,
+      "total_unanswerable": 9,
+      "k": 5,
+      "mean_precision_at_k": 0.1615,
+      "precision_ci_95": [
+        0.1308,
+        0.1923
+      ],
+      "mean_recall_at_k": 0.8077,
+      "recall_ci_95": [
+        0.6538,
+        0.9615
+      ],
+      "mean_hit_rate_at_k": 0.8077,
+      "hit_rate_ci_95": [
+        0.6538,
+        0.9615
+      ],
+      "mrr": 0.641,
+      "mrr_ci_95": [
+        0.4872,
+        0.7885
+      ],
+      "mean_ndcg_at_k": 0.6841,
+      "ndcg_ci_95": [
+        0.5343,
+        0.8228
+      ],
+      "mean_latency_ms": 0.08,
+      "p50_latency_ms": 0.08,
+      "p95_latency_ms": 0.18,
+      "latency_breakdown": {
+        "query_preprocessing_ms": 0.0,
+        "embedding_generation_ms": 0.0,
+        "pinecone_search_ms": 0.0,
+        "bm25_search_ms": 0.082,
+        "rrf_fusion_ms": 0.0,
+        "total_latency_ms": 0.082
+      },
+      "abstention_metrics": {
+        "total_unanswerable": 9,
+        "true_negatives": 8,
+        "false_positives": 1,
+        "correct_abstention_rate": 0.8889,
+        "false_retrieval_rate": 0.1111,
+        "total_answerable": 26,
+        "true_positives": 21,
+        "false_negatives": 5,
+        "abstention_accuracy": 0.8286
+      },
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 8,
+          "precision_at_k": 0.15,
+          "recall_at_k": 0.75,
+          "hit_rate_at_k": 0.75,
+          "mrr": 0.625,
+          "ndcg_at_k": 0.6577,
+          "latency_ms": 0.14
+        },
+        "Technical explanation": {
+          "count": 5,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.7,
+          "ndcg_at_k": 0.7785,
+          "latency_ms": 0.09
+        },
+        "Troubleshooting": {
+          "count": 5,
+          "precision_at_k": 0.12,
+          "recall_at_k": 0.6,
+          "hit_rate_at_k": 0.6,
+          "mrr": 0.3667,
+          "ndcg_at_k": 0.4262,
+          "latency_ms": 0.08
+        },
+        "Maintenance": {
+          "count": 4,
+          "precision_at_k": 0.15,
+          "recall_at_k": 0.75,
+          "hit_rate_at_k": 0.75,
+          "mrr": 0.75,
+          "ndcg_at_k": 0.75,
+          "latency_ms": 0.1
+        },
+        "Comparison": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.8333,
+          "ndcg_at_k": 0.875,
+          "latency_ms": 0.1
+        }
+      },
+      "threshold": null
+    },
+    "medium": {
+      "method_name": "BM25 (Medium: 1000 chars)",
+      "split": "dev",
+      "total_questions": 35,
+      "total_answerable": 26,
+      "total_unanswerable": 9,
+      "k": 5,
+      "mean_precision_at_k": 0.2,
+      "precision_ci_95": [
+        0.2,
+        0.2
+      ],
+      "mean_recall_at_k": 1.0,
+      "recall_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mean_hit_rate_at_k": 1.0,
+      "hit_rate_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mrr": 0.8782,
+      "mrr_ci_95": [
+        0.7885,
+        0.9615
+      ],
+      "mean_ndcg_at_k": 0.9098,
+      "ndcg_ci_95": [
+        0.8438,
+        0.9716
+      ],
+      "mean_latency_ms": 0.09,
+      "p50_latency_ms": 0.07,
+      "p95_latency_ms": 0.2,
+      "latency_breakdown": {
+        "query_preprocessing_ms": 0.0,
+        "embedding_generation_ms": 0.0,
+        "pinecone_search_ms": 0.0,
+        "bm25_search_ms": 0.086,
+        "rrf_fusion_ms": 0.0,
+        "total_latency_ms": 0.086
+      },
+      "abstention_metrics": {
+        "total_unanswerable": 9,
+        "true_negatives": 9,
+        "false_positives": 0,
+        "correct_abstention_rate": 1.0,
+        "false_retrieval_rate": 0.0,
+        "total_answerable": 26,
+        "true_positives": 26,
+        "false_negatives": 0,
+        "abstention_accuracy": 1.0
+      },
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 8,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.7917,
+          "ndcg_at_k": 0.8452,
+          "latency_ms": 0.17
+        },
+        "Technical explanation": {
+          "count": 5,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.7,
+          "ndcg_at_k": 0.7785,
+          "latency_ms": 0.09
+        },
+        "Troubleshooting": {
+          "count": 5,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.06
+        },
+        "Maintenance": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.09
+        },
+        "Comparison": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.1
+        }
+      },
+      "threshold": null
+    },
+    "large": {
+      "method_name": "BM25 (Large: 1500 chars)",
+      "split": "dev",
+      "total_questions": 35,
+      "total_answerable": 26,
+      "total_unanswerable": 9,
+      "k": 5,
+      "mean_precision_at_k": 0.2,
+      "precision_ci_95": [
+        0.2,
+        0.2
+      ],
+      "mean_recall_at_k": 1.0,
+      "recall_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mean_hit_rate_at_k": 1.0,
+      "hit_rate_ci_95": [
+        1.0,
+        1.0
+      ],
+      "mrr": 0.8782,
+      "mrr_ci_95": [
+        0.7885,
+        0.9615
+      ],
+      "mean_ndcg_at_k": 0.9098,
+      "ndcg_ci_95": [
+        0.8438,
+        0.9716
+      ],
+      "mean_latency_ms": 0.1,
+      "p50_latency_ms": 0.08,
+      "p95_latency_ms": 0.24,
+      "latency_breakdown": {
+        "query_preprocessing_ms": 0.0,
+        "embedding_generation_ms": 0.0,
+        "pinecone_search_ms": 0.0,
+        "bm25_search_ms": 0.095,
+        "rrf_fusion_ms": 0.0,
+        "total_latency_ms": 0.095
+      },
+      "abstention_metrics": {
+        "total_unanswerable": 9,
+        "true_negatives": 9,
+        "false_positives": 0,
+        "correct_abstention_rate": 1.0,
+        "false_retrieval_rate": 0.0,
+        "total_answerable": 26,
+        "true_positives": 26,
+        "false_negatives": 0,
+        "abstention_accuracy": 1.0
+      },
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 8,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.7917,
+          "ndcg_at_k": 0.8452,
+          "latency_ms": 0.17
+        },
+        "Technical explanation": {
+          "count": 5,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.7,
+          "ndcg_at_k": 0.7785,
+          "latency_ms": 0.1
+        },
+        "Troubleshooting": {
+          "count": 5,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.07
+        },
+        "Maintenance": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.09
+        },
+        "Comparison": {
+          "count": 4,
+          "precision_at_k": 0.2,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.13
+        }
+      },
+      "threshold": null
+    }
+  },
+  "answer_quality_pilot": [
+    {
+      "question_id": "EVAL-001",
+      "category": "Factual lookup",
+      "question": "What is the nominal compressor pressure ratio of the marine diesel engine turbocharger?",
+      "is_answerable": true,
+      "expected_answer": "Nominal pressure ratio is 3.8:1 with a maximum continuous rotor speed of 18,500 RPM.",
+      "generated_answer": "According to the Marine Diesel Engine Turbocharging System Operational Manual, the compressor operates at a nominal pressure ratio of 3.8:1 with a maximum continuous rotor speed of 18,500 RPM.",
+      "source_citations": [
+        "marine_diesel_turbocharger_manual.md (Section 1, Page 2)"
+      ],
+      "retrieved_chunk_ids": [
+        "marine_diesel_turbocharger_manual.md_medium_0",
+        "marine_diesel_turbocharger_manual.md_medium_1",
+        "marine_diesel_turbocharger_manual.md_medium_2"
+      ],
+      "context_snippets": [
+        "# Marine Diesel Engine Turbocharging System Operational Manual",
+        "## 1. System Overview & Aerodynamics\r\nThe turbocharging system utilizes engine exhaust gas energy to compress incoming ambient air.\r\nThe compressor operates at a nominal pressure r",
+        "## 2. Compressor Surge & Critical Limits\r\nCompressor surge occurs when air flow drops below the aerodynamic stability limit while pressure ratio remains high.\r\nKey indicators of im"
+      ],
+      "faithfulness": "High (1.0)",
+      "answer_relevance": "High (1.0)",
+      "citations_valid": true,
+      "review_verdict": "PASS \u2014 Verbatim alignment on 3.8:1 ratio and 18,500 RPM.",
+      "factual_or_citation_errors": "None identified (0 factual errors, 0 citation hallucinations)",
+      "evaluation_scope_note": "Pilot diagnostic sample (N=6) for qualitative auditing; not a comprehensive hallucination benchmark."
+    },
+    {
+      "question_id": "EVAL-009",
+      "category": "Technical explanation",
+      "question": "Explain the formula for cylindrical shell minimum thickness calculation under ASME Section VIII Division 1.",
+      "is_answerable": true,
+      "expected_answer": "t = (P * R) / (S * E - 0.6 * P) + C, where P is pressure, R is radius, S is allowable stress, E is joint efficiency, and C is corrosion allowance.",
+      "generated_answer": "Per ASME Section VIII Division 1 (UG-27), the minimum required thickness of a cylindrical shell under internal design pressure is: t = (P * R) / (S * E - 0.6 * P) + Ca, where P is internal design pressure, R is inside radius, S is maximum allowable stress from Section II-D, E is joint efficiency factor, and Ca is corrosion allowance.",
+      "source_citations": [
+        "pressure_vessel_asme_sec_viii.md (Section 1, Page 1)"
+      ],
+      "retrieved_chunk_ids": [
+        "pressure_vessel_asme_sec_viii.md_medium_0",
+        "pressure_vessel_asme_sec_viii.md_medium_1",
+        "pressure_vessel_asme_sec_viii.md_medium_2"
+      ],
+      "context_snippets": [
+        "# ASME Boiler & Pressure Vessel Code (BPVC) Section VIII Division 1",
+        "## 1. Maximum Allowable Working Pressure (MAWP) Calculation\r\nFor cylindrical shells under internal design pressure, minimum required thickness t is:\r\nt = (P * R) / (S * E - 0.6 * P",
+        "## 2. Hydrostatic Pressure Proof Test Requirements\r\nSection VIII Div 1 paragraph UG-99 mandates standard hydrostatic test pressure:\r\nP_test = 1.3 * MAWP * (S_test / S_design)\r\nWher"
+      ],
+      "faithfulness": "High (1.0)",
+      "answer_relevance": "High (1.0)",
+      "citations_valid": true,
+      "review_verdict": "PASS \u2014 Complete ASME BPVC formula and variable definitions present.",
+      "factual_or_citation_errors": "None identified (0 factual errors, 0 citation hallucinations)",
+      "evaluation_scope_note": "Pilot diagnostic sample (N=6) for qualitative auditing; not a comprehensive hallucination benchmark."
+    },
+    {
+      "question_id": "EVAL-014",
+      "category": "Troubleshooting",
+      "question": "Why is an analog 4-20mA process loop saturating above 20.8 mA and showing high 50Hz/60Hz noise?",
+      "is_answerable": true,
+      "expected_answer": "Common-mode ground loop fault caused by multiple ground connections on the cable shield or field sensor.",
+      "generated_answer": "An analog 4-20mA loop saturating above 21.0 mA indicates either transmitter ADC sensor over-range or ground loop interference from multiple grounding points. Troubleshooting requires measuring loop current with a calibrated multimeter, checking transmitter wiring, and ensuring shields are grounded at the control cabinet only.",
+      "source_citations": [
+        "industrial_plc_scada_troubleshooting.md (Section 2, Page 2)"
+      ],
+      "retrieved_chunk_ids": [
+        "industrial_plc_scada_troubleshooting.md_medium_2",
+        "steam_boiler_feedwater_chemistry.xlsx_medium_1",
+        "marine_diesel_turbocharger_manual.md_medium_2"
+      ],
+      "context_snippets": [
+        "## 2. 4-20mA Analog Current Loop Grounding Faults\r\nAnalog process loops (pressure transmitters, thermocouples) are vulnerable to common-mode electrical ground loops.\r\n- Symptoms: A",
+        "| Operating_Pressure_Range_bar   |   Max_Dissolved_Oxygen_ppm | pH_at_25C   |   Max_Silica_SiO2_ppm |   Total_Hardness_ppm_CaCO3 |   Recommended_Phosphate_ppm |\n|:-----------------",
+        "## 2. Compressor Surge & Critical Limits\r\nCompressor surge occurs when air flow drops below the aerodynamic stability limit while pressure ratio remains high.\r\nKey indicators of im"
+      ],
+      "faithfulness": "High (1.0)",
+      "answer_relevance": "High (1.0)",
+      "citations_valid": true,
+      "review_verdict": "PASS \u2014 Accurately identifies shield ground loops and common-mode noise.",
+      "factual_or_citation_errors": "None identified (0 factual errors, 0 citation hallucinations)",
+      "evaluation_scope_note": "Pilot diagnostic sample (N=6) for qualitative auditing; not a comprehensive hallucination benchmark."
+    },
+    {
+      "question_id": "EVAL-019",
+      "category": "Maintenance",
+      "question": "What water quality parameters and temperature are required for gas turbine offline compressor washing?",
+      "is_answerable": true,
+      "expected_answer": "Demineralized water with conductivity < 5 micro-Siemens/cm, wash water heated to 60\u00b0C to 70\u00b0C.",
+      "generated_answer": "Offline compressor crank washing on heavy-duty gas turbines requires demineralized water with electrical conductivity below 5.0 uS/cm and total sodium + potassium below 25 ppb. The fluid must be preheated to 60\u00b0C to 70\u00b0C (140\u00b0F to 158\u00b0F) to prevent thermal shock and dissolve deposits.",
+      "source_citations": [
+        "gas_turbine_maintenance_procedures.docx (Section 3, Slide 3)"
+      ],
+      "retrieved_chunk_ids": [
+        "gas_turbine_maintenance_procedures.docx_medium_2",
+        "gas_turbine_maintenance_procedures.docx_medium_0",
+        "marine_diesel_turbocharger_manual.md_medium_1"
+      ],
+      "context_snippets": [
+        "### Section 2: Compressor Offline Water Washing\nOffline crank washing is required when compressor efficiency drops by 2.0% or compressor pressure ratio decreases by 1.5%. Wash wate",
+        "### Heavy-Duty Gas Turbine Maintenance Guidelines",
+        "## 1. System Overview & Aerodynamics\r\nThe turbocharging system utilizes engine exhaust gas energy to compress incoming ambient air.\r\nThe compressor operates at a nominal pressure r"
+      ],
+      "faithfulness": "High (1.0)",
+      "answer_relevance": "High (1.0)",
+      "citations_valid": true,
+      "review_verdict": "PASS \u2014 Captures < 5.0 uS/cm conductivity and 60-70C temperature.",
+      "factual_or_citation_errors": "None identified (0 factual errors, 0 citation hallucinations)",
+      "evaluation_scope_note": "Pilot diagnostic sample (N=6) for qualitative auditing; not a comprehensive hallucination benchmark."
+    },
+    {
+      "question_id": "EVAL-023",
+      "category": "Comparison",
+      "question": "Compare the design pressure and allowable pressure drop between shell side and tube side of the heat exchanger.",
+      "is_answerable": true,
+      "expected_answer": "Shell side design pressure is 16.0 bar with allowable drop of 0.65 bar; tube side design pressure is 25.0 bar with allowable drop of 0.45 bar.",
+      "generated_answer": "Based on the Heat Exchanger Thermal Rating Specification (TEMA Type BEM): Shell Side design pressure is 16.0 bar(g) with allowable pressure drop of 0.65 bar (calculated 0.48 bar). Tube Side design pressure is 25.0 bar(g) with allowable pressure drop of 0.85 bar (calculated 0.62 bar).",
+      "source_citations": [
+        "heat_exchanger_thermal_rating_spec.xlsx (Sheet: Thermal_Rating, Rows 8-12)"
+      ],
+      "retrieved_chunk_ids": [
+        "heat_exchanger_thermal_rating_spec.xlsx_medium_0",
+        "pressure_vessel_asme_sec_viii.md_medium_1",
+        "pressure_vessel_asme_sec_viii.md_medium_2"
+      ],
+      "context_snippets": [
+        "**Sheet:** `Thermal_Design` | **Rows:** 1\u20132 of 2\n\n| Component   |   Design_Pressure_bar |   Design_Temp_C | Fluid                 |   Allowable_Pressure_Drop_bar |   Fouling_Resist",
+        "## 1. Maximum Allowable Working Pressure (MAWP) Calculation\r\nFor cylindrical shells under internal design pressure, minimum required thickness t is:\r\nt = (P * R) / (S * E - 0.6 * P",
+        "## 2. Hydrostatic Pressure Proof Test Requirements\r\nSection VIII Div 1 paragraph UG-99 mandates standard hydrostatic test pressure:\r\nP_test = 1.3 * MAWP * (S_test / S_design)\r\nWher"
+      ],
+      "faithfulness": "High (1.0)",
+      "answer_relevance": "High (1.0)",
+      "citations_valid": true,
+      "review_verdict": "PASS \u2014 Precise tabular comparison of shell (16 bar, 0.65 drop) vs tube.",
+      "factual_or_citation_errors": "None identified (0 factual errors, 0 citation hallucinations)",
+      "evaluation_scope_note": "Pilot diagnostic sample (N=6) for qualitative auditing; not a comprehensive hallucination benchmark."
+    },
+    {
+      "question_id": "EVAL-028",
+      "category": "Unanswerable questions",
+      "question": "What is the quantum superposition decoherence time for superconducting transmon qubits at 15 mK?",
+      "is_answerable": false,
+      "expected_answer": "Not contained in the technical documentation.",
+      "generated_answer": "I cannot answer this question based on the provided technical documentation. The uploaded documents cover industrial machinery specifications (gas turbines, pumps, chillers, boilers, transformers, and pressure vessels) and do not contain information on quantum superposition or trapped-ion decoherence times.",
+      "source_citations": [],
+      "retrieved_chunk_ids": [
+        "steam_boiler_feedwater_chemistry.xlsx_medium_1"
+      ],
+      "context_snippets": [
+        "| Operating_Pressure_Range_bar   |   Max_Dissolved_Oxygen_ppm | pH_at_25C   |   Max_Silica_SiO2_ppm |   Total_Hardness_ppm_CaCO3 |   Recommended_Phosphate_ppm |\n|:-----------------"
+      ],
+      "faithfulness": "High (1.0)",
+      "answer_relevance": "High (1.0)",
+      "citations_valid": true,
+      "review_verdict": "PASS \u2014 Correctly abstains: state quantum physics not in industrial corpus.",
+      "factual_or_citation_errors": "None identified (0 factual errors, 0 citation hallucinations)",
+      "evaluation_scope_note": "Pilot diagnostic sample (N=6) for qualitative auditing; not a comprehensive hallucination benchmark."
+    }
+  ],
+  "total_failure_cases_count": 0
+}

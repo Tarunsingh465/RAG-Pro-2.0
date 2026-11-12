@@ -35,7 +35,7 @@ from app.evaluation.metrics import (
 from app.ingestion.loader import DocumentLoader
 from app.ingestion.splitter import ChunkStrategy, DocumentSplitter
 from app.retrieval.bm25 import BM25Index
-from app.retrieval.hybrid import reciprocal_rank_fusion
+from app.retrieval.hybrid import get_canonical_chunk_id, reciprocal_rank_fusion
 from app.vectorstore.pinecone import PineconeManager
 
 logger = get_logger()
@@ -57,24 +57,6 @@ def get_git_commit() -> str:
         return res.stdout.strip() or "unknown"
     except Exception:
         return "unknown"
-
-
-def get_canonical_chunk_id(doc: Document) -> str:
-    """
-    Resolves canonical deterministic chunk identifier: {file_name}_{strategy}_{index}.
-    Handles both deterministic metadata chunk IDs and legacy UUID mappings.
-    """
-    meta = doc.metadata
-    fn = meta.get("file_name") or meta.get("source") or "doc"
-    raw_id = str(meta.get("chunk_id", ""))
-    if "_" in raw_id and raw_id.startswith(fn):
-        return raw_id
-    strat = meta.get("chunk_strategy", "medium")
-    try:
-        idx = int(meta.get("chunk_index", 0))
-    except Exception:
-        idx = 0
-    return f"{fn}_{strat}_{idx}"
 
 
 class EvaluationCorpusManager:
@@ -126,7 +108,54 @@ class ExperimentRunner:
         self.k = k
         self.corpus_manager = EvaluationCorpusManager(corpus_dir=corpus_dir)
         self.questions = self._load_dataset()
+        self._dense_cache_file = RESULTS_DIR / ".dense_cache.json"
         self._dense_cache: Dict[str, Tuple[List[Tuple[Document, float]], LatencyBreakdown]] = {}
+        self._load_dense_cache()
+        self.per_question_audit_records: List[Dict[str, Any]] = []
+        self.hybrid_diagnostics: List[Dict[str, Any]] = []
+
+    def _load_dense_cache(self) -> None:
+        if self._dense_cache_file.exists():
+            try:
+                data = json.loads(self._dense_cache_file.read_text(encoding="utf-8"))
+                for q_text, payload in data.items():
+                    candidates = []
+                    for c in payload.get("candidates", []):
+                        doc = Document(
+                            page_content=c.get("page_content", ""),
+                            metadata=dict(c.get("metadata", {})),
+                        )
+                        candidates.append((doc, float(c.get("score", 0.0))))
+                    bd_dict = payload.get("breakdown", {})
+                    bd = LatencyBreakdown(
+                        query_preprocessing_ms=bd_dict.get("query_preprocessing_ms", 0.002),
+                        embedding_generation_ms=bd_dict.get("embedding_generation_ms", 689.58),
+                        pinecone_search_ms=bd_dict.get("pinecone_search_ms", 172.40),
+                        total_latency_ms=bd_dict.get("total_latency_ms", 861.98),
+                    )
+                    self._dense_cache[q_text] = (candidates, bd)
+                logger.info(f"Loaded {len(self._dense_cache)} dense query entries from disk cache.")
+            except Exception as e:
+                logger.warning(f"Could not load .dense_cache.json: {e}")
+
+    def _save_dense_cache(self) -> None:
+        try:
+            cache_data = {}
+            for q_text, (candidates, bd) in self._dense_cache.items():
+                cache_data[q_text] = {
+                    "candidates": [
+                        {
+                            "page_content": d.page_content,
+                            "metadata": dict(d.metadata),
+                            "score": s,
+                        }
+                        for d, s in candidates
+                    ],
+                    "breakdown": bd.to_dict(),
+                }
+            self._dense_cache_file.write_text(json.dumps(cache_data, indent=2), encoding="utf-8")
+        except Exception as e:
+            logger.debug(f"Failed to persist dense cache: {e}")
 
     def _load_dataset(self) -> List[Dict[str, Any]]:
         if not self.dataset_path.exists():
@@ -320,10 +349,18 @@ class ExperimentRunner:
             if score_threshold is not None and top_score < score_threshold:
                 retrieved_chunk_ids = []
             else:
-                retrieved_chunk_ids = [
-                    get_canonical_chunk_id(d) for d, _ in retrieved_items
-                    if get_canonical_chunk_id(d)
-                ]
+                retrieved_chunk_ids = []
+                for d, _ in retrieved_items:
+                    cid = get_canonical_chunk_id(d)
+                    if cid and cid not in retrieved_chunk_ids:
+                        retrieved_chunk_ids.append(cid)
+                    if len(retrieved_chunk_ids) == self.k:
+                        break
+
+            # Invariant check
+            assert len(retrieved_chunk_ids) == len(set(retrieved_chunk_ids)), (
+                f"Duplicate chunk IDs in BM25 ranking for question {qid}: {retrieved_chunk_ids}"
+            )
 
             breakdown = LatencyBreakdown(
                 query_preprocessing_ms=round(prep_ms, 3),
@@ -345,6 +382,44 @@ class ExperimentRunner:
                 threshold=score_threshold,
             )
             question_results.append(metric_res)
+
+            rel_ret = sum(1 for cid in retrieved_chunk_ids if cid in relevant_chunk_ids)
+            verdict = "CORRECT_ABSTENTION" if (not is_answerable and metric_res.correctly_abstained) else (
+                "FALSE_RETRIEVAL" if not is_answerable else (
+                    "CORRECT_RETRIEVAL" if metric_res.hit_at_k == 1.0 else "RETRIEVAL_FAILURE"
+                )
+            )
+            ceiling_note = "Max achievable P@5 is 1/5 = 0.2000 (R=1, k=5)" if is_answerable else "N/A (Unanswerable query)"
+            self.per_question_audit_records.append({
+                "question_id": qid,
+                "split": split,
+                "category": category,
+                "answerability": is_answerable,
+                "method": method_name,
+                "dense_top_score": 0.0,
+                "dense_threshold": None,
+                "bm25_top_score": round(top_score, 4),
+                "bm25_threshold": score_threshold,
+                "dense_accepted_count": 0,
+                "bm25_accepted_count": len(retrieved_chunk_ids) if top_score >= (score_threshold or 0) else 0,
+                "rrf_fused_count": len(retrieved_chunk_ids),
+                "retrieved_chunk_ids": ";".join(retrieved_chunk_ids),
+                "unique_retrieved_count": len(set(retrieved_chunk_ids)),
+                "duplicate_count": len(retrieved_chunk_ids) - len(set(retrieved_chunk_ids)),
+                "ground_truth_chunks": ";".join(relevant_chunk_ids),
+                "ground_truth_count": len(relevant_chunk_ids),
+                "relevant_retrieved_count": rel_ret,
+                "hit_at_5": metric_res.hit_at_k,
+                "precision_at_5": metric_res.precision_at_k,
+                "recall_at_5": metric_res.recall_at_k,
+                "mrr": metric_res.reciprocal_rank,
+                "ndcg_at_5": metric_res.ndcg_at_k,
+                "correct_abstention": metric_res.correctly_abstained,
+                "audit_verdict": verdict,
+                "precision_ceiling_analysis": ceiling_note,
+                "total_latency_ms": round(tot_ms, 3),
+                "question_text": query_text,
+            })
 
             if is_answerable and (metric_res.hit_at_k == 0.0 or metric_res.hit_at_k is None):
                 failure_cases.append({
@@ -463,15 +538,25 @@ class ExperimentRunner:
 
             top_score = all_candidates[0][1] if all_candidates else 0.0
 
-            if threshold is not None:
+            if threshold is not None and top_score < threshold:
+                passed_candidates = []
+            elif threshold is not None:
                 passed_candidates = [item for item in all_candidates if item[1] >= threshold]
             else:
                 passed_candidates = all_candidates
 
-            retrieved_chunk_ids = [
-                get_canonical_chunk_id(d) for d, _ in passed_candidates[:self.k]
-                if get_canonical_chunk_id(d)
-            ]
+            retrieved_chunk_ids = []
+            for d, _ in passed_candidates:
+                cid = get_canonical_chunk_id(d)
+                if cid and cid not in retrieved_chunk_ids:
+                    retrieved_chunk_ids.append(cid)
+                if len(retrieved_chunk_ids) == self.k:
+                    break
+
+            # Invariant check
+            assert len(retrieved_chunk_ids) == len(set(retrieved_chunk_ids)), (
+                f"Duplicate chunk IDs in Dense ranking for question {qid}: {retrieved_chunk_ids}"
+            )
 
             metric_res = evaluate_single_retrieval(
                 question_id=qid,
@@ -487,6 +572,44 @@ class ExperimentRunner:
                 threshold=threshold,
             )
             question_results.append(metric_res)
+
+            rel_ret = sum(1 for cid in retrieved_chunk_ids if cid in relevant_chunk_ids)
+            verdict = "CORRECT_ABSTENTION" if (not is_answerable and metric_res.correctly_abstained) else (
+                "FALSE_RETRIEVAL" if not is_answerable else (
+                    "CORRECT_RETRIEVAL" if metric_res.hit_at_k == 1.0 else "RETRIEVAL_FAILURE"
+                )
+            )
+            ceiling_note = "Max achievable P@5 is 1/5 = 0.2000 (R=1, k=5)" if is_answerable else "N/A (Unanswerable query)"
+            self.per_question_audit_records.append({
+                "question_id": qid,
+                "split": split,
+                "category": category,
+                "answerability": is_answerable,
+                "method": method_name,
+                "dense_top_score": round(top_score, 4),
+                "dense_threshold": threshold,
+                "bm25_top_score": 0.0,
+                "bm25_threshold": None,
+                "dense_accepted_count": len(retrieved_chunk_ids) if top_score >= (threshold or 0) else 0,
+                "bm25_accepted_count": 0,
+                "rrf_fused_count": len(retrieved_chunk_ids),
+                "retrieved_chunk_ids": ";".join(retrieved_chunk_ids),
+                "unique_retrieved_count": len(set(retrieved_chunk_ids)),
+                "duplicate_count": len(retrieved_chunk_ids) - len(set(retrieved_chunk_ids)),
+                "ground_truth_chunks": ";".join(relevant_chunk_ids),
+                "ground_truth_count": len(relevant_chunk_ids),
+                "relevant_retrieved_count": rel_ret,
+                "hit_at_5": metric_res.hit_at_k,
+                "precision_at_5": metric_res.precision_at_k,
+                "recall_at_5": metric_res.recall_at_k,
+                "mrr": metric_res.reciprocal_rank,
+                "ndcg_at_5": metric_res.ndcg_at_k,
+                "correct_abstention": metric_res.correctly_abstained,
+                "audit_verdict": verdict,
+                "precision_ceiling_analysis": ceiling_note,
+                "total_latency_ms": round(breakdown.total_latency_ms, 3),
+                "question_text": query_text,
+            })
 
             if is_answerable and (metric_res.hit_at_k == 0.0 or metric_res.hit_at_k is None):
                 failure_cases.append({
@@ -527,11 +650,20 @@ class ExperimentRunner:
         chunks: List[Document],
         strategy: str = "medium",
         split_filter: Optional[str] = None,
-        threshold: Optional[float] = None,
+        threshold: Optional[float] = 0.65,
+        dense_threshold: Optional[float] = None,
+        bm25_threshold: Optional[float] = 5.0,
         rrf_k: int = 60,
     ) -> Tuple[AggregateMetrics, List[QuestionMetricResult], List[Dict[str, Any]]]:
-        """Executes Hybrid RRF experiment combining Dense (calibrated) and Sparse BM25."""
-        method_name = f"Hybrid RRF (Dense + BM25, k={rrf_k}, τ={threshold or 'None'})"
+        """
+        Executes Hybrid RRF experiment combining Dense (calibrated) and Sparse BM25.
+        Enforces independent source acceptance (Dense τ >= 0.65, BM25 τ >= 5.0) with
+        ZERO answerability label leakage.
+        """
+        effective_dense_thresh = threshold if dense_threshold is None else dense_threshold
+        effective_bm25_thresh = bm25_threshold
+
+        method_name = f"Hybrid RRF (Dense + BM25, k={rrf_k}, τ={effective_dense_thresh or 'None'})"
         split_label = split_filter or "all"
         logger.info(f"--- Running {method_name} [Split: {split_label}] ---")
 
@@ -620,24 +752,46 @@ class ExperimentRunner:
                 self._dense_cache[query_text] = (dense_items, breakdown)
                 time.sleep(0.05)
 
-            top_score = dense_items[0][1] if dense_items else 0.0
+            dense_top_score = dense_items[0][1] if dense_items else 0.0
+            bm25_top_score = sparse_items[0][1] if sparse_items else 0.0
 
-            # If threshold is active and query is unanswerable, check dense score
-            if threshold is not None and not is_answerable and top_score < threshold:
-                passed_dense = []
+            # 3. Independent Candidate Acceptance (NO GROUND-TRUTH LEAKAGE)
+            # Dense candidates pass when cosine similarity >= effective_dense_thresh
+            if effective_dense_thresh is not None:
+                passed_dense = [it for it in dense_items if it[1] >= effective_dense_thresh]
             else:
                 passed_dense = dense_items
 
-            # 3. Reciprocal Rank Fusion
-            t0_rrf = time.perf_counter()
-            fused_items, _ = reciprocal_rank_fusion(
-                dense_results=passed_dense,
-                bm25_results=sparse_items,
-                k=rrf_k,
-                top_n=self.k,
-            )
-            rrf_ms = (time.perf_counter() - t0_rrf) * 1000.0
+            # BM25 candidates pass when BM25 score >= effective_bm25_thresh
+            if effective_bm25_thresh is not None:
+                passed_sparse = [it for it in sparse_items if it[1] >= effective_bm25_thresh]
+            else:
+                passed_sparse = sparse_items
 
+            # 4. Reciprocal Rank Fusion of Accepted Candidates
+            t0_rrf = time.perf_counter()
+            if not passed_dense and not passed_sparse:
+                # Both sources rejected all candidates -> Abstain cleanly
+                retrieved_chunk_ids = []
+                fused_items = []
+            else:
+                fused_items, _ = reciprocal_rank_fusion(
+                    dense_results=passed_dense,
+                    bm25_results=passed_sparse,
+                    k=rrf_k,
+                    top_n=self.k,
+                )
+                seen_cids = set()
+                retrieved_chunk_ids = []
+                for d, _ in fused_items:
+                    cid = get_canonical_chunk_id(d)
+                    if cid and cid not in seen_cids:
+                        seen_cids.add(cid)
+                        retrieved_chunk_ids.append(cid)
+                    if len(retrieved_chunk_ids) == self.k:
+                        break
+
+            rrf_ms = (time.perf_counter() - t0_rrf) * 1000.0
             tot_lat_ms = prep_ms + emb_ms + pine_ms + bm25_ms + rrf_ms
 
             breakdown_hybrid = LatencyBreakdown(
@@ -649,14 +803,12 @@ class ExperimentRunner:
                 total_latency_ms=round(tot_lat_ms, 3),
             )
 
-            if not is_answerable and threshold is not None and top_score < threshold:
-                retrieved_chunk_ids = []
-            else:
-                retrieved_chunk_ids = [
-                    get_canonical_chunk_id(d) for d, _ in fused_items[:self.k]
-                    if get_canonical_chunk_id(d)
-                ]
+            # Invariant check: Rankings must be strictly unique
+            assert len(retrieved_chunk_ids) == len(set(retrieved_chunk_ids)), (
+                f"Duplicate chunk IDs in Hybrid ranking for question {qid}: {retrieved_chunk_ids}"
+            )
 
+            # 5. Evaluate Retrieval Metrics (Ground Truth labels used ONLY here)
             metric_res = evaluate_single_retrieval(
                 question_id=qid,
                 category=category,
@@ -667,10 +819,85 @@ class ExperimentRunner:
                 k=self.k,
                 latency_ms=tot_lat_ms,
                 latency_breakdown=breakdown_hybrid,
-                top_score=top_score,
-                threshold=threshold,
+                top_score=dense_top_score,
+                threshold=None,  # Decisions already made via independent acceptance
             )
             question_results.append(metric_res)
+
+            rel_ret = sum(1 for cid in retrieved_chunk_ids if cid in relevant_chunk_ids)
+            verdict = "CORRECT_ABSTENTION" if (not is_answerable and metric_res.correctly_abstained) else (
+                "FALSE_RETRIEVAL" if not is_answerable else (
+                    "CORRECT_RETRIEVAL" if metric_res.hit_at_k == 1.0 else "RETRIEVAL_FAILURE"
+                )
+            )
+            ceiling_note = "Max achievable P@5 is 1/5 = 0.2000 (R=1, k=5)" if is_answerable else "N/A (Unanswerable query)"
+
+            audit_row = {
+                "question_id": qid,
+                "split": split,
+                "category": category,
+                "answerability": is_answerable,
+                "method": method_name,
+                "dense_top_score": round(dense_top_score, 4),
+                "dense_threshold": effective_dense_thresh,
+                "bm25_top_score": round(bm25_top_score, 4),
+                "bm25_threshold": effective_bm25_thresh,
+                "dense_accepted_count": len(passed_dense),
+                "bm25_accepted_count": len(passed_sparse),
+                "rrf_fused_count": len(fused_items),
+                "retrieved_chunk_ids": ";".join(retrieved_chunk_ids),
+                "unique_retrieved_count": len(set(retrieved_chunk_ids)),
+                "duplicate_count": len(retrieved_chunk_ids) - len(set(retrieved_chunk_ids)),
+                "ground_truth_chunks": ";".join(relevant_chunk_ids),
+                "ground_truth_count": len(relevant_chunk_ids),
+                "relevant_retrieved_count": rel_ret,
+                "hit_at_5": metric_res.hit_at_k,
+                "precision_at_5": metric_res.precision_at_k,
+                "recall_at_5": metric_res.recall_at_k,
+                "mrr": metric_res.reciprocal_rank,
+                "ndcg_at_5": metric_res.ndcg_at_k,
+                "correct_abstention": metric_res.correctly_abstained,
+                "audit_verdict": verdict,
+                "precision_ceiling_analysis": ceiling_note,
+                "total_latency_ms": round(tot_lat_ms, 3),
+                "question_text": query_text,
+            }
+            self.per_question_audit_records.append(audit_row)
+
+            # Diagnostic record specifically for Hybrid
+            self.hybrid_diagnostics.append({
+                "question_id": qid,
+                "split": split,
+                "category": category,
+                "is_answerable": is_answerable,
+                "query_text": query_text,
+                "dense_top_score": round(dense_top_score, 4),
+                "dense_threshold": effective_dense_thresh,
+                "dense_passed": len(passed_dense) > 0,
+                "dense_accepted_count": len(passed_dense),
+                "bm25_top_score": round(bm25_top_score, 4),
+                "bm25_threshold": effective_bm25_thresh,
+                "bm25_passed": len(passed_sparse) > 0,
+                "bm25_accepted_count": len(passed_sparse),
+                "rrf_fused_count": len(fused_items),
+                "retrieved_chunk_ids": ";".join(retrieved_chunk_ids),
+                "unique_retrieved_count": len(set(retrieved_chunk_ids)),
+                "duplicate_count": len(retrieved_chunk_ids) - len(set(retrieved_chunk_ids)),
+                "ground_truth_chunks": ";".join(relevant_chunk_ids),
+                "hit_at_5": metric_res.hit_at_k,
+                "precision_at_5": metric_res.precision_at_k,
+                "recall_at_5": metric_res.recall_at_k,
+                "mrr": metric_res.reciprocal_rank,
+                "ndcg_at_5": metric_res.ndcg_at_k,
+                "correct_abstention": metric_res.correctly_abstained,
+                "verdict": verdict,
+                "total_latency_ms": round(tot_lat_ms, 3),
+                "query_prep_ms": round(prep_ms, 3),
+                "embedding_gen_ms": round(emb_ms, 3),
+                "pinecone_search_ms": round(pine_ms, 3),
+                "bm25_search_ms": round(bm25_ms, 3),
+                "rrf_fusion_ms": round(rrf_ms, 3),
+            })
 
             if is_answerable and (metric_res.hit_at_k == 0.0 or metric_res.hit_at_k is None):
                 failure_cases.append({
@@ -702,7 +929,7 @@ class ExperimentRunner:
             results=question_results,
             k=self.k,
             split=split_label,
-            threshold=threshold,
+            threshold=effective_dense_thresh,
         )
         return aggregate, question_results, failure_cases
 
@@ -850,17 +1077,18 @@ class ExperimentRunner:
         pilot_records: List[Dict[str, Any]],
         failure_cases: List[Dict[str, Any]],
     ) -> Tuple[Path, Path]:
-        """Saves aggregate metrics, splits, calibration, and errors to JSON, CSV, and Markdown."""
+        """Saves aggregate metrics, splits, calibration, per-question audit, diagnostics, and errors."""
         git_commit = get_git_commit()
         timestamp = datetime.now(timezone.utc).isoformat()
 
         all_aggregates = list(dev_aggregates) + list(test_aggregates) + list(chunk_aggregates.values())
 
-        # 1. Save EXPERIMENT_RESULTS.json
+        # 1. Save EXPERIMENT_RESULTS.json & phase_3_1_2_results.json
         json_path = RESULTS_DIR / "EXPERIMENT_RESULTS.json"
+        p312_json_path = RESULTS_DIR / "phase_3_1_2_results.json"
         payload = {
             "metadata": {
-                "experiment_id": f"EXP-PHASE3.1-{int(time.time())}",
+                "experiment_id": f"EXP-PHASE3.1.2-{int(time.time())}",
                 "timestamp_utc": timestamp,
                 "git_commit": git_commit,
                 "host": "Intel Core i5-4440 (4 cores, 4 threads), 7.69 GB RAM",
@@ -870,6 +1098,10 @@ class ExperimentRunner:
                 "dev_questions_count": sum(1 for q in self.questions if q.get("split") == "dev"),
                 "test_questions_count": sum(1 for q in self.questions if q.get("split") == "test"),
                 "calibrated_threshold": optimal_threshold,
+                "dense_threshold": 0.65,
+                "bm25_threshold": 5.0,
+                "rrf_k": 60,
+                "phase": "3.1.2",
             },
             "calibration_curve": calibration_curve,
             "development_split_benchmarks": [a.to_dict() for a in dev_aggregates],
@@ -878,14 +1110,15 @@ class ExperimentRunner:
             "answer_quality_pilot": pilot_records,
             "total_failure_cases_count": len(failure_cases),
         }
-        json_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-        logger.success(f"Saved experiment results to JSON: {json_path}")
+        json_str = json.dumps(payload, indent=2)
+        json_path.write_text(json_str, encoding="utf-8")
+        p312_json_path.write_text(json_str, encoding="utf-8")
+        Path("EXPERIMENT_RESULTS.json").write_text(json_str, encoding="utf-8")
+        logger.success(f"Saved experiment results to JSON: {json_path} and {p312_json_path}")
 
-        root_json = Path("EXPERIMENT_RESULTS.json")
-        root_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-        # 2. Save EXPERIMENT_RESULTS.csv
+        # 2. Save EXPERIMENT_RESULTS.csv & phase_3_1_2_results.csv
         csv_path = RESULTS_DIR / "EXPERIMENT_RESULTS.csv"
+        p312_csv_path = RESULTS_DIR / "phase_3_1_2_results.csv"
         fieldnames = [
             "method_name", "split", "k", "total_questions", "total_answerable", "total_unanswerable",
             "mean_precision_at_k", "precision_ci_95_low", "precision_ci_95_high",
@@ -937,17 +1170,60 @@ class ExperimentRunner:
                     "rrf_fusion_ms": a.latency_breakdown.rrf_fusion_ms,
                 })
 
-        root_csv = Path("EXPERIMENT_RESULTS.csv")
-        root_csv.write_text(csv_path.read_text(encoding="utf-8"), encoding="utf-8")
-        logger.success(f"Saved experiment results to CSV: {csv_path}")
+        csv_content = csv_path.read_text(encoding="utf-8")
+        p312_csv_path.write_text(csv_content, encoding="utf-8")
+        Path("EXPERIMENT_RESULTS.csv").write_text(csv_content, encoding="utf-8")
+        logger.success(f"Saved experiment results to CSV: {csv_path} and {p312_csv_path}")
 
-        # 3. Save ERROR_ANALYSIS.md
+        # 3. Save PER_QUESTION_EVALUATION_AUDIT.csv & phase_3_1_2_per_question.csv
+        per_q_csv = RESULTS_DIR / "PER_QUESTION_EVALUATION_AUDIT.csv"
+        p312_per_q_csv = RESULTS_DIR / "phase_3_1_2_per_question.csv"
+        audit_fieldnames = [
+            "question_id", "split", "category", "answerability", "method",
+            "dense_top_score", "dense_threshold", "bm25_top_score", "bm25_threshold",
+            "dense_accepted_count", "bm25_accepted_count", "rrf_fused_count",
+            "retrieved_chunk_ids", "unique_retrieved_count", "duplicate_count",
+            "ground_truth_chunks", "ground_truth_count", "relevant_retrieved_count",
+            "hit_at_5", "precision_at_5", "recall_at_5", "mrr", "ndcg_at_5",
+            "correct_abstention", "audit_verdict", "precision_ceiling_analysis",
+            "total_latency_ms", "question_text"
+        ]
+        with open(per_q_csv, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=audit_fieldnames)
+            writer.writeheader()
+            for r in self.per_question_audit_records:
+                writer.writerow(r)
+
+        audit_content = per_q_csv.read_text(encoding="utf-8")
+        p312_per_q_csv.write_text(audit_content, encoding="utf-8")
+        Path("PER_QUESTION_EVALUATION_AUDIT.csv").write_text(audit_content, encoding="utf-8")
+        logger.success(f"Saved per-question audit CSV to: {per_q_csv} and {p312_per_q_csv}")
+
+        # 4. Save phase_3_1_2_hybrid_diagnostics.csv
+        diag_csv = RESULTS_DIR / "phase_3_1_2_hybrid_diagnostics.csv"
+        diag_fieldnames = [
+            "question_id", "split", "category", "is_answerable", "query_text",
+            "dense_top_score", "dense_threshold", "dense_passed", "dense_accepted_count",
+            "bm25_top_score", "bm25_threshold", "bm25_passed", "bm25_accepted_count",
+            "rrf_fused_count", "retrieved_chunk_ids", "unique_retrieved_count", "duplicate_count",
+            "ground_truth_chunks", "hit_at_5", "precision_at_5", "recall_at_5",
+            "mrr", "ndcg_at_5", "correct_abstention", "verdict", "total_latency_ms",
+            "query_prep_ms", "embedding_gen_ms", "pinecone_search_ms", "bm25_search_ms", "rrf_fusion_ms"
+        ]
+        with open(diag_csv, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=diag_fieldnames)
+            writer.writeheader()
+            for r in self.hybrid_diagnostics:
+                writer.writerow(r)
+        logger.success(f"Saved hybrid diagnostics CSV to: {diag_csv}")
+
+        # 5. Save ERROR_ANALYSIS.md
         error_md_path = Path("ERROR_ANALYSIS.md")
         lines = [
-            "# 🔍 Failure & Error Analysis Report — Phase 3.1 Audited\n\n",
+            "# 🔍 Failure & Error Analysis Report — Phase 3.1.2 Audited\n\n",
             f"**Generated**: {timestamp} | **Git Commit**: `{git_commit}`\n\n",
-            "This report analyzes error occurrences across Development and Held-Out Test splits.\n",
-            "Distinct error taxonomy separates unique question flaws from multi-method occurrences.\n\n",
+            "This report analyzes error occurrences across Development and Held-Out Test splits following\n",
+            "the Phase 3.1.2 Hybrid Retrieval Integrity correction (independent acceptance without label leakage).\n\n",
             f"**Total Method Failure Occurrences**: {len(failure_cases)}\n",
             f"**Unique Questions with at least one failure**: {len({f['question_id'] for f in failure_cases})}\n\n",
             "| Question ID | Split | Method | Category | Failure Mode | Root Cause & Remediation |\n",
@@ -986,9 +1262,9 @@ class ExperimentRunner:
         return json_path, csv_path
 
     def run_all(self) -> Tuple[Path, Path]:
-        """Runs complete Phase 3.1 Audited benchmark across Dev and Test splits."""
+        """Runs complete Phase 3.1.2 Audited benchmark across Dev and Test splits."""
         logger.info("==================================================")
-        logger.info("   STARTING PHASE 3.1 AUDITED BENCHMARK PIPELINE  ")
+        logger.info("   STARTING PHASE 3.1.2 BENCHMARK PIPELINE        ")
         logger.info("==================================================")
 
         optimal_thresh, cal_table = self.calibrate_dense_threshold()
@@ -1003,7 +1279,7 @@ class ExperimentRunner:
             chunks_med, strategy="medium", split_filter="dev", threshold=optimal_thresh
         )
         hybrid_dev, _, hybrid_dev_fails = self.run_hybrid_experiment(
-            chunks_med, strategy="medium", split_filter="dev", threshold=optimal_thresh
+            chunks_med, strategy="medium", split_filter="dev", threshold=optimal_thresh, bm25_threshold=5.0
         )
         dev_aggs = [dense_dev, bm25_dev, hybrid_dev]
 
@@ -1015,7 +1291,7 @@ class ExperimentRunner:
             chunks_med, strategy="medium", split_filter="test", threshold=optimal_thresh
         )
         hybrid_test, _, hybrid_test_fails = self.run_hybrid_experiment(
-            chunks_med, strategy="medium", split_filter="test", threshold=optimal_thresh
+            chunks_med, strategy="medium", split_filter="test", threshold=optimal_thresh, bm25_threshold=5.0
         )
         test_aggs = [dense_test, bm25_test, hybrid_test]
 

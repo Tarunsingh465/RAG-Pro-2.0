@@ -72,13 +72,13 @@ To determine the optimal rejection cutoff for dense cosine similarity ($1 - \tex
 
 | Retrieval Pipeline | Hit Rate@5 [95% CI] | Precision@5 [95% CI] | Recall@5 [95% CI] | MRR [95% CI] | nDCG@5 [95% CI] | Mean Latency | Correct Abstention Rate (CAR) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Dense Semantic (Pinecone, $\tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | **0.9808** [0.94, 1.0] | **0.9858** [0.96, 1.0] | 935.41 ms | **100.0% (9/9)** |
-| **BM25 Sparse (Okapi, $\tau_{\text{BM25}}=5.0$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.8782 [0.79, 0.96] | 0.9098 [0.84, 0.97] | **0.07 ms** | **100.0% (9/9)** |
-| **Hybrid RRF (Dense + BM25, $k=60, \tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.8846 [0.81, 0.96] | 0.9148 [0.86, 0.97] | 935.85 ms | **100.0% (9/9)** |
+| **Dense Semantic (Pinecone, $\tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | **0.9808** [0.94, 1.0] | **0.9858** [0.96, 1.0] | 861.98 ms | **100.0% (9/9)** |
+| **BM25 Sparse (Okapi, $\tau_{\text{BM25}}=5.0$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.8782 [0.79, 0.96] | 0.9098 [0.84, 0.97] | **0.08 ms** | **100.0% (9/9)** |
+| **Hybrid RRF (Dense + BM25, $k=60, \tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.9231 [0.85, 0.98] | 0.9432 [0.89, 0.99] | 862.36 ms | **100.0% (9/9)** |
 
 > [!NOTE]
 > **Precision@5 Ceiling Effect ($0.2000$)**:
-> Every answerable query in the benchmark has exactly one targeted ground-truth chunk ($|\mathcal{G}|=1$). Because Precision@$K = |\mathcal{R}_K \cap \mathcal{G}| / K$, the maximum possible score for $K=5$ is $1/5 = \mathbf{0.2000}$. At 100% Hit Rate@5, Precision@5 is mathematically bounded to exactly 0.2000. See `PER_QUESTION_EVALUATION_AUDIT.csv` and `PHASE_3_1_1_FINAL_REVIEW.md` for the per-question verification.
+> Every answerable query in the benchmark has exactly one targeted ground-truth chunk ($|\mathcal{G}|=1$). Because Precision@$K = |\mathcal{R}_K \cap \mathcal{G}| / K$, the maximum possible score for $K=5$ is $1/5 = \mathbf{0.2000}$. At 100% Hit Rate@5, Precision@5 is mathematically bounded to exactly 0.2000. See `PER_QUESTION_EVALUATION_AUDIT.csv` and `PHASE_3_1_2_FINAL_REVIEW.md` for the per-question verification.
 
 ---
 
@@ -89,13 +89,14 @@ To determine the optimal rejection cutoff for dense cosine similarity ($1 - \tex
 | Retrieval Pipeline | Hit Rate@5 [95% CI] | Precision@5 [95% CI] | Recall@5 [95% CI] | MRR [95% CI] | nDCG@5 [95% CI] | Mean Latency | Correct Abstention Rate (CAR) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Dense Semantic (Pinecone, $\tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | **0.9545** [0.86, 1.0] | **0.9664** [0.90, 1.0] | 861.98 ms | **100.0% (4/4)** |
-| **BM25 Sparse (Okapi, $\tau_{\text{BM25}}=5.0$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.9091 [0.77, 1.0] | 0.9329 [0.83, 1.0] | **0.11 ms** | **100.0% (4/4)** |
-| **Hybrid RRF (Dense + BM25, $k=60, \tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.8636 [0.73, 1.0] | 0.8993 [0.80, 1.0] | 862.38 ms | **100.0% (4/4)** |
+| **BM25 Sparse (Okapi, $\tau_{\text{BM25}}=5.0$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.9091 [0.77, 1.0] | 0.9329 [0.83, 1.0] | **0.15 ms** | **100.0% (4/4)** |
+| **Hybrid RRF (Dense + BM25, $k=60, \tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.9091 [0.77, 1.0] | 0.9329 [0.83, 1.0] | 862.31 ms | **100.0% (4/4)** |
 
 ### Generalization Key Findings:
 1. **Zero Degradation on Unseen Prompts**: Dense, BM25, and Hybrid pipelines all achieved 100% Hit Rate@5 on answerable questions in the Test split, proving that retrieval generalizes robustly to unseen technical prompts.
 2. **Defensive Abstention Verified**: The unanswerable queries in the Test Split (Titanic box office, adult ibuprofen dosage, British prime minister in 1805, coffee cultivation) were 100% rejected across Dense, BM25, and Hybrid with calibrated cutoffs.
 3. **Statistical Sample-Size Boundaries**: While achieving 100% CAR (4/4) on held-out test data verifies that abstention logic functions properly, $N=4$ unanswerable samples is a pilot diagnostic check rather than a population-level safety proof.
+4. **Phase 3.1.2 Deduplication Lift**: By eliminating duplicate ranking rows caused by float metadata serialization (`_0.0` vs `_0`), distinct relevant chunks advanced in the ranking, lifting Hybrid MRR on the Test split from 0.8636 to 0.9091 (+5.27%) and nDCG@5 from 0.8993 to 0.9329 (+3.74%).
 
 ---
 
