@@ -82,6 +82,12 @@ class IngestService:
                 f"Could not delete vectors from Pinecone for {document_name}: {e}"
             )
 
+        try:
+            removed_bm25 = self.pipeline.bm25_index.remove_document_by_filename(document_name)
+            logger.info(f"Removed {removed_bm25} chunk(s) from BM25 index for '{document_name}'.")
+        except Exception as e:
+            logger.warning(f"Could not remove BM25 chunks for {document_name}: {e}")
+
         return file_deleted
 
     def delete_all_documents(self) -> int:
@@ -105,5 +111,11 @@ class IngestService:
             logger.success("Purged all vectors from Pinecone index.")
         except Exception as e:
             logger.warning(f"Could not purge Pinecone index: {e}")
+
+        try:
+            self.pipeline.bm25_index.clear()
+            logger.success("Cleared BM25 sparse index.")
+        except Exception as e:
+            logger.warning(f"Could not clear BM25 index: {e}")
 
         return count

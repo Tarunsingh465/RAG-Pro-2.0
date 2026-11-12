@@ -6,6 +6,7 @@ from app.core.engineering import is_engineering_query
 from app.core.logger import get_logger
 from app.llm.chain import RAGChain
 from app.llm.client import LLMClient
+from app.retrieval.retriever import Retriever
 from app.vectorstore.pinecone import PineconeManager
 
 logger = get_logger()
@@ -28,6 +29,7 @@ class RagService:
 
     def __init__(self):
         self.chain = RAGChain()
+        self.retriever = Retriever()
         self.vectorstore = PineconeManager()
 
     def _get_search_query(self, question: str) -> tuple[str, bool]:
@@ -52,7 +54,8 @@ class RagService:
         top_k: int = 5,
     ):
         """
-        Run a similarity check before invoking the full chain.
+        Run a hybrid relevance check before invoking the full LLM chain.
+        Evaluates both dense cosine similarity and BM25 sparse keyword signals.
         Returns (is_relevant, top_score, results).
         """
         upload_dir = Path(UPLOAD_FOLDER)
@@ -63,38 +66,35 @@ class RagService:
         )
 
         if not active_docs:
-            logger.info("RagService: No active documents in knowledge base. Bypassing vector search.")
+            logger.info("RagService: No active documents in knowledge base. Bypassing retrieval.")
             return False, 0.0, []
-
-        if document_id:
-            metadata_filter = {"document_id": document_id}
-        elif len(active_docs) == 1:
-            metadata_filter = {"file_name": {"$eq": active_docs[0]}}
-        else:
-            metadata_filter = {"file_name": {"$in": active_docs}}
 
         search_query, is_evaluative = self._get_search_query(question)
 
-        results = self.vectorstore.similarity_search_with_score(
-            search_query, k=top_k, filter=metadata_filter
+        # 1. Check Dense candidates
+        dense_results = self.retriever.retrieve_dense(
+            query=search_query, k=top_k, document_id=document_id, active_docs=active_docs
         )
 
-        if not results:
-            logger.warning("No matches found in vectorstore for query.")
-            return False, 0.0, []
+        # 2. Check BM25 candidates
+        bm25_results = self.retriever.retrieve_bm25(
+            query=search_query, k=top_k, document_id=document_id, active_docs=active_docs
+        )
 
-        top_score = results[0][1]  # (Document, score) tuples
+        top_score = dense_results[0][1] if dense_results else 0.0
+        has_bm25_match = len(bm25_results) > 0 and bm25_results[0][1] > 1.0
 
         # Adaptive thresholding: Evaluative & Engineering queries often use cross-domain vocabulary
-        # compared to raw technical chunks, so use adaptive threshold 0.50.
         effective_threshold = 0.50 if is_evaluative else settings.RAG_SIMILARITY_THRESHOLD
 
         logger.info(
-            f"Top similarity score: {top_score:.4f} (threshold: {effective_threshold:.2f}, evaluative={is_evaluative})"
+            f"Relevance check: Dense top_score={top_score:.4f} (threshold={effective_threshold:.2f}), "
+            f"BM25 match={has_bm25_match} ({len(bm25_results)} matches)"
         )
 
-        is_relevant = top_score >= effective_threshold
-        return is_relevant, top_score, results
+        is_relevant = (top_score >= effective_threshold) or has_bm25_match
+        primary_results = dense_results if dense_results else bm25_results
+        return is_relevant, top_score, primary_results
 
     def ask(
         self,
@@ -102,6 +102,7 @@ class RagService:
         document_id: str | None = None,
         top_k: int = 5,
         history: list[dict] | None = None,
+        mode: str = "hybrid",
     ):
         is_relevant, top_score, results = self._check_relevance(
             question, document_id=document_id, top_k=top_k
@@ -120,14 +121,17 @@ class RagService:
             document_id=document_id,
             top_k=top_k,
             history=history,
+            mode=mode,
         )
 
         sources = []
         for doc in response["documents"]:
             sources.append(
                 {
-                    "source": doc.metadata.get("source"),
+                    "source": doc.metadata.get("source") or doc.metadata.get("file_name"),
                     "page": doc.metadata.get("page"),
+                    "section": doc.metadata.get("section"),
+                    "rrf_score": doc.metadata.get("rrf_score"),
                 }
             )
 

@@ -34,6 +34,7 @@ class ChatService:
         document_id: str | None = None,
         top_k: int = 5,
         history: list[dict] | None = None,
+        retrieval_mode: str = "hybrid",
     ):
         try:
             # 1. Zero-API conversational interceptor:
@@ -105,6 +106,7 @@ class ChatService:
                         document_id=document_id,
                         top_k=top_k,
                         history=history,
+                        mode=retrieval_mode,
                     )
                     # Sanitize sources: only allow active documents
                     if result.get("sources"):
@@ -131,6 +133,7 @@ class ChatService:
                     document_id=document_id,
                     top_k=top_k,
                     history=history,
+                    mode=retrieval_mode,
                 )
 
                 if result.get("out_of_context"):

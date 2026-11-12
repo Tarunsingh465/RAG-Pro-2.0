@@ -37,6 +37,7 @@ class RAGChain:
         document_id: str | None = None,
         top_k: int = 4,
         history: list[dict] | None = None,
+        mode: str = "hybrid",
     ):
         is_evaluative = any(kw in question.lower() for kw in EVALUATIVE_KEYWORDS)
         is_eng, discipline, disc_name = is_engineering_query(question)
@@ -56,6 +57,7 @@ class RAGChain:
             query=search_query,
             document_id=document_id,
             k=top_k,
+            mode=mode,
         )
 
         context = "\n\n".join(

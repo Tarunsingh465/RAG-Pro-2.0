@@ -92,4 +92,5 @@ async def chat(request: ChatRequest):
         document_id=request.document_id,
         top_k=request.top_k,
         history=request.history,
+        retrieval_mode=request.retrieval_mode,
     )

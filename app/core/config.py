@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     LLM_BASE_URL: str | None = None
     LLM_MODEL: str = "nvidia/nemotron-3.5-super-vl-120b-a12b"
     EMBEDDING_MODEL: str = "models/gemini-embedding-001"
+    EMBEDDING_DIMENSION: int = 3072
 
     @property
     def active_llm_api_key(self) -> str:

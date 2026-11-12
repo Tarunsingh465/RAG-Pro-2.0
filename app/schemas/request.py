@@ -31,6 +31,11 @@ class ChatRequest(BaseModel):
         description="Optional recent chat history messages",
     )
 
+    retrieval_mode: str = Field(
+        default="hybrid",
+        description="Retrieval strategy: 'hybrid' (RRF dense+sparse), 'dense' (Pinecone), or 'sparse' (BM25)",
+    )
+
 
 class DeleteDocumentRequest(BaseModel):
     """

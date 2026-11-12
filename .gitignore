@@ -65,6 +65,8 @@ data/processed/*
 *.db
 *.sqlite
 *.sqlite3
+data/.*_cache.json
+data/.*_index.json
 chroma/
 .chromadb/
 
