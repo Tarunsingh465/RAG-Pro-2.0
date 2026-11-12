@@ -115,9 +115,11 @@ class DocumentSplitter:
         for index, chunk in enumerate(raw_chunks):
             # Maintain existing metadata from extractors, then augment with chunk provenance
             meta = dict(chunk.metadata)
+            doc_file = meta.get("file_name") or meta.get("source") or "doc"
+            deterministic_id = f"{doc_file}_{self.strategy_name}_{index}"
             meta.update(
                 {
-                    "chunk_id": str(uuid4()),
+                    "chunk_id": deterministic_id,
                     "chunk_index": index,
                     "chunk_strategy": self.strategy_name,
                     "chunk_size_chars": self.chunk_size,

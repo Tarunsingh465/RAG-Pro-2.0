@@ -1,0 +1,549 @@
+{
+  "metadata": {
+    "experiment_id": "EXP-1794460034",
+    "timestamp_utc": "2026-11-12T05:07:14.294777+00:00",
+    "git_commit": "e8df536",
+    "host": "Intel Core i5-4440 (4 cores, 4 threads), 7.69 GB RAM",
+    "embedding_model": "models/gemini-embedding-001",
+    "k": 5,
+    "total_questions": 50
+  },
+  "retrieval_methods": [
+    {
+      "method_name": "Dense Semantic (Pinecone)",
+      "total_questions": 50,
+      "k": 5,
+      "mean_precision_at_k": 0.328,
+      "precision_ci_95": [
+        0.26,
+        0.392
+      ],
+      "mean_recall_at_k": 0.685,
+      "recall_ci_95": [
+        0.5567,
+        0.8083
+      ],
+      "mean_hit_rate_at_k": 0.74,
+      "hit_rate_ci_95": [
+        0.6,
+        0.86
+      ],
+      "mrr": 0.74,
+      "mrr_ci_95": [
+        0.6,
+        0.86
+      ],
+      "mean_ndcg_at_k": 0.6926,
+      "ndcg_ci_95": [
+        0.5631,
+        0.8161
+      ],
+      "mean_latency_ms": 835.21,
+      "p50_latency_ms": 804.8,
+      "p95_latency_ms": 861.98,
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 12,
+          "precision_at_k": 0.4167,
+          "recall_at_k": 0.9375,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.9386,
+          "latency_ms": 932.83
+        },
+        "Technical explanation": {
+          "count": 7,
+          "precision_at_k": 0.4286,
+          "recall_at_k": 0.9167,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.9425,
+          "latency_ms": 812.88
+        },
+        "Troubleshooting": {
+          "count": 7,
+          "precision_at_k": 0.4571,
+          "recall_at_k": 0.9524,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.9665,
+          "latency_ms": 808.17
+        },
+        "Maintenance": {
+          "count": 6,
+          "precision_at_k": 0.4333,
+          "recall_at_k": 0.8611,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.862,
+          "latency_ms": 808.69
+        },
+        "Comparison": {
+          "count": 5,
+          "precision_at_k": 0.52,
+          "recall_at_k": 0.95,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.9664,
+          "latency_ms": 801.16
+        },
+        "Unanswerable questions": {
+          "count": 13,
+          "precision_at_k": 0.0,
+          "recall_at_k": 0.0,
+          "hit_rate_at_k": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_k": 0.0,
+          "latency_ms": 797.04
+        }
+      }
+    },
+    {
+      "method_name": "BM25 Sparse (Okapi)",
+      "total_questions": 50,
+      "k": 5,
+      "mean_precision_at_k": 0.476,
+      "precision_ci_95": [
+        0.388,
+        0.568
+      ],
+      "mean_recall_at_k": 0.77,
+      "recall_ci_95": [
+        0.6867,
+        0.8483
+      ],
+      "mean_hit_rate_at_k": 0.96,
+      "hit_rate_ci_95": [
+        0.9,
+        1.0
+      ],
+      "mrr": 0.9367,
+      "mrr_ci_95": [
+        0.8667,
+        0.99
+      ],
+      "mean_ndcg_at_k": 0.7988,
+      "ndcg_ci_95": [
+        0.7217,
+        0.8668
+      ],
+      "mean_latency_ms": 0.1,
+      "p50_latency_ms": 0.09,
+      "p95_latency_ms": 0.24,
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 12,
+          "precision_at_k": 0.35,
+          "recall_at_k": 0.8056,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.9028,
+          "ndcg_at_k": 0.8091,
+          "latency_ms": 0.15
+        },
+        "Technical explanation": {
+          "count": 7,
+          "precision_at_k": 0.4,
+          "recall_at_k": 0.8452,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.8872,
+          "latency_ms": 0.1
+        },
+        "Troubleshooting": {
+          "count": 7,
+          "precision_at_k": 0.2857,
+          "recall_at_k": 0.619,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.6928,
+          "latency_ms": 0.16
+        },
+        "Maintenance": {
+          "count": 6,
+          "precision_at_k": 0.3667,
+          "recall_at_k": 0.75,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.7723,
+          "latency_ms": 0.12
+        },
+        "Comparison": {
+          "count": 5,
+          "precision_at_k": 0.32,
+          "recall_at_k": 0.6167,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.7072,
+          "latency_ms": 0.1
+        },
+        "Unanswerable questions": {
+          "count": 13,
+          "precision_at_k": 0.8462,
+          "recall_at_k": 0.8462,
+          "hit_rate_at_k": 0.8462,
+          "mrr": 0.8462,
+          "ndcg_at_k": 0.8462,
+          "latency_ms": 0.02
+        }
+      }
+    },
+    {
+      "method_name": "Hybrid RRF (Dense + BM25, k=60)",
+      "total_questions": 50,
+      "k": 5,
+      "mean_precision_at_k": 0.532,
+      "precision_ci_95": [
+        0.428,
+        0.632
+      ],
+      "mean_recall_at_k": 0.73,
+      "recall_ci_95": [
+        0.59,
+        0.85
+      ],
+      "mean_hit_rate_at_k": 0.74,
+      "hit_rate_ci_95": [
+        0.6,
+        0.86
+      ],
+      "mrr": 0.74,
+      "mrr_ci_95": [
+        0.6,
+        0.86
+      ],
+      "mean_ndcg_at_k": 0.7264,
+      "ndcg_ci_95": [
+        0.5904,
+        0.8478
+      ],
+      "mean_latency_ms": 0.51,
+      "p50_latency_ms": 0.47,
+      "p95_latency_ms": 0.81,
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 12,
+          "precision_at_k": 0.6833,
+          "recall_at_k": 0.9583,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.9575,
+          "latency_ms": 0.5
+        },
+        "Technical explanation": {
+          "count": 7,
+          "precision_at_k": 0.8,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 1.0,
+          "latency_ms": 0.48
+        },
+        "Troubleshooting": {
+          "count": 7,
+          "precision_at_k": 0.7143,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.9951,
+          "latency_ms": 0.51
+        },
+        "Maintenance": {
+          "count": 6,
+          "precision_at_k": 0.6333,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.9829,
+          "latency_ms": 0.67
+        },
+        "Comparison": {
+          "count": 5,
+          "precision_at_k": 0.8,
+          "recall_at_k": 1.0,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.9932,
+          "latency_ms": 0.47
+        },
+        "Unanswerable questions": {
+          "count": 13,
+          "precision_at_k": 0.0,
+          "recall_at_k": 0.0,
+          "hit_rate_at_k": 0.0,
+          "mrr": 0.0,
+          "ndcg_at_k": 0.0,
+          "latency_ms": 0.47
+        }
+      }
+    }
+  ],
+  "chunk_size_comparison": {
+    "small": {
+      "method_name": "BM25 (Small Chunks: 500 chars)",
+      "total_questions": 50,
+      "k": 5,
+      "mean_precision_at_k": 0.508,
+      "precision_ci_95": [
+        0.424,
+        0.596
+      ],
+      "mean_recall_at_k": 0.735,
+      "recall_ci_95": [
+        0.6467,
+        0.8217
+      ],
+      "mean_hit_rate_at_k": 0.96,
+      "hit_rate_ci_95": [
+        0.9,
+        1.0
+      ],
+      "mrr": 0.9267,
+      "mrr_ci_95": [
+        0.85,
+        0.98
+      ],
+      "mean_ndcg_at_k": 0.7641,
+      "ndcg_ci_95": [
+        0.6846,
+        0.8405
+      ],
+      "mean_latency_ms": 0.1,
+      "p50_latency_ms": 0.09,
+      "p95_latency_ms": 0.25,
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 12,
+          "precision_at_k": 0.3667,
+          "recall_at_k": 0.7014,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.9444,
+          "ndcg_at_k": 0.7444,
+          "latency_ms": 0.15
+        },
+        "Technical explanation": {
+          "count": 7,
+          "precision_at_k": 0.4571,
+          "recall_at_k": 0.7738,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.8373,
+          "latency_ms": 0.1
+        },
+        "Troubleshooting": {
+          "count": 7,
+          "precision_at_k": 0.3143,
+          "recall_at_k": 0.6191,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.9286,
+          "ndcg_at_k": 0.6449,
+          "latency_ms": 0.16
+        },
+        "Maintenance": {
+          "count": 6,
+          "precision_at_k": 0.4,
+          "recall_at_k": 0.7639,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.7743,
+          "latency_ms": 0.11
+        },
+        "Comparison": {
+          "count": 5,
+          "precision_at_k": 0.44,
+          "recall_at_k": 0.6,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.9,
+          "ndcg_at_k": 0.6499,
+          "latency_ms": 0.09
+        },
+        "Unanswerable questions": {
+          "count": 13,
+          "precision_at_k": 0.8462,
+          "recall_at_k": 0.8462,
+          "hit_rate_at_k": 0.8462,
+          "mrr": 0.8462,
+          "ndcg_at_k": 0.8462,
+          "latency_ms": 0.02
+        }
+      }
+    },
+    "medium": {
+      "method_name": "BM25 (Medium Chunks: 1000 chars)",
+      "total_questions": 50,
+      "k": 5,
+      "mean_precision_at_k": 0.476,
+      "precision_ci_95": [
+        0.388,
+        0.568
+      ],
+      "mean_recall_at_k": 0.77,
+      "recall_ci_95": [
+        0.6867,
+        0.8483
+      ],
+      "mean_hit_rate_at_k": 0.96,
+      "hit_rate_ci_95": [
+        0.9,
+        1.0
+      ],
+      "mrr": 0.9367,
+      "mrr_ci_95": [
+        0.8667,
+        0.99
+      ],
+      "mean_ndcg_at_k": 0.7988,
+      "ndcg_ci_95": [
+        0.7217,
+        0.8668
+      ],
+      "mean_latency_ms": 0.21,
+      "p50_latency_ms": 0.1,
+      "p95_latency_ms": 0.65,
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 12,
+          "precision_at_k": 0.35,
+          "recall_at_k": 0.8056,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.9028,
+          "ndcg_at_k": 0.8091,
+          "latency_ms": 0.21
+        },
+        "Technical explanation": {
+          "count": 7,
+          "precision_at_k": 0.4,
+          "recall_at_k": 0.8452,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.8872,
+          "latency_ms": 0.1
+        },
+        "Troubleshooting": {
+          "count": 7,
+          "precision_at_k": 0.2857,
+          "recall_at_k": 0.619,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.6928,
+          "latency_ms": 0.8
+        },
+        "Maintenance": {
+          "count": 6,
+          "precision_at_k": 0.3667,
+          "recall_at_k": 0.75,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.7723,
+          "latency_ms": 0.14
+        },
+        "Comparison": {
+          "count": 5,
+          "precision_at_k": 0.32,
+          "recall_at_k": 0.6167,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.7072,
+          "latency_ms": 0.1
+        },
+        "Unanswerable questions": {
+          "count": 13,
+          "precision_at_k": 0.8462,
+          "recall_at_k": 0.8462,
+          "hit_rate_at_k": 0.8462,
+          "mrr": 0.8462,
+          "ndcg_at_k": 0.8462,
+          "latency_ms": 0.02
+        }
+      }
+    },
+    "large": {
+      "method_name": "BM25 (Large Chunks: 1500 chars)",
+      "total_questions": 50,
+      "k": 5,
+      "mean_precision_at_k": 0.472,
+      "precision_ci_95": [
+        0.38,
+        0.564
+      ],
+      "mean_recall_at_k": 0.86,
+      "recall_ci_95": [
+        0.7817,
+        0.9267
+      ],
+      "mean_hit_rate_at_k": 0.96,
+      "hit_rate_ci_95": [
+        0.9,
+        1.0
+      ],
+      "mrr": 0.9267,
+      "mrr_ci_95": [
+        0.8533,
+        0.98
+      ],
+      "mean_ndcg_at_k": 0.855,
+      "ndcg_ci_95": [
+        0.7833,
+        0.9162
+      ],
+      "mean_latency_ms": 0.07,
+      "p50_latency_ms": 0.07,
+      "p95_latency_ms": 0.15,
+      "category_breakdown": {
+        "Factual lookup": {
+          "count": 12,
+          "precision_at_k": 0.35,
+          "recall_at_k": 0.8889,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.9028,
+          "ndcg_at_k": 0.8455,
+          "latency_ms": 0.09
+        },
+        "Technical explanation": {
+          "count": 7,
+          "precision_at_k": 0.4,
+          "recall_at_k": 0.8452,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.8872,
+          "latency_ms": 0.08
+        },
+        "Troubleshooting": {
+          "count": 7,
+          "precision_at_k": 0.2857,
+          "recall_at_k": 0.8095,
+          "hit_rate_at_k": 1.0,
+          "mrr": 0.9286,
+          "ndcg_at_k": 0.7917,
+          "latency_ms": 0.09
+        },
+        "Maintenance": {
+          "count": 6,
+          "precision_at_k": 0.3667,
+          "recall_at_k": 0.9445,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.9253,
+          "latency_ms": 0.09
+        },
+        "Comparison": {
+          "count": 5,
+          "precision_at_k": 0.28,
+          "recall_at_k": 0.8167,
+          "hit_rate_at_k": 1.0,
+          "mrr": 1.0,
+          "ndcg_at_k": 0.8602,
+          "latency_ms": 0.09
+        },
+        "Unanswerable questions": {
+          "count": 13,
+          "precision_at_k": 0.8462,
+          "recall_at_k": 0.8462,
+          "hit_rate_at_k": 0.8462,
+          "mrr": 0.8462,
+          "ndcg_at_k": 0.8462,
+          "latency_ms": 0.01
+        }
+      }
+    }
+  }
+}

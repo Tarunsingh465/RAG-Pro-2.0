@@ -177,3 +177,4 @@ Measurements executed on Intel Core i5-4440 CPU @ 3.10GHz, 7.69 GB RAM:
 | **BUG-006** | Absence of Automated Test Suite | **Fixed and verified (20 tests passing)** |
 | **BUG-007** | Missing BM25, Reciprocal Rank Fusion & Evaluation | **Partially fixed (BM25 + RRF complete; eval in Phase 3)** |
 | **BUG-008** | Lack of Dedicated Industrial Workspaces | **Scheduled for Phase 4** |
+

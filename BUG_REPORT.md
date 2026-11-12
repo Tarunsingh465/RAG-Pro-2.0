@@ -14,7 +14,7 @@ This document tracks all identified, investigated, fixed, and active defects acr
 | **BUG-004** | Loss of Table & Multi-Sheet Structure in Office/Tabular Parsers | `app.ingestion.extractors` | **Medium** | **Fixed and verified** |
 | **BUG-005** | Dead Code & Duplicate Logic in Frontend Directory | `frontend/api.py`, `chat.py`, `sidebar.py` | **Low** | **Deferred to Phase 5** |
 | **BUG-006** | Absence of Automated Test Suite and Regression Harness | Root / Test Architecture | **High** | **Fixed and verified (20 tests passing)** |
-| **BUG-007** | Missing BM25, Reciprocal Rank Fusion, and Evaluation Metrics | `app.retrieval`, `app.evaluation` | **Critical** | **Partially fixed (BM25 + RRF fixed; eval in Phase 3)** |
+| **BUG-007** | Missing BM25, Reciprocal Rank Fusion, and Evaluation Metrics | `app.retrieval`, `app.evaluation` | **Critical** | **Fixed and verified (Phase 2 & 3 complete)** |
 | **BUG-008** | Lack of Dedicated Industrial Decision Workspaces (RCA/FMEA/CAPA) | `frontend/app.py`, `app.services` | **High** | **Scheduled for Phase 4** |
 
 ---
@@ -111,12 +111,16 @@ This document tracks all identified, investigated, fixed, and active defects acr
 - **Affected Module**: `app/retrieval/`, `app/evaluation/`
 - **Severity**: Critical
 - **Root Cause**: Hybrid retrieval and evaluation engines were scheduled for Phase 2 and 3.
-- **Fix Implemented (Phase 2 Component)**:
+- **Fix Implemented**:
   1. Implemented Okapi BM25 (`app/retrieval/bm25.py`) with tokenization, TF, smoothed IDF, and length normalization.
   2. Implemented Reciprocal Rank Fusion (`app/retrieval/hybrid.py`) with constant $k=60$, stable chunk IDs, and diagnostic profiling.
   3. Integrated hybrid retrieval into `app/retrieval/retriever.py`, `pipeline.py`, and `rag_service.py`.
-- **Test Used for Verification**: 5 BM25 tests and 3 RRF tests in `tests/test_phase2_retrieval.py`.
-- **Final Status**: **Partially fixed (BM25 + RRF complete; quantitative benchmark evaluation scheduled for Phase 3)**
+  4. Implemented full Phase 3 Evaluation Metrics engine (`app/evaluation/metrics.py`) providing Precision@K, Recall@K, Hit Rate@K, MRR, nDCG@K, and 95% Bootstrap Confidence Intervals.
+  5. Built evaluation corpus (10 industrial specs) and ground-truth dataset (50 questions: 35 dev / 15 test).
+  6. Implemented reproducible benchmark runner (`app/evaluation/runner.py`) generating `EXPERIMENT_RESULTS.json`, `EXPERIMENT_RESULTS.csv`, and `ERROR_ANALYSIS.md`.
+  7. Built interactive Evaluation & Benchmark Dashboard in `frontend/app.py`.
+- **Test Used for Verification**: 5 BM25 tests and 3 RRF tests in `tests/test_phase2_retrieval.py` + 15 evaluation tests in `tests/test_phase3_evaluation.py`. All 35 tests pass in 2.59s.
+- **Final Status**: **Fixed and verified (Phase 2 & Phase 3 complete)**
 
 ---
 

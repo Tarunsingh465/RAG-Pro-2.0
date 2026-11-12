@@ -1,0 +1,5 @@
+Failure_Mode,Root_Cause,Severity,Occurrence,Detection,RPN,Corrective_Action
+Fatigue Flaking / Spalling,Cyclic contact stress exceeding dynamic load rating,8,4,3,96,Upgrade to vacuum-degassed high-chromium bearing steel
+Lubrication Starvation,Blocked grease port or oil mist supply failure,9,5,2,90,Install automatic grease lubricators with low-level alarm
+Electrical Fluting (VFD induced),Parasitic shaft voltage discharging across oil film,7,6,4,168,Fit ceramic insulated bearings on NDE and install shaft grounding brush
+False Brinelling (Vibration fretting),External vibration transmission while machine is idle,6,4,5,120,Implement periodic shaft rotation protocol for standby equipment

@@ -317,3 +317,4 @@ class BM25Index:
             logger.info(f"Loaded BM25 index with {len(self.corpus)} chunks from '{self.storage_path.name}'.")
         except Exception as e:
             logger.warning(f"Failed to load BM25 index from '{self.storage_path}': {e}")
+
