@@ -8,7 +8,7 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.30%2B-FF4B4B.svg)](https://streamlit.io/)
 [![Pinecone](https://img.shields.io/badge/Pinecone-Vector_DB-green.svg)](https://www.pinecone.io/)
-[![Tests](https://img.shields.io/badge/Tests-53%20Passed%20(100%25)-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-60%20Passed%20(100%25)-brightgreen.svg)]()
 
 ---
 
@@ -94,7 +94,7 @@ Industrial documentation presents distinct retrieval challenges compared to gene
 | **Embeddings** | Google Gemini (`models/gemini-embedding-001`) | High-dimensional (3072d) semantic embeddings via Google AI Studio API. |
 | **LLM Inference** | NVIDIA NIM / OpenRouter | Cloud inference with NVIDIA Nemotron / Llama models to avoid GPU hardware constraints. |
 | **Document Parsers** | `pypdf`, `python-docx`, `python-pptx`, `pandas`, `openpyxl`, `tabulate` | Format-specific local extraction; optional Mistral OCR for scanned images. |
-| **Testing** | Python `unittest` | 53 unit and integration tests covering extraction, retrieval, fusion, evaluation, and integrity. |
+| **Testing** | Python `unittest` | 60 unit and integration tests covering extraction, retrieval, fusion, evaluation, and end-to-end functional validation. |
 
 ---
 
@@ -195,7 +195,7 @@ In a separate terminal window:
 - Web UI will launch at `http://localhost:8501`.
 
 ### Step 6: Run the Unit Tests
-Execute the 53-test verification suite:
+Execute the 60-test verification suite:
 ```powershell
 python -m unittest discover tests
 ```

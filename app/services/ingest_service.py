@@ -31,7 +31,8 @@ class IngestService:
                     detail="Upload contained a file with no filename.",
                 )
 
-            file_path = upload_dir / file.filename
+            safe_filename = Path(file.filename).name
+            file_path = upload_dir / safe_filename
 
             content = await file.read()
 
@@ -39,12 +40,30 @@ class IngestService:
                 buffer.write(content)
 
             logger.success(
-                f"Saved: {file.filename}"
+                f"Saved: {safe_filename}"
             )
 
             paths.append(file_path)
 
-        return self.pipeline.ingest(paths)
+        try:
+            return self.pipeline.ingest(paths)
+        except ValueError as e:
+            # Clean up uploaded files on validation error to prevent orphaned files
+            for p in paths:
+                try:
+                    p.unlink(missing_ok=True)
+                except Exception:
+                    pass
+            logger.error(f"Ingestion failed with validation error: {e}")
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            for p in paths:
+                try:
+                    p.unlink(missing_ok=True)
+                except Exception:
+                    pass
+            logger.error(f"Ingestion failed with unexpected error: {e}")
+            raise HTTPException(status_code=500, detail=f"Ingestion failed: {e}")
 
     def list_documents(self) -> list[str]:
         upload_dir = Path(UPLOAD_FOLDER)
@@ -59,34 +78,35 @@ class IngestService:
         )
 
     def delete_document(self, document_name: str) -> bool:
+        safe_name = Path(document_name).name
         upload_dir = Path(UPLOAD_FOLDER)
-        file_path = upload_dir / document_name
+        file_path = upload_dir / safe_name
 
         file_deleted = False
         if file_path.exists() and file_path.is_file():
             file_path.unlink()
             file_deleted = True
-            logger.info(f"Deleted local file: {document_name}")
+            logger.info(f"Deleted local file: {safe_name}")
 
         try:
             self.pipeline.vector_store.index.delete(
-                filter={"file_name": {"$eq": document_name}}
+                filter={"file_name": {"$eq": safe_name}}
             )
             # Also purge by source metadata if indexed with full path or basename
             self.pipeline.vector_store.index.delete(
-                filter={"source": {"$eq": document_name}}
+                filter={"source": {"$eq": safe_name}}
             )
-            logger.info(f"Deleted vectors for '{document_name}' from Pinecone")
+            logger.info(f"Deleted vectors for '{safe_name}' from Pinecone")
         except Exception as e:
             logger.warning(
-                f"Could not delete vectors from Pinecone for {document_name}: {e}"
+                f"Could not delete vectors from Pinecone for {safe_name}: {e}"
             )
 
         try:
-            removed_bm25 = self.pipeline.bm25_index.remove_document_by_filename(document_name)
-            logger.info(f"Removed {removed_bm25} chunk(s) from BM25 index for '{document_name}'.")
+            removed_bm25 = self.pipeline.bm25_index.remove_document_by_filename(safe_name)
+            logger.info(f"Removed {removed_bm25} chunk(s) from BM25 index for '{safe_name}'.")
         except Exception as e:
-            logger.warning(f"Could not remove BM25 chunks for {document_name}: {e}")
+            logger.warning(f"Could not remove BM25 chunks for {safe_name}: {e}")
 
         return file_deleted
 

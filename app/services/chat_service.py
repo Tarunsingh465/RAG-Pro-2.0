@@ -110,7 +110,10 @@ class ChatService:
                     )
                     # Sanitize sources: only allow active documents
                     if result.get("sources"):
-                        result["sources"] = [s for s in result["sources"] if s.get("source") in active_docs]
+                        result["sources"] = [
+                            s for s in result["sources"]
+                            if Path(str(s.get("source") or "")).name in active_docs
+                        ]
                     return result
 
                 is_eng, disc, _ = is_engineering_query(question)
@@ -189,7 +192,10 @@ class ChatService:
 
                 # Ensure only currently active documents are in sources
                 if result.get("sources"):
-                    result["sources"] = [s for s in result["sources"] if s.get("source") in active_docs]
+                    result["sources"] = [
+                        s for s in result["sources"]
+                        if Path(str(s.get("source") or "")).name in active_docs
+                    ]
 
                 return result
 
@@ -210,6 +216,16 @@ class ChatService:
                         "**How to resolve this:**\n"
                         "1. Go to [https://openrouter.ai/settings/credits](https://openrouter.ai/settings/credits) and top up your account balance.\n"
                         "2. Or update your `OPENROUTER_API_KEY` in your `.env` file with an active key."
+                    ),
+                    "sources": [],
+                }
+            if "429" in err_str or "rate limit" in err_str.lower() or "resource_exhausted" in err_str.lower():
+                logger.error(f"Upstream API rate limit reached: {e}")
+                return {
+                    "answer": (
+                        "⚠️ **API Rate Limit Exceeded (Error 429)**\n\n"
+                        "The upstream inference provider rate limit has been temporarily exceeded. "
+                        "Please wait a few seconds before submitting your next question."
                     ),
                     "sources": [],
                 }

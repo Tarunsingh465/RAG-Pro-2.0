@@ -52,7 +52,7 @@ with st.sidebar:
         """
         <div class="developer-badge">
             <span>👨‍💻</span>
-            <span>Developed by <b>Tarun</b> · B.Tech CS (DS & AI)</span>
+            <span>Developed by <b>Tarun</b> · B.Tech CS (Data Science & AI)</span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -143,18 +143,24 @@ with st.sidebar:
                         with col_del:
                             if st.button("🗑", key=f"del_{doc}", help=f"Delete {doc}"):
                                 try:
-                                    requests.delete(f"{API_URL}/documents/{doc}", timeout=10)
-                                    st.toast(f"Removed {doc}", icon="✅")
-                                    st.rerun()
+                                    del_resp = requests.delete(f"{API_URL}/documents/{doc}", timeout=10)
+                                    if del_resp.status_code == 200:
+                                        st.toast(f"Removed {doc}", icon="✅")
+                                        st.rerun()
+                                    else:
+                                        st.error(f"Failed to delete {doc}: {del_resp.text}")
                                 except Exception as e:
                                     st.error(f"Failed to delete: {e}")
                     if docs:
                         st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
                         if st.button("🗑 Wipe All Documents", use_container_width=True, help="Removes all uploaded documents and resets Pinecone index"):
                             try:
-                                requests.delete(f"{API_URL}/documents", timeout=10)
-                                st.toast("Knowledge base cleared!", icon="✅")
-                                st.rerun()
+                                del_all_resp = requests.delete(f"{API_URL}/documents", timeout=10)
+                                if del_all_resp.status_code == 200:
+                                    st.toast("Knowledge base cleared!", icon="✅")
+                                    st.rerun()
+                                else:
+                                    st.error(f"Failed to clear knowledge base: {del_all_resp.text}")
                             except Exception as e:
                                 st.error(f"Failed to clear knowledge base: {e}")
             else:

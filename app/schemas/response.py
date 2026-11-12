@@ -5,7 +5,9 @@ from typing import List
 class SourceDocument(BaseModel):
     source: str
     page: int | None = None
+    section: str | None = None
     score: float | None = None
+    rrf_score: float | None = None
 
 
 class ChatResponse(BaseModel):
