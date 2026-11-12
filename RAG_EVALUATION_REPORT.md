@@ -5,7 +5,7 @@
 **Standard**: TREC / BeIR Information Retrieval Benchmarking Protocol  
 **Audit Standard**: Phase 3.1 Audited Edition (Deterministic Chunk IDs, Separated Splits, Calibrated Cutoffs)  
 **Hardware Profile**: Intel Core i5-4440 (4 physical cores, 4 threads @ 3.10 GHz), 7.69 GB RAM, Windows 10  
-**Inference Profile**: Local CPU (Okapi BM25 Sparse) + Cloud REST API (`text-embedding-004` / Pinecone Serverless)  
+**Inference Profile**: Local CPU (Okapi BM25 Sparse) + Cloud REST API (`models/gemini-embedding-001` / Pinecone Serverless)  
 **Date**: November 2026 | **Git Branch**: `main`
 
 ---
@@ -19,7 +19,7 @@ Unlike superficial accuracy benchmarks, this evaluation addresses industrial kno
 2. **Strict Metric Segregation**: Retrieval ranking metrics (Precision@5, Recall@5, Hit Rate@5, MRR, nDCG@5) are computed **exclusively on answerable queries** ($N=26$ Dev, $N=11$ Test). Out-of-domain unanswerable queries are evaluated via dedicated **Abstention Metrics** (Confusion Matrix, Correct Abstention Rate, False Retrieval Rate).
 3. **Similarity Threshold Calibration**: Cosine similarity cutoff calibration on the Development Split established **$\tau^* = 0.65$** as the optimal operating point, eliminating 100% of out-of-domain false positives while preserving 100% answerable recall.
 4. **Generalization on Held-Out Test Split**: The frozen threshold was verified on 15 unseen test questions, confirming that the calibrated system achieves 100% Hit Rate@5 and 100% Correct Abstention Rate without overfitting.
-5. **Architectural Latency Stage Profiling**: Detailed stage profiling highlights that local CPU Okapi BM25 completes retrieval in **0.08 ms**, whereas cloud embedding generation and vector database querying require **~848 ms** due to network and API overhead.
+5. **Architectural Latency Stage Profiling**: Detailed stage profiling highlights that local CPU Okapi BM25 completes retrieval in **0.08 ms**, whereas cloud embedding generation (689.58 ms) and vector database querying (172.40 ms) total **861.98 ms** due to network and API overhead.
 
 ---
 
@@ -107,14 +107,14 @@ Total retrieval latency is systematically accounted across discrete execution st
 | Sub-System / Pipeline Stage | Dense Semantic | Okapi BM25 Sparse | Hybrid RRF ($k=60$) | Compute Location |
 | :--- | :---: | :---: | :---: | :--- |
 | **1. Query Preprocessing** | 0.002 ms | 0.001 ms | 0.001 ms | Local CPU (In-Memory) |
-| **2. BM25 Inverted Index Search** | — | **0.07 ms** | 0.10 ms | Local CPU (In-Memory) |
-| **3. Cloud Embedding Generation** | ~748.33 ms | — | ~748.33 ms | Google Generative AI Cloud API |
-| **4. Pinecone Vector Search** | ~187.08 ms | — | ~187.08 ms | Pinecone Serverless Cloud Index |
-| **5. RRF Rank Fusion** | — | — | 0.35 ms | Local CPU (Ordinal Rank Math) |
-| **Total End-to-End Latency** | **935.41 ms** | **0.07 ms** | **935.85 ms** | Mixed (Cloud + Local) |
+| **2. BM25 Inverted Index Search** | — | **0.08 ms** | 0.09 ms | Local CPU (In-Memory) |
+| **3. Cloud Embedding Generation** | **689.58 ms** | — | **689.58 ms** | Google Generative AI Cloud API (`models/gemini-embedding-001`) |
+| **4. Pinecone Vector Search** | **172.40 ms** | — | **172.40 ms** | Pinecone Serverless Cloud Index |
+| **5. RRF Rank Fusion** | — | — | **0.29 ms** | Local CPU (Ordinal Rank Math) |
+| **Total End-to-End Latency** | **861.98 ms** | **0.08 ms** | **862.36 ms** | Mixed (Cloud + Local) |
 
 > [!TIP]
-> **Engineering Architectural Insight**: Okapi BM25 delivers a **13,300x latency speedup** over Dense Vector Search because it avoids external REST API handshakes, TLS negotiation, and remote network serialization. For embedded or latency-critical edge deployments (e.g. factory SCADA or marine engine rooms), local BM25 provides instant sub-millisecond retrieval. For complex semantic queries, Hybrid RRF leverages dense semantics while maintaining exact keyword anchoring.
+> **Engineering Architectural Insight**: Okapi BM25 delivers an **over 10,000x latency speedup** (0.08 ms vs 861.98 ms) over Dense Vector Search because it avoids external REST API handshakes, TLS negotiation, and remote network serialization. For embedded or latency-critical edge deployments (e.g. factory SCADA or marine engine rooms), local BM25 provides instant sub-millisecond retrieval. For complex semantic queries, Hybrid RRF leverages dense semantics while maintaining exact keyword anchoring.
 
 ---
 

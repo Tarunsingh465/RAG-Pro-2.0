@@ -3,7 +3,7 @@
 
 **Project**: RAG-Pro 2.0 — Industrial Knowledge Intelligence and Decision Support Platform  
 **Repository**: `Tarunsingh465/RAG-Pro-2.0`  
-**Base Commit**: `4f6013d`  
+**Base Commit**: `4f6013d` | **Resolution Commit**: `e860afa`  
 **Developer**: Tarun Singh — B.Tech Computer Science (Data Science & AI)  
 **Date**: November 12, 2026  
 **Status**: **PHASE 3.1.2 COMPLETE & METHODOLOGICALLY VERIFIED** (Phase 4 Paused)
@@ -179,7 +179,7 @@ The complete data path was traced:
 7. **What are the remaining limitations?**
    - The corpus contains 10 documents (30 chunks). While representative of plant-level specifications, it does not evaluate multi-gigabyte scale.
    - The held-out test split contains 15 questions (4 unanswerable). While sufficient for regression verification, it is not a population-level safety certification.
-   - Cloud embedding inference incurs ~748 ms latency, whereas local BM25 takes 0.08 ms.
+   - Cloud embedding inference incurs ~689.58 ms latency, whereas local BM25 takes 0.08 ms.
 8. **How many test queries were used?**
    Exactly **50 queries** (35 Development split: 26 answerable, 9 unanswerable; 15 Held-out test split: 11 answerable, 4 unanswerable).
 9. **Which measurements were obtained from actual external Pinecone/API execution?**

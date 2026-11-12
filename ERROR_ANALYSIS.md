@@ -1,6 +1,6 @@
 # 🔍 Failure & Error Analysis Report — Phase 3.1.2 Audited
 
-**Generated**: 2026-11-12 | **Git Commit**: `4f6013d`  
+**Generated**: 2026-11-12 | **Git Commit at Execution**: `4f6013d` (Working tree state committed as `e860afa`)  
 **Evaluation Scope**: 50 Evaluation Questions (35 Development Split, 15 Held-Out Test Split)  
 **Retrieval Architectures Audited**:
 - Dense Semantic Vector Search (Pinecone Serverless, `models/gemini-embedding-001`, 3072d)

@@ -36,6 +36,7 @@ from app.evaluation.metrics import (
 )
 from app.retrieval.bm25 import BM25Index
 from app.ingestion.extractors.text_extractor import TextExtractor
+from app.evaluation.runner import ExperimentRunner
 
 
 class TestPhase3HybridIntegrity(unittest.TestCase):
@@ -97,43 +98,138 @@ class TestPhase3HybridIntegrity(unittest.TestCase):
             },
         )
 
-    def test_1_no_answerability_leakage(self):
+    @patch("app.evaluation.runner.PineconeManager")
+    def test_1_no_answerability_leakage(self, mock_pinecone):
         """
-        Test 1: Verify that identical retrieval candidates and scores produce
-        identical retrieval decisions regardless of whether ground-truth is_answerable
-        is True or False.
+        Test 1: Genuine test of run_hybrid_experiment() on ExperimentRunner.
+        Verify that identical retrieval candidates and scores produce identical
+        retrieval decisions, threshold decisions, and rankings regardless of
+        whether ground-truth is_answerable is True or False.
+        Confirms ground-truth labels are used exclusively during metric calculation.
         """
-        dense_candidates = [(self.doc_a, 0.72), (self.doc_b, 0.68)]
-        sparse_candidates = [(self.doc_a, 12.0), (self.doc_c, 8.5)]
+        mock_db = MagicMock()
+        mock_pinecone.return_value = mock_db
 
-        dense_thresh = 0.65
-        bm25_thresh = 5.0
-
-        def simulate_hybrid_retrieval(dense_in, sparse_in):
-            passed_dense = [it for it in dense_in if it[1] >= dense_thresh]
-            passed_sparse = [it for it in sparse_in if it[1] >= bm25_thresh]
-            if not passed_dense and not passed_sparse:
-                return []
-            fused, _ = reciprocal_rank_fusion(passed_dense, passed_sparse, k=60, top_n=5)
-            seen = set()
-            retrieved = []
-            for d, _ in fused:
-                cid = get_canonical_chunk_id(d)
-                if cid and cid not in seen:
-                    seen.add(cid)
-                    retrieved.append(cid)
-            return retrieved
-
-        res_when_answerable = simulate_hybrid_retrieval(dense_candidates, sparse_candidates)
-        res_when_unanswerable = simulate_hybrid_retrieval(dense_candidates, sparse_candidates)
-
-        self.assertEqual(
-            res_when_answerable,
-            res_when_unanswerable,
-            "Retrieval decision differed based on ground-truth label (Label Leakage detected!)",
+        runner = ExperimentRunner(k=5)
+        query_text = "What are the turbine bearing temperature limits?"
+        bd = LatencyBreakdown(
+            query_preprocessing_ms=0.01,
+            embedding_generation_ms=10.0,
+            pinecone_search_ms=5.0,
+            total_latency_ms=15.01,
         )
-        self.assertEqual(len(res_when_answerable), 3)
-        self.assertEqual(res_when_answerable[0], "gas_turbine_manual.md_medium_0")
+
+        # 1. Setup two questions with identical query text but opposite answerability labels
+        q_ans = {
+            "question_id": "TEST-ANS-001",
+            "question": query_text,
+            "category": "Factual lookup",
+            "split": "test",
+            "answerability": True,
+            "ground_truth_chunks_medium": [self.doc_a.metadata["chunk_id"]],
+            "expected_answer": "Limit is 115 C.",
+        }
+        q_unans = {
+            "question_id": "TEST-UNANS-001",
+            "question": query_text,  # Identical query text
+            "category": "Unanswerable questions",
+            "split": "test",
+            "answerability": False,
+            "ground_truth_chunks_medium": [],
+            "expected_answer": "Information not present.",
+        }
+
+        # Populate cache so no external embedding call is made
+        runner._dense_cache[query_text] = ([(self.doc_a, 0.78), (self.doc_b, 0.70)], bd)
+        runner.questions = [q_ans, q_unans]
+        chunks = [self.doc_a, self.doc_b, self.doc_c]
+
+        # Execute genuine run_hybrid_experiment()
+        agg, results, fails = runner.run_hybrid_experiment(
+            chunks=chunks,
+            strategy="medium",
+            split_filter="test",
+            threshold=0.65,
+            bm25_threshold=5.0,
+            rrf_k=60,
+        )
+
+        self.assertEqual(len(results), 2)
+        res_ans, res_unans = results[0], results[1]
+
+        # Verify retrieval candidates, rankings, and counts are strictly identical
+        self.assertEqual(
+            res_ans.retrieved_chunk_ids,
+            res_unans.retrieved_chunk_ids,
+            "Retrieval rankings differed based on ground-truth label! (Label leakage detected in run_hybrid_experiment)",
+        )
+        self.assertEqual(res_ans.retrieved_count, res_unans.retrieved_count)
+        self.assertGreater(len(res_ans.retrieved_chunk_ids), 0)
+
+        # Verify audit records prove identical candidate acceptance and RRF fusion
+        audit_ans = runner.per_question_audit_records[-2]
+        audit_unans = runner.per_question_audit_records[-1]
+        self.assertEqual(audit_ans["dense_accepted_count"], audit_unans["dense_accepted_count"])
+        self.assertEqual(audit_ans["bm25_accepted_count"], audit_unans["bm25_accepted_count"])
+        self.assertEqual(audit_ans["rrf_fused_count"], audit_unans["rrf_fused_count"])
+        self.assertEqual(audit_ans["retrieved_chunk_ids"], audit_unans["retrieved_chunk_ids"])
+
+        # Verify ground-truth labels are ONLY used post-retrieval in metric calculation
+        self.assertTrue(res_ans.is_answerable)
+        self.assertEqual(res_ans.hit_at_k, 1.0)
+        self.assertAlmostEqual(res_ans.precision_at_k, 0.2)
+        self.assertEqual(res_ans.relevant_count, 1)
+
+        self.assertFalse(res_unans.is_answerable)
+        self.assertIsNone(res_unans.hit_at_k)
+        self.assertIsNone(res_unans.precision_at_k)
+        self.assertEqual(res_unans.relevant_count, 0)
+        self.assertFalse(res_unans.correctly_abstained)  # False retrieval because candidates were retrieved for unanswerable query
+
+        # 2. Also verify dual-rejection (abstention) behavior is identical when scores are below threshold
+        low_query = "Unrelated out-of-domain query?"
+        q_ans_low = {
+            "question_id": "TEST-ANS-LOW",
+            "question": low_query,
+            "category": "Factual lookup",
+            "split": "test",
+            "answerability": True,
+            "ground_truth_chunks_medium": [self.doc_a.metadata["chunk_id"]],
+            "expected_answer": "Expected info.",
+        }
+        q_unans_low = {
+            "question_id": "TEST-UNANS-LOW",
+            "question": low_query,
+            "category": "Unanswerable questions",
+            "split": "test",
+            "answerability": False,
+            "ground_truth_chunks_medium": [],
+            "expected_answer": "No info.",
+        }
+
+        # Dense score 0.52 is below threshold 0.65; BM25 score 0.0 with empty chunks
+        runner._dense_cache[low_query] = ([(self.doc_a, 0.52)], bd)
+        runner.questions = [q_ans_low, q_unans_low]
+
+        _, results_low, _ = runner.run_hybrid_experiment(
+            chunks=[],
+            strategy="medium",
+            split_filter="test",
+            threshold=0.65,
+            bm25_threshold=5.0,
+        )
+
+        res_ans_low, res_unans_low = results_low[0], results_low[1]
+
+        # Both must produce identical empty retrieved lists (clean abstention)
+        self.assertEqual(res_ans_low.retrieved_chunk_ids, [])
+        self.assertEqual(res_unans_low.retrieved_chunk_ids, [])
+        self.assertEqual(res_ans_low.retrieved_count, 0)
+        self.assertEqual(res_unans_low.retrieved_count, 0)
+
+        # Ground truth determines metric outcome only
+        self.assertEqual(res_ans_low.hit_at_k, 0.0)  # Retrieval failure for answerable
+        self.assertTrue(res_unans_low.correctly_abstained)  # Correct abstention for unanswerable
 
     def test_2_dense_threshold(self):
         """
