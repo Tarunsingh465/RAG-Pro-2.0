@@ -58,6 +58,10 @@ data/temp/*
 data/processed/*
 !data/processed/.gitkeep
 
+# OCR Output Files
+data/ocr_output/*
+!data/ocr_output/.gitkeep
+
 # ==========================================
 # Vector Database
 # ==========================================

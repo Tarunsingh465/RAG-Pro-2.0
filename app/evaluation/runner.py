@@ -1083,9 +1083,8 @@ class ExperimentRunner:
 
         all_aggregates = list(dev_aggregates) + list(test_aggregates) + list(chunk_aggregates.values())
 
-        # 1. Save EXPERIMENT_RESULTS.json & phase_3_1_2_results.json
+        # 1. Save EXPERIMENT_RESULTS.json
         json_path = RESULTS_DIR / "EXPERIMENT_RESULTS.json"
-        p312_json_path = RESULTS_DIR / "phase_3_1_2_results.json"
         payload = {
             "metadata": {
                 "experiment_id": f"EXP-PHASE3.1.2-{int(time.time())}",
@@ -1112,12 +1111,10 @@ class ExperimentRunner:
         }
         json_str = json.dumps(payload, indent=2)
         json_path.write_text(json_str, encoding="utf-8")
-        p312_json_path.write_text(json_str, encoding="utf-8")
-        logger.success(f"Saved experiment results to JSON: {json_path} and {p312_json_path}")
+        logger.success(f"Saved experiment results to JSON: {json_path}")
 
-        # 2. Save EXPERIMENT_RESULTS.csv & phase_3_1_2_results.csv
+        # 2. Save EXPERIMENT_RESULTS.csv
         csv_path = RESULTS_DIR / "EXPERIMENT_RESULTS.csv"
-        p312_csv_path = RESULTS_DIR / "phase_3_1_2_results.csv"
         fieldnames = [
             "method_name", "split", "k", "total_questions", "total_answerable", "total_unanswerable",
             "mean_precision_at_k", "precision_ci_95_low", "precision_ci_95_high",
@@ -1169,13 +1166,10 @@ class ExperimentRunner:
                     "rrf_fusion_ms": a.latency_breakdown.rrf_fusion_ms,
                 })
 
-        csv_content = csv_path.read_text(encoding="utf-8")
-        p312_csv_path.write_text(csv_content, encoding="utf-8")
-        logger.success(f"Saved experiment results to CSV: {csv_path} and {p312_csv_path}")
+        logger.success(f"Saved experiment results to CSV: {csv_path}")
 
-        # 3. Save PER_QUESTION_EVALUATION_AUDIT.csv & phase_3_1_2_per_question.csv
+        # 3. Save PER_QUESTION_EVALUATION_AUDIT.csv
         per_q_csv = RESULTS_DIR / "PER_QUESTION_EVALUATION_AUDIT.csv"
-        p312_per_q_csv = RESULTS_DIR / "phase_3_1_2_per_question.csv"
         audit_fieldnames = [
             "question_id", "split", "category", "answerability", "method",
             "dense_top_score", "dense_threshold", "bm25_top_score", "bm25_threshold",
@@ -1192,9 +1186,7 @@ class ExperimentRunner:
             for r in self.per_question_audit_records:
                 writer.writerow(r)
 
-        audit_content = per_q_csv.read_text(encoding="utf-8")
-        p312_per_q_csv.write_text(audit_content, encoding="utf-8")
-        logger.success(f"Saved per-question audit CSV to: {per_q_csv} and {p312_per_q_csv}")
+        logger.success(f"Saved per-question audit CSV to: {per_q_csv}")
 
         # 4. Save phase_3_1_2_hybrid_diagnostics.csv
         diag_csv = RESULTS_DIR / "phase_3_1_2_hybrid_diagnostics.csv"

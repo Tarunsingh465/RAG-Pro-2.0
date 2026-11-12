@@ -22,7 +22,7 @@ This document provides a formal, auditable verification report certifying that t
    - The experiment JSON recorded `git_commit: "4f6013d"` because at execution time (`2026-11-12T06:53:46 UTC`), `4f6013d` was the repository `HEAD`.
    - The benchmark ran on the modified working tree containing the Phase 3.1.2 code fixes (`app/retrieval/hybrid.py` float normalization and `app/evaluation/runner.py` independent candidate acceptance).
    - Once generated, that exact working tree was committed into git as commit `e860afa` (`2026-11-12T07:00:52 UTC`).
-   - The provenance is documented transparently in `phase_3_1_2_results.json` and `EXPERIMENT_RESULTS.json` without rewriting historical records.
+   - The provenance is documented transparently in `EXPERIMENT_RESULTS.json` without rewriting historical records.
 3. **Synchronized Documentation**:
    - All references to `text-embedding-004` and legacy latency figures (~748 ms, ~935 ms, ~848 ms) have been synchronized with the committed benchmark JSON:
      - Embedding model: `models/gemini-embedding-001` (3072d)
@@ -40,7 +40,7 @@ This document provides a formal, auditable verification report certifying that t
 
 ## 2. Definitive Benchmark Numbers Achieved
 
-All numbers reported below originate directly from `evaluation/results/phase_3_1_2_results.json` and `EXPERIMENT_RESULTS.csv`, generated across 50 rigorously annotated industrial questions evaluated against 10 authentic technical specifications (30 medium chunks):
+All numbers reported below originate directly from `evaluation/results/EXPERIMENT_RESULTS.json` and `EXPERIMENT_RESULTS.csv`, generated across 50 rigorously annotated industrial questions evaluated against 10 authentic technical specifications (30 medium chunks):
 
 ### 2.1 Development Split Benchmark ($N=35$: 26 Answerable, 9 Unanswerable)
 *Evaluated with frozen calibrated thresholds: $\tau_{\text{dense}} = 0.65$, $\tau_{\text{BM25}} = 5.0$, $K=5$, $RRF\ k=60$.*
@@ -132,7 +132,7 @@ OK
 | **Answerability Leakage** | Zero inspection of ground truth during retrieval | `test_1_no_answerability_leakage` passes on genuine `run_hybrid_experiment` | **VERIFIED** |
 | **Independent Acceptance** | Dense $\ge 0.65$, BM25 $\ge 5.0$ applied disjunctively | Verified in `runner.py` lines 746–760 and `test_4_independent_source_acceptance` | **VERIFIED** |
 | **Duplicate Rankings** | Invariant `len(ids) == len(set(ids))` | 0 duplicate IDs across 255 evaluation rows and 50 diagnostic rows | **VERIFIED** |
-| **Benchmark Provenance** | Historical execution vs commit SHA accurately documented | Provenance documented in `phase_3_1_2_results.json` and review reports | **VERIFIED** |
+| **Benchmark Provenance** | Historical execution vs commit SHA accurately documented | Provenance documented in `EXPERIMENT_RESULTS.json` and review reports | **VERIFIED** |
 | **Documentation Sync** | Stale models and latency numbers corrected | `RAG_EVALUATION_REPORT.md` and related reports updated to 689.58 ms / 172.40 ms | **VERIFIED** |
 | **Automated Test Suite** | All 53 regression and integrity tests pass | 53 / 53 tests passed in 3.243 seconds | **VERIFIED** |
 | **Working Tree Cleanliness** | No stray files, no uncommitted secrets | Git working tree clean, all files staged and committed | **VERIFIED** |
