@@ -1,19 +1,19 @@
-# 🧪 Test Execution Report — Phase 3
+# 🧪 Test Execution Report — Phase 3.1 Evaluation Audit & Verification
 
 ## 1. Overview
 - **Execution Date**: 2026-11-12
 - **Environment**: Windows 10 | Python 3.11.0 | Intel Core i5-4440 @ 3.10GHz | 7.69 GB RAM
 - **Test Framework**: Python `unittest` standard library (0 external test runner dependencies)
-- **Total Tests Discovered**: 35
-- **Total Tests Passed**: **35 (100%)**
+- **Total Tests Discovered**: **41**
+- **Total Tests Passed**: **41 (100%)**
 - **Failures / Errors**: **0**
-- **Execution Time**: **2.591 seconds**
+- **Execution Time**: **2.610 seconds**
 
 ---
 
 ## 2. Test Execution Breakdown
 
-### Phase 1 Regression Suite (`tests/test_phase1_baseline.py`)
+### Phase 1 Regression Suite (`tests/test_phase1_baseline.py` — 6 tests)
 | Test Name | Module Covered | Objective | Result |
 | :--- | :--- | :--- | :--- |
 | `test_zero_api_developer_identity` | `conversational_engine` | Verifies Tarun developer identity match in <0.5ms with 0 API calls | **PASSED** |
@@ -23,7 +23,7 @@
 | `test_supervisor_fast_path_routing` | `supervisor_service` | Verifies deterministic routing to 'greeting' and 'rag' | **PASSED** |
 | `test_data_leakage_isolation_when_empty`| `chat_service` | Verifies empty knowledge base short-circuits with 0 citations and no leakage | **PASSED** |
 
-### Phase 2 Document Intelligence & Retrieval Suite (`tests/test_phase2_retrieval.py`)
+### Phase 2 Document Intelligence & Retrieval Suite (`tests/test_phase2_retrieval.py` — 14 tests)
 | Test Name | Module Covered | Objective | Result |
 | :--- | :--- | :--- | :--- |
 | `test_bm25_empty_corpus` | `retrieval.bm25` | Verifies empty BM25 corpus returns empty list gracefully | **PASSED** |
@@ -41,30 +41,41 @@
 | `test_dimension_mismatch_raises_error` | `vectorstore.pinecone` | Verifies ValueError raised when model and index dimensions mismatch | **PASSED** |
 | `test_startup_uses_cache_without_calling_embed_query`| `vectorstore.pinecone`| Verifies startup utilizes dimension cache without calling external embedding API | **PASSED** |
 
-### Phase 3 Evaluation & Benchmarking Suite (`tests/test_phase3_evaluation.py`)
+### Phase 3.1 Evaluation & Benchmarking Suite (`tests/test_phase3_evaluation.py` — 21 tests)
 | Test Name | Module Covered | Objective | Result |
 | :--- | :--- | :--- | :--- |
-| `test_precision_at_k_standard` | `evaluation.metrics` | Verifies Precision@K calculation on partially relevant retrieved list | **PASSED** |
+| `test_precision_at_k_standard` | `evaluation.metrics` | Verifies Precision@K calculation on partially relevant retrieved list with deduplication | **PASSED** |
 | `test_precision_at_k_perfect_and_zero` | `evaluation.metrics` | Verifies boundary cases: 1.0 on all-relevant and 0.0 on zero-relevant | **PASSED** |
-| `test_precision_at_k_unanswerable_abstention`| `evaluation.metrics` | Verifies correct abstention score (1.0 if empty, 0.0 if false retrieval) | **PASSED** |
+| `test_precision_at_k_raises_on_empty_relevant` | `evaluation.metrics` | Verifies ValueError raised when computing retrieval precision on unanswerable query | **PASSED** |
 | `test_precision_at_k_invalid_k` | `evaluation.metrics` | Verifies ValueError raised when $k \le 0$ | **PASSED** |
-| `test_recall_at_k_standard` | `evaluation.metrics` | Verifies Recall@K calculation against total ground-truth count | **PASSED** |
+| `test_recall_at_k_standard` | `evaluation.metrics` | Verifies Recall@K calculation against total ground-truth count with deduplication | **PASSED** |
 | `test_recall_at_k_perfect` | `evaluation.metrics` | Verifies 1.0 Recall@K when all relevant items are retrieved | **PASSED** |
-| `test_recall_at_k_unanswerable_abstention` | `evaluation.metrics` | Verifies unanswerable query recall abstention behavior | **PASSED** |
+| `test_recall_at_k_raises_on_empty_relevant` | `evaluation.metrics` | Verifies ValueError raised when computing recall on unanswerable query | **PASSED** |
 | `test_hit_rate_at_k` | `evaluation.metrics` | Verifies binary Hit Rate@K (1.0 if $\ge 1$ relevant, else 0.0) | **PASSED** |
+| `test_hit_rate_raises_on_empty_relevant` | `evaluation.metrics` | Verifies ValueError raised on empty relevant set for Hit Rate | **PASSED** |
 | `test_reciprocal_rank` | `evaluation.metrics` | Verifies Reciprocal Rank calculation at ranks 1, 2, 4 and miss (0.0) | **PASSED** |
-| `test_ndcg_at_k` | `evaluation.metrics` | Verifies nDCG@K formula against ideal DCG ordering | **PASSED** |
-| `test_bootstrap_confidence_interval` | `evaluation.metrics` | Verifies 95% empirical bootstrap CI on uniform and varied samples | **PASSED** |
+| `test_reciprocal_rank_raises_on_empty_relevant` | `evaluation.metrics` | Verifies ValueError raised on empty relevant set for MRR | **PASSED** |
+| `test_ndcg_at_k` | `evaluation.metrics` | Verifies nDCG@K formula against ideal DCG ordering with deduplication | **PASSED** |
+| `test_ndcg_raises_on_empty_relevant` | `evaluation.metrics` | Verifies ValueError raised on empty relevant set for nDCG | **PASSED** |
+| `test_abstention_metrics` | `evaluation.metrics` | Verifies TN, FP, TP, FN confusion matrix, CAR, FRR, and accuracy | **PASSED** |
+| `test_latency_breakdown` | `evaluation.metrics` | Verifies LatencyBreakdown dataclass stage summing (prep, emb, pinecone, bm25, rrf) | **PASSED** |
+| `test_bootstrap_confidence_interval` | `evaluation.metrics` | Verifies 95% empirical bootstrap CI across 1,000 resamples | **PASSED** |
 | `test_evaluate_single_retrieval` | `evaluation.metrics` | Verifies end-to-end question metric result generation dataclass | **PASSED** |
-| `test_aggregate_experiment_metrics` | `evaluation.metrics` | Verifies macro-aggregation, percentiles, and category breakdowns | **PASSED** |
-| `test_corpus_manager_strategies` | `evaluation.runner` | Verifies loading corpus across small (500), medium (1000), large (1500) | **PASSED** |
-| `test_bm25_benchmark_runner` | `evaluation.runner` | Verifies BM25 benchmark execution and metric generation on dev split | **PASSED** |
+| `test_aggregate_experiment_metrics` | `evaluation.metrics` | Verifies macro-aggregation, percentiles, abstention, and category breakdowns | **PASSED** |
+| `test_corpus_exists` | `evaluation.runner` | Verifies authentic 10-document industrial corpus exists on disk | **PASSED** |
+| `test_corpus_chunking_strategies` | `evaluation.runner` | Verifies chunking across small (500), medium (1000), large (1500) presets | **PASSED** |
+| `test_bm25_dev_and_test_splits` | `evaluation.runner` | Verifies BM25 execution across isolated dev (35) and held-out test (15) splits | **PASSED** |
 
 ---
 
-## 3. Regression Verification
+## 3. Regression & Audit Verification
 - **BUG-001 (LLM Timeout)**: Verified that `enable_thinking=False` remains active in NVIDIA NIM client.
 - **BUG-002 (Data Leakage)**: Verified that active document filter and short-circuit remain 100% functional.
 - **BUG-003 (Startup Probe)**: Verified that cached dimension resolution executes with 0 external API calls.
 - **BUG-004 (Structured Extractors)**: Preserved and verified table, slide, and multi-sheet extractors.
-- **BUG-007 (Evaluation Framework)**: Complete reproducible framework with zero synthetic metrics. All 35 tests pass.
+- **Phase 3.1 Audit Standards**:
+  - Eliminated synthetic chunk IDs (`item_0`, `item_1`) and virtual ground-truth IDs (`unretrieved_corpus_gt_`).
+  - Strict segregation of answerable queries (Information Retrieval metrics) and unanswerable queries (Abstention metrics).
+  - Ground-truth relevance grounded in canonical deterministic chunk IDs (`{file_name}_{strategy}_{index}`).
+  - Frozen optimal threshold $\tau^* = 0.65$ validated on Held-Out Test split ($N=15$) without data leakage.
+  - Zero metric invention: Every benchmark metric is computed directly from executed experiments.

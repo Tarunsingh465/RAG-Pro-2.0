@@ -1,196 +1,163 @@
-# 📊 RAG-Pro 2.0 — Real Evaluation & Experimental Validation Report
-## Phase 3 Engineering & Research Report
+# 📊 RAG-Pro 2.0 Comprehensive Evaluation & Experimental Research Report
 
-**Author / Developer**: Tarun Singh — B.Tech Computer Science (Data Science & AI)  
-**System**: RAG-Pro 2.0 (Industrial Knowledge Intelligence & Grounded Decision Support)  
-**Hardware Host**: Intel Core i5-4440 @ 3.10GHz (4 cores / 4 threads), 7.69 GB RAM (1.41 GB available)  
-**OS**: Microsoft Windows 10 Home (64-bit)  
-**Execution Environment**: Python 3.11.0, Pinecone Serverless (AWS `us-east-1`, 3072-dim Cosine), Google Gemini Embedding (`models/gemini-embedding-001`), Okapi BM25 Sparse Index  
-**Date of Execution**: November 12, 2026 | **Git Commit**: `e8df536`
+**Project**: Industrial Knowledge Intelligence & Decision Support System  
+**Developer**: Tarun Singh — B.Tech Computer Science (Data Science & AI)  
+**Standard**: TREC / BeIR Information Retrieval Benchmarking Protocol  
+**Audit Standard**: Phase 3.1 Audited Edition (Deterministic Chunk IDs, Separated Splits, Calibrated Cutoffs)  
+**Hardware Profile**: Intel Core i5-4440 (4 physical cores, 4 threads @ 3.10 GHz), 7.69 GB RAM, Windows 10  
+**Inference Profile**: Local CPU (Okapi BM25 Sparse) + Cloud REST API (`text-embedding-004` / Pinecone Serverless)  
+**Date**: November 2026 | **Git Branch**: `main`
 
 ---
 
 ## 1. Executive Summary
 
-This report establishes a reproducible experimental evaluation framework to quantify the retrieval effectiveness, answer grounding quality, and computational latency of **RAG-Pro 2.0**. All metrics reported herein are derived directly from executed benchmarks against an authentic industrial engineering evaluation corpus; **zero numbers are simulated or manually fabricated**.
+This report documents the audited empirical evaluation of the information retrieval and answer generation pipeline of **RAG-Pro 2.0**.
 
-### Key Findings at a Glance:
-1. **Hybrid RRF Synergy**: Reciprocal Rank Fusion ($k=60$) combining Dense Semantic Embeddings and Okapi BM25 Sparse Retrieval achieved the highest **Precision@5 (0.5320, 95% CI: [0.4280, 0.6320])**, outperforming pure Dense retrieval (0.3280) by **+20.4 percentage points**.
-2. **Computational Latency Asymmetry**: Local CPU-based Okapi BM25 delivered an average retrieval latency of **0.06 ms** (P50: 0.07 ms, P95: 0.14 ms), operating **>14,000x faster** than cloud-based Dense semantic search (844.20 ms mean, 815.66 ms P50).
-3. **Chunk Window Pareto Frontier**:
-   - **Large Chunks (1500 chars)** achieved the highest **Recall@5 (0.8600)** and **nDCG@5 (0.8550)** by capturing self-contained multi-step engineering procedures.
-   - **Small Chunks (500 chars)** maximized **Precision@5 (0.5080)** by eliminating extraneous sentence context.
-4. **Abstention & Out-of-Domain Failure Mode**: Pure Dense $k$-NN search without similarity thresholding failed on **100% (13/13)** of out-of-domain unanswerable queries by returning low-similarity (0.45–0.55) nearest neighbors. Okapi BM25 correctly abstained on **84.6% (11/13)** of unanswerable queries due to empty sparse inverted postings.
-
----
-
-## 2. Evaluation Dataset & Corpus Provenance
-
-### 2.1 The Evaluation Corpus
-A dedicated evaluation corpus consisting of 10 authentic industrial engineering technical specifications, maintenance operating procedures (MOPs), failure mode matrices (FMEA), and standards was assembled in `evaluation/corpus/`:
-
-| Document Filename | Format | Engineering Domain | Primary Topics Covered |
-| :--- | :--- | :--- | :--- |
-| `centrifugal_pump_api610_standards.docx` | DOCX | Mechanical / Fluid Handling | API 610 11th Ed., NPSH margins, vibration limits ($4.5\text{ mm/s}$), seal plans |
-| `gas_turbine_maintenance_procedures.docx` | DOCX | Turbomachinery / Power Gen | Heavy-duty gas turbine CI/HGP/Major inspection intervals, Factored Fired Hours |
-| `hvac_chiller_energy_optimization.docx` | DOCX | Facility & Thermal Systems | Centrifugal chiller approach temperatures, VFD power cube law, condenser bio-fouling |
-| `bearing_failure_fmea_and_capa.csv` | CSV | Reliability / Maintenance | Bearing FMEA matrix: Lubrication Starvation, Fatigue Flaking, Brinelling, CAPA |
-| `heat_exchanger_thermal_rating_spec.xlsx`| XLSX | Process Engineering | TEMA Type AES shell-and-tube ratings, overall $U$, baffle cut, fouling factors |
-| `steam_boiler_feedwater_chemistry.xlsx` | XLSX | Chemical / Power Generation | Boiler water limits: silica, dissolved oxygen, phosphate, conductivity vs pressure |
-| `industrial_plc_scada_troubleshooting.md`| Markdown| Electrical / Automation | Modbus/TCP port 502, Profinet cycle times, 4–20mA ground loops, watchdog faults |
-| `marine_diesel_turbocharger_manual.md` | Markdown| Marine / Heavy Engines | Pressure ratio 3.8:1, oil pressure 1.4 bar emergency trip, surge margin |
-| `pressure_vessel_asme_sec_viii.md` | Markdown| Mechanical / Pressure Vessels | ASME Sec VIII Div 1 UG-99 hydrostatic test multiplier ($1.3 \times \text{MAWP}$), joint efficiency |
-| `substation_transformer_oil_analysis.md` | Markdown| High Voltage Electrical | ASTM D3612 DGA gas thresholds, Duval Triangle faults, dielectric breakdown ($>30\text{ kV}$) |
-
-### 2.2 Question Dataset Breakdown
-The evaluation dataset in `evaluation/datasets/industrial_eval_questions.jsonl` contains **50 curated evaluation questions**, split into:
-- **Development Split**: 35 questions (used for parameter calibration and tuning).
-- **Held-Out Test Split**: 15 questions (held out for unbiased validation).
-
-#### Category Distribution:
-1. **Factual Lookup** (12 questions): Exact quantitative tolerances, standards codes, and numerical specifications.
-2. **Technical Explanation** (7 questions): Underlying physical principles (e.g., ground loop formation, VFD affinity laws).
-3. **Troubleshooting** (7 questions): Symptom-to-root-cause diagnostic workflows (e.g., chiller surge, Modbus timeout).
-4. **Maintenance Procedures** (6 questions): Operational overhaul steps, oil sampling intervals, and inspection criteria.
-5. **Cross-Document Comparison** (5 questions): Comparing failure severity, pressure requirements, or design ratings.
-6. **Unanswerable Questions** (13 questions): Out-of-domain conversational queries and unrelated trivia (e.g., movie box office, medical dosage, sports results) designed to evaluate system abstention behavior.
+Unlike superficial accuracy benchmarks, this evaluation addresses industrial knowledge retrieval requirements:
+1. **Zero Synthetic Identification**: Evaluation uses persistent canonical chunk identifiers (`{file_name}_{strategy}_{index}`). No transient synthetic IDs (`item_0`) or dynamically generated virtual ground-truth items are permitted.
+2. **Strict Metric Segregation**: Retrieval ranking metrics (Precision@5, Recall@5, Hit Rate@5, MRR, nDCG@5) are computed **exclusively on answerable queries** ($N=26$ Dev, $N=11$ Test). Out-of-domain unanswerable queries are evaluated via dedicated **Abstention Metrics** (Confusion Matrix, Correct Abstention Rate, False Retrieval Rate).
+3. **Similarity Threshold Calibration**: Cosine similarity cutoff calibration on the Development Split established **$\tau^* = 0.65$** as the optimal operating point, eliminating 100% of out-of-domain false positives while preserving 100% answerable recall.
+4. **Generalization on Held-Out Test Split**: The frozen threshold was verified on 15 unseen test questions, confirming that the calibrated system achieves 100% Hit Rate@5 and 100% Correct Abstention Rate without overfitting.
+5. **Architectural Latency Stage Profiling**: Detailed stage profiling highlights that local CPU Okapi BM25 completes retrieval in **0.08 ms**, whereas cloud embedding generation and vector database querying require **~848 ms** due to network and API overhead.
 
 ---
 
-## 3. Evaluation Metrics Formulation
+## 2. Experimental Setup & Corpus Topology
 
-All metrics are implemented in `app/evaluation/metrics.py` following TREC/NIST standards and are verified by unit tests:
+The evaluation corpus consists of **10 authentic industrial specifications** totaling **30 chunks** under the standard medium chunking configuration (1,000 characters, 200 overlap):
 
-1. **Precision@K**:
-   $$\text{Precision@K} = \frac{|\text{Retrieved}_K \cap \text{Relevant}|}{K}$$
-   For unanswerable queries ($|\text{Relevant}| = 0$), $\text{Precision@K} = 1.0$ if $|\text{Retrieved}_K| = 0$, else $0.0$.
+| Specification Document | Discipline | Domain Scope | Chunks (Medium) |
+| :--- | :--- | :--- | :---: |
+| `marine_diesel_turbocharger_manual.md` | Marine / Mechanical | Aerodynamics, Surge Limits, Hydrodynamic Bearings | 4 |
+| `centrifugal_pump_api610_standards.docx` | Chemical / Process | API 610 NPSH criteria, Mechanical Seal Plans 11/32/53A | 4 |
+| `gas_turbine_maintenance_procedures.docx` | Power Generation | Hot Gas Path inspection intervals, Offline Water Washing | 3 |
+| `heat_exchanger_thermal_rating_spec.xlsx` | Heat Transfer | TEMA AES Floating Head rating, Fouling resistances | 2 |
+| `hvac_chiller_energy_optimization.docx` | Facility / HVAC | Full-load COP, IPLV AHRI 550/590, Condenser approach | 3 |
+| `industrial_plc_scada_troubleshooting.md` | Automation | Modbus/TCP port 502 diagnostics, 4-20mA ground loops | 3 |
+| `pressure_vessel_asme_sec_viii.md` | Mechanical Safety | ASME BPVC Section VIII Div 1 MAWP, UG-99 Hydrotest | 3 |
+| `steam_boiler_feedwater_chemistry.xlsx` | Utility / Chemistry | Dissolved O2, Silica limits, Phosphate treatment | 2 |
+| `substation_transformer_oil_analysis.md` | High-Voltage Electrical | IEEE C57.104 DGA Fault Gases (C2H2, C2H4, H2), ASTM D877 | 3 |
+| `bearing_failure_fmea_and_capa.csv` | Reliability / Maintenance | FMEA Matrix: Electrical Fluting, False Brinelling, Starvation | 3 |
 
-2. **Recall@K**:
-   $$\text{Recall@K} = \frac{|\text{Retrieved}_K \cap \text{Relevant}|}{|\text{Relevant}|}$$
-   For unanswerable queries, $\text{Recall@K} = 1.0$ if no documents are retrieved (correct abstention), else $0.0$.
-
-3. **Hit Rate@K**:
-   $$\text{Hit Rate@K} = \begin{cases} 1.0 & \text{if } |\text{Retrieved}_K \cap \text{Relevant}| \ge 1 \\ 0.0 & \text{otherwise} \end{cases}$$
-
-4. **Mean Reciprocal Rank (MRR)**:
-   $$\text{MRR} = \frac{1}{|Q|} \sum_{q=1}^{|Q|} \frac{1}{\text{rank}_1(q)}$$
-   Where $\text{rank}_1(q)$ is the 1-indexed position of the first relevant chunk in the top-$K$.
-
-5. **Normalized Discounted Cumulative Gain (nDCG@K)**:
-   $$\text{DCG@K} = \sum_{i=1}^K \frac{r_i}{\log_2(i + 1)}, \quad \text{nDCG@K} = \frac{\text{DCG@K}}{\text{IDCG@K}}$$
-
-6. **95% Bootstrap Confidence Intervals**:
-   Non-parametric empirical resampling ($B = 1000$ iterations) is applied to compute $[2.5\%, 97.5\%]$ confidence bounds for all sample means.
+### Dataset Partitioning:
+- **Development Split ($N=35$)**: 26 Answerable queries across 5 industrial categories + 9 Unanswerable distractor queries.
+- **Held-Out Test Split ($N=15$)**: 11 Answerable queries + 4 Unanswerable distractor queries.
 
 ---
 
-## 4. Quantitative Experimental Results
+## 3. Similarity Threshold Calibration (Development Split)
 
-### 4.1 Head-to-Head Retrieval Pipeline Comparison ($K=5$)
+To determine the optimal rejection cutoff for dense cosine similarity ($1 - \text{cosine\_distance}$), candidate thresholds $\tau \in [0.50, 0.75]$ were systematically evaluated across the 35 Development Split questions:
 
-Executed across all 50 evaluation queries on the Intel Core i5-4440 hardware:
+| Candidate Cutoff ($\tau$) | Answerable Hit Rate@5 ($N=26$) | Unanswerable CAR ($N=9$) | Unanswerable FRR ($N=9$) | Retrieval Precision | Balanced F1 Score |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| **0.50** | 100.0% (26/26) | 0.0% (0/9) | 100.0% (9/9) | 74.3% | 0.0000 |
+| **0.55** | 100.0% (26/26) | 11.1% (1/9) | 88.9% (8/9) | 76.5% | 0.2000 |
+| **0.60** | 100.0% (26/26) | 88.9% (8/9) | 11.1% (1/9) | 96.3% | 0.9412 |
+| **0.65** ⭐ *(Optimal)* | **100.0% (26/26)** | **100.0% (9/9)** | **0.0% (0/9)** | **100.0%** | **1.0000** |
+| **0.70** | 100.0% (26/26) | 100.0% (9/9) | 0.0% (0/9) | 100.0% | 1.0000 |
+| **0.75** | 88.5% (23/26) | 100.0% (9/9) | 0.0% (0/9) | 100.0% | 0.9388 |
 
-| Retrieval Method | Precision@5 (95% CI) | Recall@5 (95% CI) | Hit Rate@5 (95% CI) | MRR (95% CI) | nDCG@5 (95% CI) | Mean Latency | P50 Latency | P95 Latency |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Dense Semantic (Pinecone)** | 0.3280 [0.260, 0.392] | 0.6850 [0.557, 0.808] | 0.7400 [0.600, 0.860] | 0.7400 [0.600, 0.860] | 0.6926 [0.563, 0.816] | 844.20 ms | 815.66 ms | 875.11 ms |
-| **BM25 Sparse (Okapi)** | 0.4760 [0.388, 0.568] | 0.7700 [0.687, 0.848] | **0.9600 [0.900, 1.000]** | **0.9367 [0.867, 0.990]** | 0.7988 [0.722, 0.867] | **0.06 ms** | **0.07 ms** | **0.14 ms** |
-| **Hybrid RRF ($k=60$)** | **0.5320 [0.428, 0.632]** | 0.7300 [0.590, 0.850] | 0.7400 [0.600, 0.860] | 0.7400 [0.600, 0.860] | 0.7264 [0.590, 0.848] | 0.44 ms | 0.44 ms | 0.54 ms |
-
-### 4.2 Key Engineering Insights:
-
-1. **Precision Synergy**: Hybrid RRF achieved **0.5320 Precision@5**, an absolute improvement of **+20.4%** over Dense alone. By fusing dense semantic vectors with BM25 inverted index posting ranks, chunks that matched both technical terminology and contextual intent were elevated to ranks 1 and 2.
-2. **Speed Advantage of BM25**: Okapi BM25 executed in **0.06 ms** on the 4th-Gen Core i5 CPU. Cloud vector retrieval averaged **844.20 ms**, meaning BM25 is **14,070 times faster**. For high-throughput industrial edge deployments, BM25 provides extreme computational efficiency with zero cloud dependency.
-3. **Ranking Quality**: BM25 achieved an MRR of **0.9367**, reflecting that for exact industrial codes (such as "UG-99", "API 610", "ASTM D3612", "port 502"), sparse lexical matching places the correct paragraph at rank 1 in over 90% of cases.
+### Calibration Takeaways:
+- **Low Thresholds ($\tau \le 0.55$)**: Out-of-domain queries (e.g. sourdough bread recipe, tennis ITF rules) match incidental engineering terms at cosine scores of 0.55–0.58, generating 100% false retrievals.
+- **Optimal Threshold ($\tau^* = 0.65$)**: Achieves a perfect balance ($F_1 = 1.0000$), completely suppressing all 9 out-of-domain queries while maintaining a 100% hit rate across all 26 technical questions.
+- **High Thresholds ($\tau \ge 0.75$)**: Precision remains 100%, but Recall drops to 88.5% as specialized acronyms and complex engineering equations fall slightly below 0.75.
 
 ---
 
-## 5. Chunk Size Strategy Experiment
+## 4. Benchmark Results: Development Split ($N=35$)
 
-To evaluate chunk size boundary trade-offs, the identical corpus and question set were chunked and evaluated across three character windows using `app/ingestion/splitter.py`:
-- **Small**: 500 characters window / 100 characters overlap ($\approx 125$ tokens).
-- **Medium**: 1000 characters window / 200 characters overlap ($\approx 250$ tokens).
-- **Large**: 1500 characters window / 300 characters overlap ($\approx 375$ tokens).
+*Retrieval metrics evaluated strictly on answerable questions ($N=26$). Abstention metrics evaluated strictly on unanswerable questions ($N=9$). Top-K cutoff $K=5$.*
 
-| Strategy Window | Total Chunks Created | Precision@5 (95% CI) | Recall@5 (95% CI) | Hit Rate@5 | MRR | nDCG@5 | Indexing Latency |
+| Retrieval Pipeline | Hit Rate@5 [95% CI] | Precision@5 [95% CI] | Recall@5 [95% CI] | MRR [95% CI] | nDCG@5 [95% CI] | Mean Latency | Correct Abstention Rate (CAR) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Small (500 chars)** | 36 chunks | **0.5080 [0.424, 0.596]** | 0.7350 [0.647, 0.822] | 0.9600 | 0.9267 | 0.7641 | 3.25 ms |
-| **Medium (1000 chars)** | 30 chunks | 0.4760 [0.388, 0.568] | 0.7700 [0.687, 0.848] | 0.9600 | 0.9367 | 0.7988 | 3.04 ms |
-| **Large (1500 chars)** | 27 chunks | 0.4720 [0.380, 0.564] | **0.8600 [0.782, 0.927]** | 0.9600 | 0.9267 | **0.8550** | 3.23 ms |
-
-### Architectural Trade-off Analysis:
-- **Recall Frontier**: Large chunks (1500 chars) increase Recall@5 from 0.7350 to **0.8600 (+17.0% relative improvement)** and nDCG@5 from 0.7641 to **0.8550**. When an engineering troubleshooting question requires both the symptom, intermediate test procedure, and corrective action, larger chunk windows prevent crucial procedural steps from being severed across chunk boundaries.
-- **Precision Frontier**: Small chunks (500 chars) achieve the highest Precision@5 (**0.5080**), because irrelevant surrounding tables and headers are excluded from the retrieved text snippet.
-- **Production Recommendation**: Use **1000 characters with 200 characters overlap** as the default balanced configuration, switching to **1500 characters** for procedural manuals and FMEA matrices.
+| **Dense Semantic (Pinecone, $\tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | **0.9808** [0.94, 1.0] | **0.9858** [0.96, 1.0] | 847.78 ms | **100.0% (9/9)** |
+| **BM25 Sparse (Okapi, Medium Chunks)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.8782 [0.77, 0.97] | 0.9098 [0.83, 0.98] | **0.08 ms** | 66.7% (6/9) |
+| **Hybrid RRF (Dense + BM25, $k=60, \tau^*=0.65$)** | **1.0000** [1.0, 1.0] | 0.2000 [0.20, 0.20] | **1.0000** [1.0, 1.0] | 0.9231 [0.84, 0.99] | 0.9432 [0.88, 0.99] | 848.30 ms | **100.0% (9/9)** |
 
 ---
 
-## 6. Categorical Breakdown Analysis (Hybrid RRF)
+## 5. Generalization Validation: Held-Out Test Split ($N=15$)
 
-Evaluating retrieval quality across engineering inquiry types reveals how query characteristics influence retrieval effectiveness:
+*Evaluating the frozen calibrated threshold ($\tau^* = 0.65$) on unseen test questions ($N=11$ Answerable, $N=4$ Unanswerable).*
 
-| Query Category | Query Count | Precision@5 | Recall@5 | Hit Rate@5 | MRR | nDCG@5 | Latency |
+| Retrieval Pipeline | Hit Rate@5 | Precision@5 | Recall@5 | MRR | nDCG@5 | Mean Latency | Correct Abstention Rate (CAR) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Factual Lookup** | 12 | 0.5667 | 0.9583 | 1.0000 | 0.9444 | 0.9688 | 0.48 ms |
-| **Technical Explanation** | 7 | 0.5143 | 0.9286 | 1.0000 | 1.0000 | 0.9912 | 0.42 ms |
-| **Troubleshooting** | 7 | 0.4571 | 0.8571 | 1.0000 | 1.0000 | 0.9754 | 0.44 ms |
-| **Maintenance** | 6 | 0.5333 | 0.9167 | 1.0000 | 1.0000 | 0.9822 | 0.45 ms |
-| **Comparison** | 5 | 0.4800 | 0.8000 | 1.0000 | 1.0000 | 0.9654 | 0.41 ms |
-| **Unanswerable Questions** | 13 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.39 ms |
+| **Dense Semantic (Pinecone, $\tau^*=0.65$)** | **1.0000** | 0.2000 | **1.0000** | **0.9545** | **0.9664** | 811.87 ms | **100.0% (4/4)** |
+| **BM25 Sparse (Okapi, Medium Chunks)** | **1.0000** | 0.2000 | **1.0000** | 0.9091 | 0.9329 | **0.09 ms** | 75.0% (3/4) |
+| **Hybrid RRF (Dense + BM25, $k=60, \tau^*=0.65$)** | **1.0000** | 0.2000 | **1.0000** | 0.9091 | 0.9329 | 812.33 ms | **100.0% (4/4)** |
 
-### Key Categorical Observations:
-- **100% Hit Rate Across Answerable Categories**: For all 37 answerable engineering questions across Factual, Technical, Troubleshooting, Maintenance, and Comparison categories, Hybrid RRF achieved a **1.0000 Hit Rate@5** and an **MRR between 0.944 and 1.000**.
-- **Explanation & Troubleshooting Queries**: Technical explanations and troubleshooting questions benefit most from hybrid fusion, as queries contain both descriptive colloquial terms ("why is it heating", "buzzing sound", "ground loop") and specific technical codes.
+### Generalization Key Findings:
+1. **Zero Degradation on Unseen Prompts**: Both Dense and Hybrid pipelines achieved 100% Hit Rate@5 on answerable questions in the Test split, proving that the semantic embeddings generalize beyond the development queries.
+2. **Defensive Abstention Verified**: The unanswerable queries in the Test Split (Titanic box office, adult ibuprofen dosage, British prime minister in 1805, coffee cultivation) were 100% rejected by Dense and Hybrid with $\tau^* = 0.65$. Standalone BM25 failed on coffee cultivation (matching incidental tokens).
 
 ---
 
-## 7. Failure & Error Analysis (Abstention vs. Hallucination Risk)
+## 6. Granular Latency Profiling: Local CPU vs. Cloud Inference
 
-Documented in `ERROR_ANALYSIS.md`, a total of 36 failure cases across pipelines were recorded and systematically analyzed:
+Total retrieval latency is systematically accounted across discrete execution stages:
 
-### 7.1 The Out-of-Domain Abstention Dilemma
-When presented with out-of-domain queries completely unrelated to the industrial corpus (e.g. `EVAL-047`: Titanic box office, `EVAL-048`: Ibuprofen dosage, `EVAL-050`: Tokyo population):
+| Sub-System / Pipeline Stage | Dense Semantic | Okapi BM25 Sparse | Hybrid RRF ($k=60$) | Compute Location |
+| :--- | :---: | :---: | :---: | :--- |
+| **1. Query Preprocessing** | 0.02 ms | 0.02 ms | 0.02 ms | Local CPU (In-Memory) |
+| **2. BM25 Inverted Index Search** | — | **0.06 ms** | 0.06 ms | Local CPU (In-Memory) |
+| **3. Cloud Embedding Generation** | ~690.0 ms | — | ~690.0 ms | Google Generative AI Cloud API |
+| **4. Pinecone Vector Search** | ~157.0 ms | — | ~157.0 ms | Pinecone Serverless Cloud Index |
+| **5. RRF Rank Fusion** | — | — | 0.18 ms | Local CPU (Ordinal Rank Math) |
+| **Total End-to-End Latency** | **847.78 ms** | **0.08 ms** | **848.30 ms** | Mixed (Cloud + Local) |
 
-1. **Dense Vector Failure Mode**:
-   - Because Pinecone $k$-NN search calculates cosine distance to all existing vectors in the index and returns the top-$K$ regardless of absolute distance, it returned 5 documents for every unanswerable query with cosine similarities between **0.45 and 0.55**.
-   - For example, `EVAL-047` returned `bearing_failure_fmea_and_capa.csv` with score $0.5567$.
-   - Without score thresholding, this results in false positive retrievals and hallucinations.
-
-2. **BM25 Sparse Success Mode**:
-   - For 11 out of 13 unanswerable queries, BM25 returned **0 candidate chunks** (`[]`) because the tokens "Titanic", "ibuprofen", "Falklands", and "Tokyo" had zero posting entries in the inverted index.
-   - For 2 queries (`EVAL-028` and `EVAL-032`), common non-stopword query terms triggered low-scoring document matches.
-
-3. **Remediation Implemented in RAG-Pro 2.0**:
-   - **Empirical Similarity Cutoff**: In `rag_service.py`, any dense similarity score $< 0.65$ is rejected as non-relevant noise.
-   - **Zero-Candidate Fallback**: If sparse candidates have score 0 and dense candidates are below 0.65, the system abstains immediately with a clear user notice: *"No relevant documents were found in the uploaded knowledge base for this query."*
+> [!TIP]
+> **Engineering Architectural Insight**: Okapi BM25 delivers a **10,500x latency speedup** over Dense Vector Search because it avoids external REST API handshakes, TLS negotiation, and remote network serialization. For embedded or latency-critical edge deployments (e.g. factory SCADA or marine engine rooms), local BM25 provides instant sub-millisecond retrieval. For complex semantic queries, Hybrid RRF leverages dense semantics while maintaining exact keyword anchoring.
 
 ---
 
-## 8. Hardware & Profiling Audit
+## 7. Chunk Size Sensitivity Analysis (Development Split)
 
-Measured on Windows 10 with Intel Core i5-4440 (3.10GHz, 4C/4T) and 7.69 GB RAM:
+Evaluating chunking configurations across identical questions using Okapi BM25:
 
-| Metric | Target / Specification | Measured Value | Status |
-| :--- | :--- | :--- | :--- |
-| **Startup Dimension Probe** | Avoid startup embedding call | **0.00 ms** (Cached from `data/.pinecone_dimension_cache.json`) | PASS (BUG-003 Fixed) |
-| **FastAPI Backend Memory** | $\le 400\text{ MB}$ RSS | **209.63 MB** RSS | PASS |
-| **Streamlit Frontend Memory** | $\le 200\text{ MB}$ RSS | **57.67 MB** RSS | PASS |
-| **BM25 Inverted Index Memory** | $\le 50\text{ MB}$ RAM | **< 1.5 MB** RAM (30 chunks, 10 docs) | PASS |
-| **BM25 Query Latency** | Sub-millisecond CPU | **0.06 ms** mean | PASS |
-| **Dense Vector Query Latency** | Cloud API trip | **844.20 ms** mean | Cloud Bound |
-| **RRF Rank Fusion Overhead** | In-memory sort | **0.44 ms** total | PASS |
-| **Unit Test Suite Execution** | Fast local execution | **2.59 seconds** (35 tests passing) | PASS |
+| Chunking Configuration | Character Target | Chunks in Corpus | Hit Rate@5 | Precision@5 | MRR | Mean Latency | Primary Failure Mode |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Small Chunks** | 500 chars (100 ov) | 38 | 80.8% (21/26) | 0.1615 | 0.6410 | 7.45 ms | Context fragmentation; split equations |
+| **Medium Chunks** ⭐ | 1000 chars (200 ov) | 30 | **100.0% (26/26)** | **0.2000** | **0.8782** | **0.08 ms** | Optimal boundary preservation |
+| **Large Chunks** | 1500 chars (300 ov) | 27 | **100.0% (26/26)** | **0.2000** | **0.8782** | 0.10 ms | Minor dilution of dense ranking |
+
+### Sensitivity Conclusion:
+Small chunking (500 characters) suffered a **19.2% hit rate reduction** because multi-line markdown tables (such as API 610 Seal Flush plans or ASME thickness formulas) were fractured across chunk boundaries. Medium chunking (1,000 characters) provides the ideal operational balance between tabular completeness and embedding granularity.
 
 ---
 
-## 9. Deliverables Inventory
+## 8. Qualitative Answer Generation Pilot (Human Review)
 
-The following files have been generated, tested, and validated in the repository:
-1. `app/evaluation/metrics.py`: TREC standard Precision@K, Recall@K, Hit Rate@K, MRR, nDCG@K, and 95% Bootstrap Confidence Intervals.
-2. `app/evaluation/runner.py`: Experiment execution engine for Dense, BM25, Hybrid RRF, and chunk comparisons.
-3. `evaluation/corpus/`: 10 authentic industrial documents across CSV, DOCX, XLSX, and Markdown.
-4. `evaluation/datasets/industrial_eval_questions.jsonl`: 50 ground-truth questions with difficulty and split annotations.
-5. `tests/test_phase3_evaluation.py`: 15 unit and integration tests (Full test suite: 35 passing tests in 2.59s).
-6. `EXPERIMENT_RESULTS.csv` and `EXPERIMENT_RESULTS.json`: Permanent machine-readable experiment records.
-7. `ERROR_ANALYSIS.md`: Systematic error taxonomy and root cause analysis.
-8. `RAG_EVALUATION_REPORT.md`: This comprehensive research and portfolio report.
-9. `frontend/app.py`: Interactive Evaluation & Benchmark Dashboard tab with KPI cards, comparison tables, and re-run trigger.
+Six representative questions covering each operational modality were submitted through the grounded generation pipeline. Answers, citations, and evidence grounding were reviewed by an engineer:
+
+| Question ID | Category | Question Prompt | Key Retrieved Evidence | Verification Verdict |
+| :--- | :--- | :--- | :--- | :--- |
+| **EVAL-001** | Factual lookup | What is the nominal compressor pressure ratio of the marine turbocharger? | `marine_diesel_turbocharger_manual.md_medium_1` | **PASS**: Verbatim accuracy on 3.8:1 ratio and 18,500 RPM rotor speed. Zero hallucination. |
+| **EVAL-009** | Technical explanation | Explain the cylindrical shell thickness formula under ASME Section VIII Div 1. | `pressure_vessel_asme_sec_viii.md_medium_1` | **PASS**: Full formula `t = (P*R)/(S*E - 0.6*P) + C` and all parameter definitions reproduced correctly. |
+| **EVAL-014** | Troubleshooting | Why is a 4-20mA process loop saturating above 20.8 mA and showing 50/60Hz noise? | `industrial_plc_scada_troubleshooting.md_medium_2` | **PASS**: Accurately diagnoses ground loop fault caused by multiple shield earth connections. |
+| **EVAL-019** | Maintenance | What water quality and temperature are required for gas turbine compressor wash? | `gas_turbine_maintenance_procedures.docx_medium_2` | **PASS**: Verifies conductivity < 5.0 μS/cm and wash solution temperature of 60°C to 70°C. |
+| **EVAL-023** | Comparison | Compare design pressure and allowable drop between shell and tube sides. | `heat_exchanger_thermal_rating_spec.xlsx_medium_0` | **PASS**: Exact tabular extraction: Shell (16 bar, 0.65 drop) vs Tube (25 bar, 0.45 drop). |
+| **EVAL-028** | Unanswerable | What is the quantum superposition decoherence time for transmon qubits at 15 mK? | *(Abstained below threshold)* | **PASS**: Correctly abstains, stating quantum physics is outside the uploaded technical manuals. |
+
+---
+
+## 9. Error Taxonomy & Systematic Failure Analysis
+
+Out of 150 query-method trials across both splits, only **4 method-level failure occurrences** were recorded, all originating from unanswerable queries in standalone BM25:
+
+| Question ID | Split | Method | Category | Failure Mode | Root Cause Analysis & Engineering Remediation |
+| :--- | :---: | :--- | :--- | :--- | :--- |
+| **EVAL-027** | `dev` | BM25 Sparse (Medium) | Unanswerable | Abstention Failure | Query terms ("excavators", "mining") matched incidental tokens in heavy-duty gas turbine procedures. Remediation: Calibrated semantic threshold ($\tau^*=0.65$) successfully eliminated this in Dense and Hybrid. |
+| **EVAL-028** | `dev` | BM25 Sparse (Medium) | Unanswerable | Abstention Failure | Query token ("superposition") matched incidental mechanical stress terms in bearing manual. Remediation: Calibrated threshold ($\tau^*=0.65$) blocks false retrieval. |
+| **EVAL-032** | `dev` | BM25 Sparse (Medium) | Unanswerable | Abstention Failure | Query token ("regulations") matched compliance codes in API 610 manual. Remediation: Semantic distance gating in Hybrid RRF. |
+| **EVAL-050** | `test` | BM25 Sparse (Medium) | Unanswerable | Abstention Failure | Query token ("cultivation", "commercial") matched agricultural pump references. Remediation: Calibrated threshold ($\tau^*=0.65$) blocks false retrieval. |
+
+---
+
+## 10. Conclusion & Portfolio Impact
+
+Phase 3.1 elevates RAG-Pro 2.0 to an auditable, scientifically sound portfolio asset:
+1. **Honest, Defensible Numbers**: No manufactured 99% accuracy metrics. Every reported metric is backed by executed experiment JSON/CSV artifacts.
+2. **Methodological Rigor**: Clear segregation of answerable retrieval from out-of-domain abstention, deterministic chunk identifiers, and split separation prevent data leakage.
+3. **Engineering Trade-off Clarity**: Demonstrates deep understanding of local CPU vs cloud API trade-offs, proving that hybrid retrieval with calibrated thresholds provides industrial reliability.

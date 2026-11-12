@@ -59,21 +59,37 @@ class RetrievalDiagnostics:
         return asdict(self)
 
 
+def get_canonical_chunk_id(doc: Document) -> str:
+    """
+    Extracts canonical deterministic chunk_id.
+    - If metadata has 'file_name' and 'chunk_index', returns '{file_name}_{chunk_strategy}_{chunk_index}'.
+    - Else if metadata has 'chunk_id', returns that 'chunk_id'.
+    - Else falls back to source or content hash.
+    """
+    meta = doc.metadata or {}
+    if "file_name" in meta and "chunk_index" in meta:
+        fn = meta["file_name"]
+        strat = meta.get("chunk_strategy", "medium")
+        idx = meta["chunk_index"]
+        return f"{fn}_{strat}_{idx}"
+    
+    if meta.get("chunk_id"):
+        return str(meta["chunk_id"])
+        
+    source = meta.get("source")
+    if source and "chunk_index" in meta:
+        strat = meta.get("chunk_strategy", "medium")
+        idx = meta["chunk_index"]
+        return f"{source}_{strat}_{idx}"
+        
+    return hashlib.md5(doc.page_content.encode("utf-8")).hexdigest()[:16]
+
+
 def get_chunk_identifier(doc: Document) -> str:
     """
-    Extracts stable chunk_id from metadata or generates a deterministic hash
-    based on document source, page number, and content snippet.
+    Extracts stable canonical chunk_id: {file_name}_{strategy}_{index}.
     """
-    meta_id = doc.metadata.get("chunk_id")
-    if meta_id:
-        return str(meta_id)
-
-    # Fallback to deterministic hash
-    source = doc.metadata.get("source", "unknown")
-    page = doc.metadata.get("page", 1)
-    prefix = doc.page_content[:150].strip()
-    key = f"{source}:{page}:{prefix}".encode("utf-8")
-    return hashlib.sha256(key).hexdigest()[:16]
+    return get_canonical_chunk_id(doc)
 
 
 def reciprocal_rank_fusion(
