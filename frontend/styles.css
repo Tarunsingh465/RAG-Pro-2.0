@@ -312,6 +312,103 @@ div[data-testid="stChatInput"] {
 }
 
 /* =========================================================
+   Sidebar "Upload Technical Files" Dropzone & Upload Button
+   Transforms the default tiny upload button into a clean, prominent,
+   and visually compatible input component.
+   ========================================================= */
+section[data-testid="stSidebar"] [data-testid="stFileUploader"] {
+    width: 100% !important;
+    margin-bottom: 6px !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border: 1.5px dashed rgba(59, 130, 246, 0.35) !important;
+    border-radius: 10px !important;
+    padding: 14px 12px 10px 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"]:hover {
+    background-color: rgba(59, 130, 246, 0.06) !important;
+    border-color: rgba(59, 130, 246, 0.7) !important;
+    box-shadow: 0 0 14px rgba(59, 130, 246, 0.16) !important;
+}
+
+/* Make the button wrapper span full width */
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] > span,
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] span:has(button) {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+
+/* The upper "Upload" button inside the dropzone */
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button,
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button[data-testid="baseButton-secondary"],
+section[data-testid="stSidebar"] div.st-key-sidebar_file_uploader [data-testid="stFileUploaderDropzone"] button {
+    width: 100% !important;
+    min-height: 44px !important;
+    padding: 0.65rem 1.2rem !important;
+    background: rgba(59, 130, 246, 0.14) !important;
+    border: 1.5px solid rgba(59, 130, 246, 0.45) !important;
+    border-radius: 8px !important;
+    color: #93c5fd !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button p,
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button span,
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button div {
+    color: #93c5fd !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button:hover {
+    background: rgba(59, 130, 246, 0.28) !important;
+    border-color: #60a5fa !important;
+    color: #ffffff !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35) !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button:hover p,
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button:hover span,
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button:hover div {
+    color: #ffffff !important;
+}
+
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] button:active {
+    transform: translateY(0px) !important;
+    background: rgba(59, 130, 246, 0.38) !important;
+}
+
+/* Instructions text inside dropzone */
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzoneInstructions"],
+section[data-testid="stSidebar"] [data-testid="stFileUploaderDropzoneInstructions"] * {
+    color: #94a3b8 !important;
+    font-size: 0.78rem !important;
+    text-align: center !important;
+    line-height: 1.4 !important;
+}
+
+/* =========================================================
    Sidebar "Upload & Index" Button - Custom Styling
    White box background, large bold red text
    ========================================================= */
