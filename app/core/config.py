@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     MISTRAL_API_KEY: str | None = None
 
     # Pinecone
-    PINECONE_INDEX_NAME: str = "rag-pro"
+    PINECONE_INDEX_NAME: str = "tyrion-2-0"
     PINECONE_NAMESPACE: str = "default"
 
     # Models & Endpoints
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     CHUNK_OVERLAP: int = Field(default=200)
 
     # Application
-    APP_NAME: str = "RAG-Pro"
+    APP_NAME: str = "TYRION-2.0"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
 

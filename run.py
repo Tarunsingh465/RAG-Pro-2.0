@@ -35,7 +35,7 @@ if __name__ == "__main__":
             print("   Please terminate the process manually or use another port.")
             sys.exit(1)
 
-    print(f"🚀 Starting RAG-Pro API on http://{HOST}:{PORT} ...")
+    print(f"🚀 Starting TYRION-2.0 API on http://{HOST}:{PORT} ...")
     uvicorn.run(
         "app.main:app",
         host=HOST,

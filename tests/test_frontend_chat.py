@@ -139,7 +139,7 @@ class TestFrontendSidebarLayout(unittest.TestCase):
             self.assertEqual(at.sidebar.file_uploader[0].key, "sidebar_file_uploader")
 
             # 2. Project Branding: exactly 1 title and 1 developer badge
-            branding_titles = [m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]
+            branding_titles = [m for m in at.sidebar.markdown if "### 🏭 TYRION-2.0" in m.value]
             self.assertEqual(len(branding_titles), 1, "Branding title must render exactly once.")
 
             dev_cards = [m for m in at.sidebar.markdown if "developer-badge" in m.value]
@@ -170,7 +170,7 @@ class TestFrontendSidebarLayout(unittest.TestCase):
                 # Verify sidebar remains singleton
                 self.assertEqual(len(at.sidebar.file_uploader), 1)
                 self.assertEqual(
-                    len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1
+                    len([m for m in at.sidebar.markdown if "### 🏭 TYRION-2.0" in m.value]), 1
                 )
                 self.assertEqual(
                     len([m for m in at.sidebar.markdown if "#### 📂 Upload & Ingest" in m.value]), 1
@@ -198,7 +198,7 @@ class TestFrontendSidebarLayout(unittest.TestCase):
 
             self.assertEqual(len(at.sidebar.file_uploader), 1)
             self.assertEqual(
-                len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1
+                len([m for m in at.sidebar.markdown if "### 🏭 TYRION-2.0" in m.value]), 1
             )
             self.assertEqual(len(at.sidebar.info), 1)
             self.assertIn("No documents uploaded yet.", at.sidebar.info[0].value)
@@ -213,7 +213,7 @@ class TestFrontendSidebarLayout(unittest.TestCase):
 
             self.assertEqual(len(at.sidebar.file_uploader), 1)
             self.assertEqual(
-                len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1
+                len([m for m in at.sidebar.markdown if "### 🏭 TYRION-2.0" in m.value]), 1
             )
             self.assertEqual(
                 len([m for m in at.sidebar.markdown if "#### 📂 Upload & Ingest" in m.value]), 1
@@ -234,7 +234,7 @@ class TestFrontendSidebarLayout(unittest.TestCase):
             # Messages reset, sidebar remains unique
             self.assertEqual(len(at.chat_message), 0)
             self.assertEqual(len(at.sidebar.file_uploader), 1)
-            self.assertEqual(len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1)
+            self.assertEqual(len([m for m in at.sidebar.markdown if "### 🏭 TYRION-2.0" in m.value]), 1)
             self.assertEqual(len([b for b in at.sidebar.button if b.key == "clear_chat_history_btn"]), 1)
 
     def test_sidebar_document_delete_action(self):
@@ -250,7 +250,7 @@ class TestFrontendSidebarLayout(unittest.TestCase):
             del_btn.click().run()
 
             self.assertEqual(len(at.sidebar.file_uploader), 1)
-            self.assertEqual(len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1)
+            self.assertEqual(len([m for m in at.sidebar.markdown if "### 🏭 TYRION-2.0" in m.value]), 1)
             self.assertEqual(len([m for m in at.sidebar.markdown if "#### 📂 Upload & Ingest" in m.value]), 1)
 
     def test_sidebar_upload_action_no_file(self):
@@ -263,7 +263,7 @@ class TestFrontendSidebarLayout(unittest.TestCase):
             self.assertEqual(len(at.sidebar.file_uploader), 1)
             self.assertEqual(len(at.sidebar.warning), 1)
             self.assertIn("Please choose one or more documents.", at.sidebar.warning[0].value)
-            self.assertEqual(len([m for m in at.sidebar.markdown if "### 🏭 RAG-Pro 2.0" in m.value]), 1)
+            self.assertEqual(len([m for m in at.sidebar.markdown if "### 🏭 TYRION-2.0" in m.value]), 1)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 """
 Phase 4 — End-to-End Functional Validation Test Suite.
-RAG-Pro 2.0 — Final-Year Academic & Portfolio Project
+TYRION-2.0 — Final-Year Academic & Portfolio Project
 
 Validates the 7 practical operational scenarios required by Phase 4:
 1. Successful document upload, extraction, chunking, and dual indexing.
@@ -40,7 +40,7 @@ class TestPhase4FunctionalValidation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = TestClient(app)
-        cls.test_dir = Path(tempfile.mkdtemp(prefix="rag_pro_phase4_test_"))
+        cls.test_dir = Path(tempfile.mkdtemp(prefix="tyrion_phase4_test_"))
 
     @classmethod
     def tearDownClass(cls):

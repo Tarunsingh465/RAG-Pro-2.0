@@ -11,7 +11,7 @@ RESULTS_CSV_PATH = Path("evaluation/results/EXPERIMENT_RESULTS.csv")
 ERROR_MD_PATH = Path("ERROR_ANALYSIS.md")
 
 st.set_page_config(
-    page_title="RAG-Pro 2.0 | Industrial Intelligence Assistant",
+    page_title="TYRION-2.0 | Industrial Intelligence Assistant",
     page_icon="🏭",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -139,7 +139,7 @@ def render_sidebar(is_online: bool) -> None:
     """
     with st.sidebar:
         # 1. Project Branding
-        st.markdown("### 🏭 RAG-Pro 2.0")
+        st.markdown("### 🏭 TYRION-2.0")
         st.caption("Industrial Knowledge Intelligence & Decision Support System")
         st.markdown(
             """
@@ -283,7 +283,7 @@ render_sidebar(is_online)
 
 col_header, col_badge = st.columns([3.8, 1.4])
 with col_header:
-    st.markdown("## 🤖 RAG-Pro 2.0 Industrial Intelligence")
+    st.markdown("## 🤖 TYRION-2.0 Industrial Intelligence")
     st.caption("Grounded Document Q&A · Industrial Root Cause Analysis · Retrieval Evaluation & Benchmarking")
 with col_badge:
     st.markdown(
@@ -317,7 +317,7 @@ with tab_chat:
             st.markdown(
                 """
                 <div class="hero-box">
-                    <h3 style="margin-top:0;">👋 Welcome to RAG-Pro 2.0</h3>
+                    <h3 style="margin-top:0;">👋 Welcome to TYRION-2.0</h3>
                     <p style="color:#94a3b8; font-size: 0.95rem;">
                         Ask questions about your uploaded documents,
                         solve engineering equations, diagnose equipment failures, or test common conversational queries.

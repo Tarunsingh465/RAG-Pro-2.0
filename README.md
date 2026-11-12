@@ -1,4 +1,4 @@
-# 🏭 RAG-Pro 2.0 — Industrial Knowledge Intelligence & Decision Support System
+# 🏭 TYRION-2.0 — Industrial Knowledge Intelligence & Decision Support System
 
 > **A Practical Retrieval-Augmented Generation (RAG) System Engineered for Technical & Engineering Documentation**  
 > **Author:** Tarun Singh — B.Tech Computer Science (Data Science & AI)  
@@ -15,7 +15,7 @@
 
 ## 1. Project Introduction
 
-**RAG-Pro 2.0** is an academic capstone and portfolio project designed to demonstrate a complete, modular, and defensible Retrieval-Augmented Generation (RAG) architecture.
+**TYRION-2.0** is an academic capstone and portfolio project designed to demonstrate a complete, modular, and defensible Retrieval-Augmented Generation (RAG) architecture.
 
 ### The Problem Being Solved
 Standard LLM question-answering systems struggle with specialized technical, industrial, and compliance documents (such as ASME boiler codes, API standards, machinery operation manuals, and sensor troubleshooting guides). These documents feature:
@@ -24,7 +24,7 @@ Standard LLM question-answering systems struggle with specialized technical, ind
 - Critical safety and precision requirements where hallucination cannot be tolerated.
 
 ### Intended Use Case & Capabilities
-RAG-Pro 2.0 serves as a local decision-support and knowledge-retrieval assistant for engineers and technical reviewers:
+TYRION-2.0 serves as a local decision-support and knowledge-retrieval assistant for engineers and technical reviewers:
 1. **Multi-format document ingestion:** Extracts structured text, sections, and tables from PDFs, Office documents (DOCX, PPTX), spreadsheets (Excel, CSV), and Markdown/text notes.
 2. **Hybrid semantic and keyword retrieval:** Combines high-dimensional dense vector embeddings with local Okapi BM25 sparse keyword matching via Reciprocal Rank Fusion (RRF).
 3. **Similarity threshold gating & abstention:** Filters out low-confidence matches before calling the LLM, safely refusing to answer out-of-corpus queries with 0 citations.
@@ -179,7 +179,7 @@ Conversely, BM25 excels at exact keyword matching but cannot capture paraphrased
 
 ## 7. Experimental Evaluation & Benchmark Results
 
-The retrieval and generation quality of RAG-Pro 2.0 was experimentally evaluated against a dedicated benchmark dataset:
+The retrieval and generation quality of TYRION-2.0 was experimentally evaluated against a dedicated benchmark dataset:
 - **Corpus:** 10 authentic industrial specifications (centrifugal pumps, marine turbochargers, steam boilers, gas turbines, transformers, chillers, pressure vessels).
 - **Benchmark Questions:** 50 curated technical questions annotated with ground-truth chunk provenance and answerability labels.
 - **Split Isolation:** 35 Development queries (used for threshold calibration and parameter selection) and 15 Held-Out Test queries (unseen validation).
@@ -223,8 +223,8 @@ A human-reviewed pilot audit was conducted across 6 representative industrial qu
 
 ### Step 1: Clone the Repository
 ```powershell
-git clone https://github.com/Tarunsingh465/RAG-Pro-2.0.git
-cd RAG-Pro-2.0
+git clone https://github.com/Tarunsingh465/TYRION-2.0.git
+cd TYRION-2.0
 ```
 
 ### Step 2: Create and Activate Virtual Environment
@@ -256,7 +256,7 @@ GOOGLE_API_KEY=your-google-api-key       # Free from Google AI Studio
 PINECONE_API_KEY=your-pinecone-api-key   # Free Serverless tier from Pinecone
 
 # Pinecone Index Settings:
-PINECONE_INDEX_NAME=rag-pro
+PINECONE_INDEX_NAME=tyrion-2-0
 PINECONE_NAMESPACE=default
 
 # Model Settings:
@@ -361,6 +361,6 @@ To demonstrate the application during an evaluation or interview, follow this ch
 
 ## 📄 License & Attribution
 
-- **Project:** RAG-Pro 2.0 (Industrial Knowledge Intelligence & Decision Support System)
+- **Project:** TYRION-2.0 (Industrial Knowledge Intelligence & Decision Support System)
 - **Developer:** Tarun Singh — B.Tech Computer Science (Data Science & AI)
 - **License:** [MIT License](LICENSE)

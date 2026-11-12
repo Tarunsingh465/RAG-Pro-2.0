@@ -60,7 +60,7 @@ INTENT_PATTERNS = [
         ],
         "response": (
             "I was developed by **Tarun**, a B.Tech Computer Science (Data Science and AI) specialist and final-year student. 🎓💻\n\n"
-            "Tarun designed and engineered this platform (**RAG-Pro 2.0**) to solve personal workflows and real-world engineering problems across multiple disciplines (CS, Mechanical, Civil, Chemical, and Electrical), combining deep document intelligence, high-speed semantic retrieval, and technical problem-solving."
+            "Tarun designed and engineered this platform (**TYRION-2.0**) to solve personal workflows and real-world engineering problems across multiple disciplines (CS, Mechanical, Civil, Chemical, and Electrical), combining deep document intelligence, high-speed semantic retrieval, and technical problem-solving."
         ),
     },
 
@@ -68,11 +68,11 @@ INTENT_PATTERNS = [
     {
         "id": "purpose_and_identity",
         "patterns": [
-            r"^(what\s+is\s+your\s+purpose|whats\s+your\s+purpose|what\s+is\s+your\s+role|whats\s+your\s+role|who\s+are\s+you|what\s+are\s+you|what\s+is\s+your\s+name|whats\s+your\s+name|what\s+are\s+you\s+called|tell\s+me\s+about\s+yourself|what\s+is\s+this\s+app|what\s+is\s+this\s+project|what\s+is\s+rag\s*pro|what\s+does\s+rag\s*pro\s+do|why\s+were\s+you\s+created)$",
+            r"^(what\s+is\s+your\s+purpose|whats\s+your\s+purpose|what\s+is\s+your\s+role|whats\s+your\s+role|who\s+are\s+you|what\s+are\s+you|what\s+is\s+your\s+name|whats\s+your\s+name|what\s+are\s+you\s+called|tell\s+me\s+about\s+yourself|what\s+is\s+this\s+app|what\s+is\s+this\s+project|what\s+is\s+tyrion|what\s+does\s+tyrion\s+do|why\s+were\s+you\s+created)$",
             r"\b(what\s+is\s+your\s+purpose|whats\s+your\s+purpose|what\s+is\s+your\s+role|whats\s+your\s+role|who\s+are\s+you|tell\s+me\s+about\s+yourself|what\s+is\s+your\s+name|whats\s+your\s+name)\b",
         ],
         "response": (
-            "I am **RAG-Pro 2.0**, an AI-powered Enterprise Knowledge & Industrial Intelligence Assistant developed by **Tarun**, a B.Tech Computer Science (Data Science and AI) specialist and final-year student. 🎓💻\n\n"
+            "I am **TYRION-2.0**, an AI-powered Enterprise Knowledge & Industrial Intelligence Assistant developed by **Tarun**, a B.Tech Computer Science (Data Science and AI) specialist and final-year student. 🎓💻\n\n"
             "Tarun built this project for personal workflows and engineering-related problem-solving across technical domains.\n\n"
             "### 🎯 Core Capabilities:\n"
             "- 📄 **Document Intelligence:** Ingest, parse, and search technical PDFs, Word docs, CSVs, and notes with exact page citations.\n"
@@ -147,7 +147,7 @@ INTENT_PATTERNS = [
             r"\b(what\s+model\s+are\s+you|what\s+llm\s+are\s+you|what\s+llm)\b",
         ],
         "response": (
-            "Yes, I am **RAG-Pro 2.0**, an AI assistant developed by **Tarun**, a B.Tech CS (Data Science and AI) specialist and final-year student. "
+            "Yes, I am **TYRION-2.0**, an AI assistant developed by **Tarun**, a B.Tech CS (Data Science and AI) specialist and final-year student. "
             "I combine semantic vector search with large language model reasoning to deliver accurate, grounded technical answers for personal workflows and engineering problem-solving."
         ),
     },

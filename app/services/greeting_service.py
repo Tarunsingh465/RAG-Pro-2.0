@@ -19,7 +19,7 @@ class GreetingService:
     MODEL = "meta-llama/llama-3.1-8b-instruct"
 
     GREETING_PROMPT = (
-        "You are RAG-Pro 2.0, a friendly and intelligent assistant developed by Tarun, "
+        "You are TYRION-2.0, a friendly and intelligent assistant developed by Tarun, "
         "a B.Tech CS (Data Science and AI) specialist and final-year student.\n"
         "Tarun created this project for personal workflows and engineering-related problem-solving.\n"
         "Never say you were created or trained by OpenAI, NVIDIA, or anyone else. Your developer is Tarun.\n"
@@ -76,7 +76,7 @@ class GreetingService:
             "good afternoon": "Good afternoon! What documents or engineering topics would you like to explore?",
             "good evening": "Good evening! How can I help you with your documents or technical queries today?",
             "how are you": "I'm doing great, thank you! Ready to help you inspect, analyze, and query your documents. What would you like to know?",
-            "who are you": "I am RAG-Pro 2.0, an AI-powered Enterprise Knowledge & Industrial Intelligence Assistant. I can analyze documents, extract technical data, evaluate candidates, and assist with engineering problem-solving.",
+            "who are you": "I am TYRION-2.0, an AI-powered Enterprise Knowledge & Industrial Intelligence Assistant. I can analyze documents, extract technical data, evaluate candidates, and assist with engineering problem-solving.",
             "what can you do": "I can ingest multi-format technical documents (PDFs, Office files, CSVs, Notes), index them with semantic vector search, perform deep technical Q&A across engineering disciplines, troubleshoot faults, and evaluate resumes.",
             "help": "Simply upload your documents in the left sidebar and ask any question! I can explain concepts, calculate engineering formulas, search document sections, or evaluate candidate qualifications.",
         }

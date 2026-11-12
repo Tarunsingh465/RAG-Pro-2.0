@@ -1,5 +1,5 @@
 """
-Experiment Execution Framework for RAG-Pro 2.0 Evaluation (Phase 3.1 Audited).
+Experiment Execution Framework for TYRION-2.0 Evaluation (Phase 3.1 Audited).
 
 Features:
 - Deterministic chunk ID grounding (No synthetic IDs, zero UUID coupling).
@@ -94,7 +94,7 @@ class EvaluationCorpusManager:
 
 class ExperimentRunner:
     """
-    Phase 3.1 Audited Experiment Runner for RAG-Pro 2.0.
+    Phase 3.1 Audited Experiment Runner for TYRION-2.0.
     """
 
     def __init__(

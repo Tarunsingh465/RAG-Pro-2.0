@@ -1,5 +1,5 @@
 """
-Builder script for RAG-Pro 2.0 Evaluation Corpus & Benchmark Dataset.
+Builder script for TYRION-2.0 Evaluation Corpus & Benchmark Dataset.
 
 Generates:
 1. 10 authentic industrial engineering source documents across MD, DOCX, XLSX, and CSV formats.

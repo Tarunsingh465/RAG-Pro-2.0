@@ -28,7 +28,7 @@ RetrievalMode = Literal["hybrid", "dense", "sparse"]
 
 class Retriever:
     """
-    Unified Retriever for RAG-Pro 2.0.
+    Unified Retriever for TYRION-2.0.
     """
 
     def __init__(self):

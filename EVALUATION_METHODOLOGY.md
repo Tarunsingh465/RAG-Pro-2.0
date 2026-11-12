@@ -1,6 +1,6 @@
 # 📐 Evaluation Methodology & Experimental Design Specification
 
-**Project**: RAG-Pro 2.0 — Industrial Knowledge Intelligence & Decision Support System  
+**Project**: TYRION-2.0 — Industrial Knowledge Intelligence & Decision Support System  
 **Developer**: Tarun Singh — B.Tech Computer Science (Data Science & AI)  
 **Standard**: TREC / BeIR Information Retrieval Benchmarking Protocol  
 **Version**: Phase 3.1 Audited Edition | **Date**: November 2026

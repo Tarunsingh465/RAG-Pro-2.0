@@ -304,13 +304,13 @@ class TestEmbeddingDimensionAndStartup(unittest.TestCase):
         """Mismatched model and index dimensions raise an informative ValueError."""
         with patch.object(PineconeManager, "__init__", lambda self: None):
             pm = PineconeManager()
-            pm.index_name = "rag-pro"
+            pm.index_name = "tyrion-2"
             pm.model_name = "models/test-model"
             pm.dimension = 768
             pm._load_cache = lambda: {}
 
             mock_client = MagicMock()
-            mock_client.list_indexes().names.return_value = ["rag-pro"]
+            mock_client.list_indexes().names.return_value = ["tyrion-2"]
             mock_desc = MagicMock()
             mock_desc.dimension = 3072  # Index expects 3072, but model is 768
             mock_client.describe_index.return_value = mock_desc
@@ -327,11 +327,11 @@ class TestEmbeddingDimensionAndStartup(unittest.TestCase):
         with patch.object(PineconeManager, "__init__", lambda self: None):
             pm = PineconeManager()
             pm.model_name = "models/gemini-embedding-001"
-            pm.index_name = "rag-pro"
+            pm.index_name = "tyrion-2"
             pm._load_cache = lambda: {
                 "model_name": "models/gemini-embedding-001",
                 "model_dimension": 3072,
-                "index_name": "rag-pro",
+                "index_name": "tyrion-2",
                 "index_dimension": 3072,
             }
             mock_embedder = MagicMock()

@@ -1,4 +1,4 @@
-# 📊 RAG-Pro 2.0 Comprehensive Evaluation & Experimental Research Report
+# 📊 TYRION-2.0 Comprehensive Evaluation & Experimental Research Report
 
 **Project**: Industrial Knowledge Intelligence & Decision Support System  
 **Developer**: Tarun Singh — B.Tech Computer Science (Data Science & AI)  
@@ -12,7 +12,7 @@
 
 ## 1. Executive Summary
 
-This report documents the audited empirical evaluation of the information retrieval and answer generation pipeline of **RAG-Pro 2.0**.
+This report documents the audited empirical evaluation of the information retrieval and answer generation pipeline of **TYRION-2.0**.
 
 Unlike superficial accuracy benchmarks, this evaluation addresses industrial knowledge retrieval requirements:
 1. **Zero Synthetic Identification**: Evaluation uses persistent canonical chunk identifiers (`{file_name}_{strategy}_{index}`). No transient synthetic IDs (`item_0`) or dynamically generated virtual ground-truth items are permitted.
@@ -166,7 +166,7 @@ Across all 150 query-method trials in the final audited benchmark, **0 failure o
 
 ## 10. Conclusion & Portfolio Impact
 
-Phase 3.1 and Phase 3.1.1 elevate RAG-Pro 2.0 to an auditable, scientifically sound portfolio asset:
+Phase 3.1 and Phase 3.1.1 elevate TYRION-2.0 to an auditable, scientifically sound portfolio asset:
 1. **Honest, Defensible Numbers**: No manufactured 99% accuracy metrics. Every reported metric is backed by executed experiment JSON/CSV artifacts.
 2. **Methodological Rigor**: Clear segregation of answerable retrieval from out-of-domain abstention, deterministic chunk identifiers, and split separation prevent data leakage.
 3. **Engineering Trade-off Clarity**: Demonstrates deep understanding of local CPU vs cloud API trade-offs, proving that hybrid retrieval with calibrated thresholds provides industrial reliability.

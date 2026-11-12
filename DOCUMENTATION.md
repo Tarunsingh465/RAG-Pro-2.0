@@ -1,4 +1,4 @@
-# 📖 RAG-Pro: Complete Architecture, Working & Feature Documentation
+# 📖 TYRION-2.0: Complete Architecture, Working & Feature Documentation
 
 > **Academic Capstone: Industrial Knowledge Intelligence & Decision Support System**  
 > Built with **FastAPI**, **LangChain**, **Pinecone**, **Google Generative AI**, **NVIDIA NIM / OpenRouter**, and **Streamlit**.
@@ -27,9 +27,9 @@
 
 ## 🌟 System Overview
 
-**RAG-Pro** is designed to provide high-accuracy, hallucination-resistant question answering over diverse user documents (resumes, financial reports, technical manuals, research papers, datasets). 
+**TYRION-2.0** is designed to provide high-accuracy, hallucination-resistant question answering over diverse user documents (resumes, financial reports, technical manuals, research papers, datasets). 
 
-Instead of passing raw questions blindly to an LLM, RAG-Pro employs a **multi-tiered agentic pipeline**:
+Instead of passing raw questions blindly to an LLM, TYRION-2.0 employs a **multi-tiered agentic pipeline**:
 - **Supervisor Routing**: Distinguishes greetings, guardrail violations, out-of-scope questions, and genuine document queries.
 - **Dynamic Semantic Retrieval**: Matches questions against high-dimensional dense vector embeddings in Pinecone.
 - **Adaptive Evaluation**: Capable of both literal extraction (*"What is the CGPA?"*) and high-level reasoning / synthesis (*"Should I hire him?"*).
@@ -104,7 +104,7 @@ flowchart TD
 ## 🚀 Key Features & Capabilities Built
 
 ### 1. Multi-Format Ingestion Engine
-RAG-Pro supports seamless extraction from a wide array of document formats:
+TYRION-2.0 supports seamless extraction from a wide array of document formats:
 - **PDF Documents** (`.pdf`)
 - **Word & PowerPoint** (`.docx`, `.pptx`)
 - **Tabular Data** (`.csv`, `.xlsx`)
@@ -211,7 +211,7 @@ MISTRAL_API_KEY=
 # ==========================================
 # Pinecone Index Settings
 # ==========================================
-PINECONE_INDEX_NAME=rag-pro
+PINECONE_INDEX_NAME=tyrion-2-0
 PINECONE_NAMESPACE=default
 
 # ==========================================
@@ -235,7 +235,7 @@ CHUNK_OVERLAP=200
 # ==========================================
 # Application Settings
 # ==========================================
-APP_NAME=RAG-Pro
+APP_NAME=TYRION-2.0
 APP_VERSION=1.0.0
 DEBUG=false
 ```
