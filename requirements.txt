@@ -20,7 +20,6 @@ pinecone
 
 # LLMs & Embeddings
 google-generativeai
-sentence-transformers
 
 # OCR
 mistralai
@@ -51,8 +50,6 @@ requests
 # Resilience
 tenacity
 
-# Serialization
-orjson
 
 # Frontend
 streamlit

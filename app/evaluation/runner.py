@@ -1113,7 +1113,6 @@ class ExperimentRunner:
         json_str = json.dumps(payload, indent=2)
         json_path.write_text(json_str, encoding="utf-8")
         p312_json_path.write_text(json_str, encoding="utf-8")
-        Path("EXPERIMENT_RESULTS.json").write_text(json_str, encoding="utf-8")
         logger.success(f"Saved experiment results to JSON: {json_path} and {p312_json_path}")
 
         # 2. Save EXPERIMENT_RESULTS.csv & phase_3_1_2_results.csv
@@ -1172,7 +1171,6 @@ class ExperimentRunner:
 
         csv_content = csv_path.read_text(encoding="utf-8")
         p312_csv_path.write_text(csv_content, encoding="utf-8")
-        Path("EXPERIMENT_RESULTS.csv").write_text(csv_content, encoding="utf-8")
         logger.success(f"Saved experiment results to CSV: {csv_path} and {p312_csv_path}")
 
         # 3. Save PER_QUESTION_EVALUATION_AUDIT.csv & phase_3_1_2_per_question.csv
@@ -1196,7 +1194,6 @@ class ExperimentRunner:
 
         audit_content = per_q_csv.read_text(encoding="utf-8")
         p312_per_q_csv.write_text(audit_content, encoding="utf-8")
-        Path("PER_QUESTION_EVALUATION_AUDIT.csv").write_text(audit_content, encoding="utf-8")
         logger.success(f"Saved per-question audit CSV to: {per_q_csv} and {p312_per_q_csv}")
 
         # 4. Save phase_3_1_2_hybrid_diagnostics.csv

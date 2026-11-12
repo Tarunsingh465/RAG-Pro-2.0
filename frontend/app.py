@@ -47,7 +47,7 @@ if "quick_prompt" not in st.session_state:
 # ---------------- SIDEBAR ---------------- #
 with st.sidebar:
     st.markdown("### 🏭 RAG-Pro 2.0")
-    st.caption("Enterprise AI Knowledge & Industrial Intelligence")
+    st.caption("Industrial Knowledge Intelligence & Decision Support System")
     st.markdown(
         """
         <div class="developer-badge">
@@ -322,10 +322,10 @@ with tab_eval:
     st.markdown("### 📊 Information Retrieval & Grounding Evaluation")
     st.caption("Phase 3.1 Audited Empirical Benchmarks · Mathematically Rigorous Metrics · Granular Latency Decomposition · Split Isolation")
 
-    json_file = RESULTS_JSON_PATH if RESULTS_JSON_PATH.exists() else Path("EXPERIMENT_RESULTS.json")
+    json_file = RESULTS_JSON_PATH
 
     if not json_file.exists():
-        st.warning("⚠️ No executed benchmark results found on disk (`EXPERIMENT_RESULTS.json`).")
+        st.warning("⚠️ No executed benchmark results found on disk (`evaluation/results/EXPERIMENT_RESULTS.json`).")
         st.markdown(
             """
             Click below to execute the reproducible evaluation runner across the **50-question industrial dataset**

@@ -1,7 +1,7 @@
 # 📖 RAG-Pro: Complete Architecture, Working & Feature Documentation
 
-> **A Production-Grade Retrieval-Augmented Generation (RAG) System**  
-> Built with **FastAPI**, **LangChain**, **Pinecone**, **Google Generative AI**, **OpenRouter**, and **Streamlit**.
+> **Academic Capstone: Industrial Knowledge Intelligence & Decision Support System**  
+> Built with **FastAPI**, **LangChain**, **Pinecone**, **Google Generative AI**, **NVIDIA NIM / OpenRouter**, and **Streamlit**.
 
 ---
 
@@ -262,7 +262,7 @@ In a second terminal window:
 ## 🔮 Future Roadmap Suggestions
 1. **Chat Memory & Multi-Turn Conversations**: Store message history in SQLite / Redis for contextual follow-up questions.
 2. **Streaming Tokens (SSE)**: Stream responses word-by-word into the Streamlit UI.
-3. **Cross-Encoder Re-Ranking**: Implement `retrieval/reranker.py` with `BAAI/bge-reranker-base` to optimize retrieval precision.
-4. **Hybrid Search**: Combine BM25 keyword matching with dense vector search for exact keyword queries (acronyms, names, code).
-5. **Docker Deployment**: Add `Dockerfile` and `docker-compose.yml` for zero-install containerized deployment.
+3. **Cross-Encoder Re-Ranking**: Integrate `BAAI/bge-reranker-base` on top of RRF candidates to optimize precision.
+4. **Local Embedding Fallback**: Quantized ONNX model support for completely offline execution.
+5. **Docker Deployment**: Add `Dockerfile` and `docker-compose.yml` for containerized deployment.
 

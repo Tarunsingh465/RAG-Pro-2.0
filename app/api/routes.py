@@ -1,12 +1,8 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from typing import List
 
-from app.core.config import settings
 from app.schemas.request import ChatRequest
-from app.schemas.response import (
-    ChatResponse,
-    HealthResponse,
-)
+from app.schemas.response import ChatResponse
 from app.services.chat_service import ChatService
 from app.services.ingest_service import IngestService
 

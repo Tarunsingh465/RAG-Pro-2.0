@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Production Ready Retrieval-Augmented Generation API",
+    description="Industrial Knowledge Intelligence & Decision Support RAG API",
     lifespan=lifespan,
 )
 
