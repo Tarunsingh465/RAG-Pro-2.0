@@ -137,19 +137,75 @@ html, body, [class*="css"] {
     transition: background-color 0.2s ease;
 }
 
-/* User Message Styling */
+/* User Message Styling (supports both odd-turn and avatar selector) */
+div[data-testid="stChatMessage"]:has([data-testid*="User"]),
 div[data-testid="stChatMessage"]:nth-child(odd) {
     background-color: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Assistant Message Styling with Accent */
+/* Assistant Message Styling with Accent (supports both even-turn and avatar selector) */
+div[data-testid="stChatMessage"]:has([data-testid*="Assistant"]),
 div[data-testid="stChatMessage"]:nth-child(even) {
     background-color: rgba(59, 130, 246, 0.04);
     border-left: 3px solid #3b82f6 !important;
     border-top: 1px solid rgba(59, 130, 246, 0.1);
     border-right: 1px solid rgba(59, 130, 246, 0.1);
     border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+/* =========================================================
+   ChatGPT-Style Chat Layout: Scrollable History & Fixed Composer
+   ========================================================= */
+
+/* Independent scrollable conversation container */
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-chat_history_container),
+.st-key-chat_history_container,
+div.st-key-chat_history_container {
+    height: calc(100vh - 280px) !important;
+    min-height: 420px !important;
+    max-height: calc(100vh - 250px) !important;
+    overflow-y: auto !important;
+    padding-right: 8px !important;
+    margin-bottom: 8px !important;
+    scroll-behavior: smooth;
+}
+
+/* Ensure inner vertical block stacks properly */
+.st-key-chat_history_container > div[data-testid="stVerticalBlock"] {
+    min-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+}
+
+/* Fixed-bottom Chat Composer Area */
+.stChatInput,
+div[data-testid="stChatInput"] {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 100 !important;
+    background: transparent !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+
+/* Polish scrollbar for chat history */
+.st-key-chat_history_container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.st-key-chat_history_container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.st-key-chat_history_container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 4px;
+}
+
+.st-key-chat_history_container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 /* Sources Pill Styling */

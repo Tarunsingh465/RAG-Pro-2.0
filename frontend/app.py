@@ -207,118 +207,129 @@ with tab_chat:
             "Please verify the backend server is running (`python run.py`)."
         )
 
-    # Hero Section when chat is empty
-    if not st.session_state.messages:
-        st.markdown(
-            """
-            <div class="hero-box">
-                <h3 style="margin-top:0;">👋 Welcome to RAG-Pro 2.0</h3>
-                <p style="color:#94a3b8; font-size: 0.95rem;">
-                    Ask questions about your uploaded documents,
-                    solve engineering equations, diagnose equipment failures, or test common conversational queries.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    # 1. Independent Scrollable Conversation Container
+    chat_container = st.container(height=560, border=False, key="chat_history_container")
 
-        st.markdown("##### 💡 Try asking:")
-        sug_col1, sug_col2 = st.columns(2)
-        with sug_col1:
-            if st.button("📄 Summarize the uploaded documents", use_container_width=True):
-                st.session_state.quick_prompt = "Summarize the uploaded documents"
-                st.rerun()
-            if st.button("⚙️ Why is my PC heating 98 degree celcius?", use_container_width=True):
-                st.session_state.quick_prompt = "Why is my PC heating 98 degree celcius"
-                st.rerun()
-        with sug_col2:
-            if st.button("👨‍💻 Who developed you and what is your purpose?", use_container_width=True):
-                st.session_state.quick_prompt = "Who developed you and what is your purpose?"
-                st.rerun()
-            if st.button("🔧 Explain turbocharger failure root causes & safety", use_container_width=True):
-                st.session_state.quick_prompt = "Explain turbocharger failure root causes & safety"
-                st.rerun()
+    with chat_container:
+        # Hero Section when chat is empty
+        if not st.session_state.messages:
+            st.markdown(
+                """
+                <div class="hero-box">
+                    <h3 style="margin-top:0;">👋 Welcome to RAG-Pro 2.0</h3>
+                    <p style="color:#94a3b8; font-size: 0.95rem;">
+                        Ask questions about your uploaded documents,
+                        solve engineering equations, diagnose equipment failures, or test common conversational queries.
+                    </p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-    # Render message history
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-            if msg.get("sources"):
-                st.markdown('<div class="source-pill-container">', unsafe_allow_html=True)
-                for source in msg["sources"]:
-                    src = source.get("source", "Document")
-                    page = source.get("page")
-                    page_str = f" · Page {int(page)}" if page is not None else ""
-                    st.markdown(
-                        f'<div class="source-card">📄 {src}{page_str}</div>',
-                        unsafe_allow_html=True,
-                    )
-                st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown("##### 💡 Try asking:")
+            sug_col1, sug_col2 = st.columns(2)
+            with sug_col1:
+                if st.button("📄 Summarize the uploaded documents", use_container_width=True):
+                    st.session_state.quick_prompt = "Summarize the uploaded documents"
+                    st.rerun()
+                if st.button("⚙️ Why is my PC heating 98 degree celcius?", use_container_width=True):
+                    st.session_state.quick_prompt = "Why is my PC heating 98 degree celcius"
+                    st.rerun()
+            with sug_col2:
+                if st.button("👨‍💻 Who developed you and what is your purpose?", use_container_width=True):
+                    st.session_state.quick_prompt = "Who developed you and what is your purpose?"
+                    st.rerun()
+                if st.button("🔧 Explain turbocharger failure root causes & safety", use_container_width=True):
+                    st.session_state.quick_prompt = "Explain turbocharger failure root causes & safety"
+                    st.rerun()
 
-    # Determine active prompt (from input bar or quick suggestion button)
-    input_prompt = st.chat_input("Ask a question about your documents, engineering problems, or calculations...")
+        # Render complete conversation history in chronological order
+        for msg in st.session_state.messages:
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
+                if msg.get("sources"):
+                    st.markdown('<div class="source-pill-container">', unsafe_allow_html=True)
+                    for source in msg["sources"]:
+                        src = source.get("source", "Document")
+                        page = source.get("page")
+                        page_str = f" · Page {int(page)}" if page is not None else ""
+                        st.markdown(
+                            f'<div class="source-card">📄 {src}{page_str}</div>',
+                            unsafe_allow_html=True,
+                        )
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+    # 2. Fixed-Bottom Chat Composer
+    input_prompt = st.chat_input(
+        "Ask a question about your documents, engineering problems, or calculations...",
+        key="chat_composer",
+    )
     prompt = input_prompt or st.session_state.quick_prompt
 
     if prompt:
         st.session_state.quick_prompt = None
 
         st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+        with chat_container:
+            with st.chat_message("user"):
+                st.markdown(prompt)
 
-        with st.chat_message("assistant"):
-            if not is_online:
-                offline_msg = "⚠️ Cannot generate response: The FastAPI backend is currently OFFLINE. Please start the server (`python run.py`)."
-                st.error(offline_msg)
-                st.session_state.messages.append({"role": "assistant", "content": offline_msg})
-            else:
-                with st.spinner("Analyzing and retrieving relevant knowledge..."):
-                    try:
-                        response = requests.post(
-                            f"{API_URL}/chat",
-                            json={
-                                "question": prompt,
-                                "history": st.session_state.messages[:-1][-4:],
-                            },
-                            timeout=120,
-                        )
-
-                        if response.status_code == 200:
-                            data = response.json()
-                            answer = data.get("answer", "No response received.")
-                            sources = data.get("sources", [])
-
-                            st.markdown(answer)
-
-                            if sources:
-                                st.markdown('<div class="source-pill-container">', unsafe_allow_html=True)
-                                for source in sources:
-                                    src = source.get("source", "Document")
-                                    page = source.get("page")
-                                    page_str = f" · Page {int(page)}" if page is not None else ""
-                                    st.markdown(
-                                        f'<div class="source-card">📄 {src}{page_str}</div>',
-                                        unsafe_allow_html=True,
-                                    )
-                                st.markdown('</div>', unsafe_allow_html=True)
-
-                            st.session_state.messages.append(
-                                {
-                                    "role": "assistant",
-                                    "content": answer,
-                                    "sources": sources,
-                                }
+            with st.chat_message("assistant"):
+                if not is_online:
+                    offline_msg = "⚠️ Cannot generate response: The FastAPI backend is currently OFFLINE. Please start the server (`python run.py`)."
+                    st.error(offline_msg)
+                    st.session_state.messages.append({"role": "assistant", "content": offline_msg})
+                else:
+                    with st.spinner("Analyzing and retrieving relevant knowledge..."):
+                        try:
+                            response = requests.post(
+                                f"{API_URL}/chat",
+                                json={
+                                    "question": prompt,
+                                    "history": st.session_state.messages[:-1][-4:],
+                                },
+                                timeout=120,
                             )
-                        else:
-                            st.error(f"Error {response.status_code}: {response.text}")
-                    except requests.exceptions.ConnectionError:
-                        err_msg = "⚠️ Cannot connect to backend server. Is FastAPI running on port 8000?"
-                        st.error(err_msg)
-                        st.session_state.messages.append({"role": "assistant", "content": err_msg})
-                    except Exception as e:
-                        err_msg = f"Backend Error: {e}"
-                        st.error(err_msg)
-                        st.session_state.messages.append({"role": "assistant", "content": err_msg})
+
+                            if response.status_code == 200:
+                                data = response.json()
+                                answer = data.get("answer", "No response received.")
+                                sources = data.get("sources", [])
+
+                                st.markdown(answer)
+
+                                if sources:
+                                    st.markdown('<div class="source-pill-container">', unsafe_allow_html=True)
+                                    for source in sources:
+                                        src = source.get("source", "Document")
+                                        page = source.get("page")
+                                        page_str = f" · Page {int(page)}" if page is not None else ""
+                                        st.markdown(
+                                            f'<div class="source-card">📄 {src}{page_str}</div>',
+                                            unsafe_allow_html=True,
+                                        )
+                                    st.markdown('</div>', unsafe_allow_html=True)
+
+                                st.session_state.messages.append(
+                                    {
+                                        "role": "assistant",
+                                        "content": answer,
+                                        "sources": sources,
+                                    }
+                                )
+                            else:
+                                err_msg = f"Error {response.status_code}: {response.text}"
+                                st.error(err_msg)
+                                st.session_state.messages.append({"role": "assistant", "content": err_msg})
+                        except requests.exceptions.ConnectionError:
+                            err_msg = "⚠️ Cannot connect to backend server. Is FastAPI running on port 8000?"
+                            st.error(err_msg)
+                            st.session_state.messages.append({"role": "assistant", "content": err_msg})
+                        except Exception as e:
+                            err_msg = f"Backend Error: {e}"
+                            st.error(err_msg)
+                            st.session_state.messages.append({"role": "assistant", "content": err_msg})
+        st.rerun()
 
 
 # =========================================================
