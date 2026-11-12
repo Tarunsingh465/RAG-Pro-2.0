@@ -83,6 +83,25 @@ class TestFrontendChatLayout(unittest.TestCase):
             # Composer must still be present at bottom
             self.assertEqual(len(at.chat_input), 1)
 
+    def test_scroll_elements_state_on_empty_and_active_chat(self):
+        """Verify bottom anchor and scroll button are absent on empty chat and present with messages."""
+        with patch("requests.get", side_effect=self.mock_get), patch("requests.post", side_effect=self.mock_post):
+            at = AppTest.from_file(APP_PATH).run()
+
+            # Empty chat: no scroll-to-bottom button
+            btn_matches = [m for m in at.markdown if "scroll-to-bottom-btn" in m.value]
+            self.assertEqual(len(btn_matches), 0, "Scroll-to-bottom button should not appear on empty chat.")
+
+            # Send a query
+            at.chat_input[0].set_value("Test query for scroll").run()
+
+            # Active chat: scroll-to-bottom button and bottom anchor must be rendered
+            anchor_matches = [m for m in at.markdown if "chat-bottom-anchor" in m.value]
+            self.assertGreaterEqual(len(anchor_matches), 1, "Bottom anchor must be rendered when messages exist.")
+
+            btn_matches_active = [m for m in at.markdown if "scroll-to-bottom-btn" in m.value]
+            self.assertGreaterEqual(len(btn_matches_active), 1, "Scroll-to-bottom button must appear when messages exist.")
+
 
 class TestFrontendSidebarLayout(unittest.TestCase):
     """Verifies that sidebar components render exactly once across all application states."""

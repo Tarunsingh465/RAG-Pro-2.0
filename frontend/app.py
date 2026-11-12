@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 
 API_URL = "http://127.0.0.1:8000/api/v1"
 HEALTH_URL = "http://127.0.0.1:8000/health"
@@ -29,6 +30,88 @@ def check_backend_status() -> bool:
         return response.status_code == 200
     except Exception:
         return False
+
+
+def inject_auto_scroll():
+    """Client-side auto-scroll injector and scroll-to-bottom event binder.
+
+    1. Directly scrolls all scrollable containers for the chat history.
+    2. Calls scrollIntoView() on the anchor at the bottom of the conversation.
+    3. Attaches a MutationObserver so dynamically generated streams/spinners trigger instant scrolling.
+    4. Attaches click handlers for the 'Scroll to bottom' button.
+    """
+    components.html(
+        """
+        <script>
+        (function() {
+            function scrollToBottom(smooth = true) {
+                try {
+                    const doc = window.parent.document;
+                    if (!doc) return;
+
+                    // 1. Scroll any chat container directly
+                    const containers = doc.querySelectorAll(
+                        '.st-key-chat_history_container, ' +
+                        '[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-chat_history_container), ' +
+                        'div.st-key-chat_history_container, ' +
+                        '.st-key-chat_history_container [data-testid="stVerticalBlock"]'
+                    );
+                    containers.forEach(el => {
+                        el.scrollTo({
+                            top: el.scrollHeight,
+                            behavior: smooth ? 'smooth' : 'auto'
+                        });
+                    });
+
+                    // 2. Scroll the bottom anchor element into view
+                    const anchor = doc.getElementById('chat-bottom-anchor');
+                    if (anchor) {
+                        anchor.scrollIntoView({
+                            behavior: smooth ? 'smooth' : 'auto',
+                            block: 'end'
+                        });
+                    }
+                } catch (e) {}
+            }
+
+            // Fire immediately and at stepped intervals to catch layout updates & font rendering
+            scrollToBottom(false);
+            setTimeout(() => scrollToBottom(true), 50);
+            setTimeout(() => scrollToBottom(true), 150);
+            setTimeout(() => scrollToBottom(true), 350);
+            setTimeout(() => scrollToBottom(true), 700);
+
+            try {
+                const doc = window.parent.document;
+                if (!doc) return;
+
+                // Attach MutationObserver to auto-scroll whenever content changes (generation, spinner, etc.)
+                const target = doc.querySelector('.st-key-chat_history_container') ||
+                               doc.querySelector('[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-chat_history_container)');
+                if (target && !target.__ragScrollObserverAttached) {
+                    target.__ragScrollObserverAttached = true;
+                    const observer = new MutationObserver(() => {
+                        scrollToBottom(true);
+                    });
+                    observer.observe(target, { childList: true, subtree: true });
+                }
+
+                // Bind click event for the Scroll to Bottom button
+                const btn = doc.getElementById('scroll-to-bottom-btn');
+                if (btn && !btn.__ragClickBound) {
+                    btn.__ragClickBound = true;
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        scrollToBottom(true);
+                    });
+                }
+            } catch (e) {}
+        })();
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
 
 
 # Check live health
@@ -277,7 +360,26 @@ with tab_chat:
                         )
                     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. Fixed-Bottom Chat Composer
+        # Render bottom anchor for reliable auto-scrolling
+        if st.session_state.messages:
+            st.markdown('<div id="chat-bottom-anchor"></div>', unsafe_allow_html=True)
+
+    # 2. Floating / Sticky "Scroll to bottom" button when messages exist
+    if st.session_state.messages:
+        st.markdown(
+            """
+            <div class="scroll-bottom-container">
+                <button id="scroll-to-bottom-btn" class="scroll-bottom-btn" title="Scroll to bottom of response">
+                    <span class="scroll-bottom-icon">⬇</span>
+                    <span>Scroll to bottom</span>
+                </button>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        inject_auto_scroll()
+
+    # 3. Fixed-Bottom Chat Composer
     input_prompt = st.chat_input(
         "Ask a question about your documents, engineering problems, or calculations...",
         key="chat_composer",
@@ -291,6 +393,10 @@ with tab_chat:
         with chat_container:
             with st.chat_message("user"):
                 st.markdown(prompt)
+
+            # Auto-scroll immediately when user prompt is submitted
+            st.markdown('<div id="chat-bottom-anchor"></div>', unsafe_allow_html=True)
+            inject_auto_scroll()
 
             with st.chat_message("assistant"):
                 if not is_online:

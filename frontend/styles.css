@@ -208,6 +208,86 @@ div[data-testid="stChatInput"] {
     background: rgba(255, 255, 255, 0.3);
 }
 
+/* =========================================================
+   Scroll to Bottom Floating Action Button
+   ========================================================= */
+.scroll-bottom-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: sticky;
+    bottom: 12px;
+    z-index: 99;
+    margin-top: -46px;
+    margin-bottom: 8px;
+    pointer-events: none;
+}
+
+.scroll-bottom-btn {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(59, 130, 246, 0.45);
+    border-radius: 9999px;
+    padding: 6px 16px;
+    color: #93c5fd;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.38);
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+.scroll-bottom-btn:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: #60a5fa;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(59, 130, 246, 0.45);
+}
+
+.scroll-bottom-btn:active {
+    transform: translateY(0);
+    background: rgba(59, 130, 246, 0.35);
+}
+
+.scroll-bottom-icon {
+    font-size: 0.95rem;
+    animation: bounce-subtle 1.8s infinite ease-in-out;
+}
+
+@keyframes bounce-subtle {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(2.5px);
+    }
+}
+
+/* Zero-height helper iframe for auto-scroll */
+div:has(> iframe[title="st.iframe"]),
+div:has(> iframe[title="streamlit_components_v1_html"]),
+iframe[title="st.iframe"],
+iframe[title="streamlit_components_v1_html"] {
+    opacity: 0 !important;
+    position: absolute !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    max-height: 0 !important;
+    max-width: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
 /* Sources Pill Styling */
 .source-pill-container {
     display: flex;
