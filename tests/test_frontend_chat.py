@@ -265,6 +265,63 @@ class TestFrontendSidebarLayout(unittest.TestCase):
             self.assertIn("Please choose one or more documents.", at.sidebar.warning[0].value)
             self.assertEqual(len([m for m in at.sidebar.markdown if "### 🏭 TYRION-2.0" in m.value]), 1)
 
+    def test_re_run_benchmark_button_does_not_duplicate_sidebar_uploader(self):
+        """Verify executing or re-running the benchmark suite does not duplicate sidebar widgets.
+
+        Regression test for: Execution Error: There are multiple elements with the same key: 'sidebar_file_uploader'.
+        Caused by sys.path shadowing where 'from app.evaluation.runner import ExperimentRunner'
+        previously self-imported frontend/app.py as 'app', re-executing sidebar rendering.
+        """
+        with patch("requests.get", side_effect=self.mock_get), \
+             patch("requests.post", side_effect=self.mock_post), \
+             patch("app.evaluation.runner.ExperimentRunner") as mock_runner:
+            at = AppTest.from_file(APP_PATH).run()
+            rerun_btns = [b for b in at.button if "Re-run Complete Evaluation" in b.label]
+            self.assertEqual(len(rerun_btns), 1, "Rerun benchmark button should be visible in dashboard.")
+
+            # Trigger benchmark execution rerun
+            at2 = rerun_btns[0].click().run()
+
+            # Verify no Streamlit duplicate key errors or exceptions were raised
+            self.assertEqual(at2.error, [], f"Expected no errors, got: {[e.value for e in at2.error]}")
+            self.assertEqual(len(at2.exception), 0, f"Expected no exceptions, got: {[e.value for e in at2.exception]}")
+
+            # Verify sidebar uploader is rendered exactly once
+            self.assertEqual(len(at2.sidebar.file_uploader), 1, "Sidebar file uploader must remain a singleton.")
+            self.assertEqual(at2.sidebar.file_uploader[0].key, "sidebar_file_uploader")
+
+            # Verify sidebar branding remains a singleton
+            self.assertEqual(len([m for m in at2.sidebar.markdown if "### 🏭 TYRION-2.0" in m.value]), 1)
+
+            # Verify the runner was called
+            self.assertTrue(mock_runner.return_value.run_all.called)
+
+    def test_execute_benchmark_suite_button_does_not_duplicate_sidebar_uploader(self):
+        """Verify executing full benchmark suite from initial missing state does not duplicate sidebar."""
+        with patch("requests.get", side_effect=self.mock_get), \
+             patch("requests.post", side_effect=self.mock_post), \
+             patch("app.evaluation.runner.ExperimentRunner") as mock_runner, \
+             patch.object(Path, "exists", return_value=False):
+            at = AppTest.from_file(APP_PATH).run()
+            exec_btns = [b for b in at.button if "Execute Full Benchmark" in b.label]
+            self.assertEqual(len(exec_btns), 1, "Execute benchmark button should be visible when results missing.")
+
+            at2 = exec_btns[0].click().run()
+
+            self.assertEqual(at2.error, [], f"Expected no errors, got: {[e.value for e in at2.error]}")
+            self.assertEqual(len(at2.exception), 0)
+            self.assertEqual(len(at2.sidebar.file_uploader), 1)
+            self.assertEqual(at2.sidebar.file_uploader[0].key, "sidebar_file_uploader")
+            self.assertEqual(len([m for m in at2.sidebar.markdown if "### 🏭 TYRION-2.0" in m.value]), 1)
+            self.assertTrue(mock_runner.return_value.run_all.called)
+
+    def test_frontend_app_cannot_be_imported_as_module(self):
+        """Verify frontend/app.py raises ImportError when imported as a module, preventing self-execution."""
+        import importlib
+        with self.assertRaises(ImportError) as ctx:
+            importlib.import_module("frontend.app")
+        self.assertIn("frontend/app.py is a Streamlit application entrypoint", str(ctx.exception))
+
 
 if __name__ == "__main__":
     unittest.main()

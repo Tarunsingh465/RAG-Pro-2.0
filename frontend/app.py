@@ -1,5 +1,24 @@
 import json
+import sys
 from pathlib import Path
+
+# Fix sys.path: Ensure project root takes precedence over the 'frontend' directory.
+# Streamlit prepends the script's directory (frontend/) to sys.path[0]. Because this
+# file is named app.py, any subsequent 'from app.evaluation.runner import ...'
+# causes Python to self-import frontend/app.py as package 'app', re-executing this file
+# and creating duplicate Streamlit widgets with identical keys ('sidebar_file_uploader').
+ROOT_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = Path(__file__).resolve().parent
+
+if str(FRONTEND_DIR) in sys.path:
+    sys.path.remove(str(FRONTEND_DIR))
+if str(ROOT_DIR) not in sys.path or sys.path[0] != str(ROOT_DIR):
+    sys.path.insert(0, str(ROOT_DIR))
+
+# Safeguard against accidental re-execution if imported as a module
+if __name__ != "__main__":
+    raise ImportError("frontend/app.py is a Streamlit application entrypoint and cannot be imported as a module.")
+
 import requests
 import streamlit as st
 import streamlit.components.v1 as components
