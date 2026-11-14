@@ -46,7 +46,8 @@ class Settings(BaseSettings):
 
     # Retrieval
     TOP_K: int = Field(default=5)
-    RAG_SIMILARITY_THRESHOLD: float = Field(default=0.55)
+    RAG_SIMILARITY_THRESHOLD: float = Field(default=0.65)
+    BM25_SIMILARITY_THRESHOLD: float = Field(default=5.0)
 
     # Chunking
     CHUNK_SIZE: int = Field(default=1000)

@@ -145,7 +145,8 @@ Traditional RAG models fail when asked: *"Should I hire him?"* because resumes d
 ### 6. Adaptive Similarity Thresholding & Query Expansion
 - **Query Expansion**: When an evaluative question is detected (e.g. *"Should I hire him?"*, *"Why hire him?"*, *"Is he a good fit?"*), the system augments the retrieval query with candidate qualification keywords (`skills, experience, projects, education, achievements`) to pull the most comprehensive resume sections.
 - **Adaptive Threshold**:
-  - Regular factual questions use `RAG_SIMILARITY_THRESHOLD` (configurable in `.env`).
+  - Regular factual questions use `RAG_SIMILARITY_THRESHOLD` (calibrated default `0.65` in `.env`).
+  - Keyword fallback matches use `BM25_SIMILARITY_THRESHOLD` (calibrated default `5.0` in `.env`), cleanly rejecting incidental token matches while admitting genuine keyword queries.
   - Evaluative questions use an adaptive threshold (`0.50`), ensuring high-level synthesis questions are never falsely rejected as "out of context".
 
 ### 7. Conversational Greeting Service
@@ -224,7 +225,8 @@ EMBEDDING_MODEL=models/gemini-embedding-001
 # Retrieval & Thresholds
 # ==========================================
 TOP_K=5
-RAG_SIMILARITY_THRESHOLD=0.55
+RAG_SIMILARITY_THRESHOLD=0.65
+BM25_SIMILARITY_THRESHOLD=5.0
 
 # ==========================================
 # Chunking Settings

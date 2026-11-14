@@ -1010,11 +1010,13 @@ class ExperimentRunner:
             "EVAL-023": {
                 "generated_answer": "Based on the Heat Exchanger Thermal Rating Specification (TEMA Type BEM): Shell Side design pressure is 16.0 bar(g) with allowable pressure drop of 0.65 bar (calculated 0.48 bar). Tube Side design pressure is 25.0 bar(g) with allowable pressure drop of 0.85 bar (calculated 0.62 bar).",
                 "source_citations": ["heat_exchanger_thermal_rating_spec.xlsx (Sheet: Thermal_Rating, Rows 8-12)"],
-                "faithfulness": "High (1.0)",
+                "faithfulness": "Partial (0.50) — Tube allowable pressure drop (0.85 bar) contradicts ground truth (0.45 bar); ungrounded calculated values and sheet name.",
                 "relevance": "High (1.0)",
-                "citations_valid": True,
-                "review_verdict": "PASS — Precise tabular comparison of shell (16 bar, 0.65 drop) vs tube.",
-                "factual_or_citation_errors": "None identified (0 factual errors, 0 citation hallucinations)",
+                "citations_valid": False,
+                "review_verdict": "FAIL / REVISED PARTIAL (Audited): Tube-side allowable drop reported as 0.85 bar (ground truth is 0.45 bar in Thermal_Design); cited non-existent sheet 'Thermal_Rating' Rows 8-12. Original recorded verdict was PASS due to human reviewer checking only shell side (16 bar, 0.65 drop).",
+                "factual_or_citation_errors": "2 errors identified: 1 factual numerical error (tube-side drop 0.85 bar vs true 0.45 bar), 1 citation hallucination (Sheet: Thermal_Rating, Rows 8-12).",
+                "original_unreviewed_verdict": "PASS — Precise tabular comparison of shell (16 bar, 0.65 drop) vs tube.",
+                "audit_status": "Corrected during Phase 5 RAG correctness audit.",
             },
             "EVAL-028": {
                 "generated_answer": "I cannot answer this question based on the provided technical documentation. The uploaded documents cover industrial machinery specifications (gas turbines, pumps, chillers, boilers, transformers, and pressure vessels) and do not contain information on quantum superposition or trapped-ion decoherence times.",
@@ -1046,7 +1048,7 @@ class ExperimentRunner:
                 "factual_or_citation_errors": "None",
             })
 
-            pilot_records.append({
+            rec = {
                 "question_id": qid,
                 "category": q["category"],
                 "question": query,
@@ -1062,7 +1064,12 @@ class ExperimentRunner:
                 "review_verdict": meta["review_verdict"],
                 "factual_or_citation_errors": meta.get("factual_or_citation_errors", "None"),
                 "evaluation_scope_note": "Pilot diagnostic sample (N=6) for qualitative auditing; not a comprehensive hallucination benchmark.",
-            })
+            }
+            if "original_unreviewed_verdict" in meta:
+                rec["original_unreviewed_verdict"] = meta["original_unreviewed_verdict"]
+            if "audit_status" in meta:
+                rec["audit_status"] = meta["audit_status"]
+            pilot_records.append(rec)
 
         logger.success(f"Generated {len(pilot_records)} qualitative answer evaluation records.")
         return pilot_records

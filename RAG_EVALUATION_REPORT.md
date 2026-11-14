@@ -137,6 +137,8 @@ Small chunking (500 characters) suffered a **19.2% hit rate reduction** because 
 
 > [!NOTE]
 > **Scope & Sample Boundary**: This evaluation is a **qualitative diagnostic pilot** across $N=6$ human-reviewed cases covering each operational modality. It provides indicative validation of end-to-end evidence synthesis, but is not claimed as a large-scale statistical generation benchmark.
+>
+> **Audit Finding (EVAL-023 Factual Correction)**: In the original Phase 3.1.2 pilot record, EVAL-023 was prematurely logged as `PASS` because the reviewer checked only shell-side figures. An audited cross-check against `heat_exchanger_thermal_rating_spec.xlsx` revealed that the generated response reported a tube-side allowable pressure drop of `0.85 bar` (actual: `0.45 bar`) and fabricated a citation to `Sheet: Thermal_Rating, Rows 8-12`. The historical text is preserved and the verdict revised to **FAIL / REVISED PARTIAL** (5/6 PASS, 83.3% pilot fidelity).
 
 Six representative questions covering each operational modality were submitted through the grounded generation pipeline (`gemini-2.5-flash`). Generated answers, citations, and evidence grounding were reviewed by an engineer:
 
@@ -146,7 +148,7 @@ Six representative questions covering each operational modality were submitted t
 | **EVAL-009** | Technical explanation | Explain the cylindrical shell thickness formula under ASME Section VIII Div 1. | `pressure_vessel_asme_sec_viii.md_medium_1` | **PASS**: Full formula `t = (P*R)/(S*E - 0.6*P) + C` and all parameter definitions reproduced correctly. | 0 |
 | **EVAL-014** | Troubleshooting | Why is a 4-20mA process loop saturating above 20.8 mA and showing 50/60Hz noise? | `industrial_plc_scada_troubleshooting.md_medium_2` | **PASS**: Accurately diagnoses ground loop fault caused by multiple shield earth connections. | 0 |
 | **EVAL-019** | Maintenance | What water quality and temperature are required for gas turbine compressor wash? | `gas_turbine_maintenance_procedures.docx_medium_2` | **PASS**: Verifies conductivity < 5.0 μS/cm and wash solution temperature of 60°C to 70°C. | 0 |
-| **EVAL-023** | Comparison | Compare design pressure and allowable drop between shell and tube sides. | `heat_exchanger_thermal_rating_spec.xlsx_medium_0` | **PASS**: Exact tabular extraction: Shell (16 bar, 0.65 drop) vs Tube (25 bar, 0.45 drop). | 0 |
+| **EVAL-023** | Comparison | Compare design pressure and allowable drop between shell and tube sides. | `heat_exchanger_thermal_rating_spec.xlsx_medium_0` | **FAIL / REVISED PARTIAL** *(Audited Correction)*: Shell-side values correct (16 bar, 0.65 drop), but tube-side allowable drop reported as 0.85 bar (actual ground truth is 0.45 bar in `Thermal_Design`); cited non-existent sheet 'Thermal_Rating' Rows 8-12. Original review recorded PASS due to reviewer checking only shell-side values. | 2 (1 factual, 1 citation) |
 | **EVAL-028** | Unanswerable | What is the quantum superposition decoherence time for transmon qubits at 15 mK? | *(Abstained below threshold)* | **PASS**: Correctly abstains, stating quantum physics is outside the uploaded technical manuals. | 0 |
 
 ---

@@ -81,19 +81,25 @@ class RagService:
             query=search_query, k=top_k, document_id=document_id, active_docs=active_docs
         )
 
-        top_score = dense_results[0][1] if dense_results else 0.0
-        has_bm25_match = len(bm25_results) > 0 and bm25_results[0][1] > 1.0
+        top_dense_score = dense_results[0][1] if dense_results else 0.0
+        top_bm25_score = bm25_results[0][1] if bm25_results else 0.0
 
         # Adaptive thresholding: Evaluative & Engineering queries often use cross-domain vocabulary
-        effective_threshold = 0.50 if is_evaluative else settings.RAG_SIMILARITY_THRESHOLD
+        effective_dense_threshold = 0.50 if is_evaluative else settings.RAG_SIMILARITY_THRESHOLD
+        effective_bm25_threshold = settings.BM25_SIMILARITY_THRESHOLD
+
+        has_dense_match = top_dense_score >= effective_dense_threshold
+        has_bm25_match = top_bm25_score >= effective_bm25_threshold
+
+        is_relevant = has_dense_match or has_bm25_match
+        top_score = top_dense_score if dense_results else top_bm25_score
 
         logger.info(
-            f"Relevance check: Dense top_score={top_score:.4f} (threshold={effective_threshold:.2f}), "
-            f"BM25 match={has_bm25_match} ({len(bm25_results)} matches)"
+            f"Relevance check: Dense top_score={top_dense_score:.4f} (threshold={effective_dense_threshold:.2f}, match={has_dense_match}), "
+            f"BM25 top_score={top_bm25_score:.4f} (threshold={effective_bm25_threshold:.2f}, match={has_bm25_match}) -> is_relevant={is_relevant}"
         )
 
-        is_relevant = (top_score >= effective_threshold) or has_bm25_match
-        primary_results = dense_results if dense_results else bm25_results
+        primary_results = dense_results if (dense_results and has_dense_match) else (bm25_results if has_bm25_match else (dense_results or bm25_results))
         return is_relevant, top_score, primary_results
 
     def ask(

@@ -205,9 +205,9 @@ The retrieval and generation quality of TYRION-2.0 was experimentally evaluated 
 
 ### Qualitative Answer Generation Assessment (Pilot Sample)
 A human-reviewed pilot audit was conducted across 6 representative industrial questions (factual lookup, calculation, troubleshooting, comparison, and out-of-domain abstention):
-- **Faithfulness:** 1.0 (verified verbatim against technical parameters in the source text).
-- **Answer Relevance:** 1.0 (directly addressed the query requirements).
-- **Citation Validity:** 100% (every citation mapped directly to a verified retrieved document and section).
+- **Faithfulness:** 5/6 (83.3%) — 5 questions demonstrated exact verbatim alignment; audited review uncovered 1 factual numerical error in EVAL-023 (tube-side pressure drop reported as 0.85 bar vs true 0.45 bar).
+- **Answer Relevance:** 6/6 (100.0%) (directly addressed the query requirements).
+- **Citation Validity:** 5/6 (83.3%) (5 valid citations; EVAL-023 cited non-existent sheet name).
 - **Abstention Safety:** Out-of-corpus queries (e.g., quantum computing questions) triggered correct rejection with zero source citations.
 - *Disclosure:* Generation quality was assessed via this 6-question qualitative diagnostic sample; it does not claim to be a large-scale statistical benchmark.
 
@@ -266,7 +266,8 @@ EMBEDDING_DIMENSION=3072
 
 # Retrieval & Chunking:
 TOP_K=5
-RAG_SIMILARITY_THRESHOLD=0.55
+RAG_SIMILARITY_THRESHOLD=0.65
+BM25_SIMILARITY_THRESHOLD=5.0
 CHUNK_SIZE=1000
 CHUNK_OVERLAP=200
 ```

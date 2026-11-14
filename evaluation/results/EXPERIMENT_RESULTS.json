@@ -1130,11 +1130,13 @@
         "## 1. Maximum Allowable Working Pressure (MAWP) Calculation\r\nFor cylindrical shells under internal design pressure, minimum required thickness t is:\r\nt = (P * R) / (S * E - 0.6 * P",
         "## 2. Hydrostatic Pressure Proof Test Requirements\r\nSection VIII Div 1 paragraph UG-99 mandates standard hydrostatic test pressure:\r\nP_test = 1.3 * MAWP * (S_test / S_design)\r\nWher"
       ],
-      "faithfulness": "High (1.0)",
+      "faithfulness": "Partial (0.50) — Tube allowable pressure drop (0.85 bar) contradicts ground truth (0.45 bar); ungrounded calculated values and sheet name.",
       "answer_relevance": "High (1.0)",
-      "citations_valid": true,
-      "review_verdict": "PASS \u2014 Precise tabular comparison of shell (16 bar, 0.65 drop) vs tube.",
-      "factual_or_citation_errors": "None identified (0 factual errors, 0 citation hallucinations)",
+      "citations_valid": false,
+      "review_verdict": "FAIL / REVISED PARTIAL (Audited): Tube-side allowable drop reported as 0.85 bar (ground truth is 0.45 bar in Thermal_Design); cited non-existent sheet 'Thermal_Rating' Rows 8-12. Original recorded verdict was PASS due to human reviewer checking only shell side (16 bar, 0.65 drop).",
+      "factual_or_citation_errors": "2 errors identified: 1 factual numerical error (tube-side drop 0.85 bar vs true 0.45 bar), 1 citation hallucination (Sheet: Thermal_Rating, Rows 8-12).",
+      "original_unreviewed_verdict": "PASS — Precise tabular comparison of shell (16 bar, 0.65 drop) vs tube.",
+      "audit_status": "Corrected during Phase 5 RAG correctness audit.",
       "evaluation_scope_note": "Pilot diagnostic sample (N=6) for qualitative auditing; not a comprehensive hallucination benchmark."
     },
     {
